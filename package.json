@@ -1,0 +1,17 @@
+{
+  "name": "public-server-bot",
+  "version": "1.0.0",
+  "description": "A discord server public bot",
+  "author": "Burak <@burakbehlull>",
+  "license": "MIT",
+  "main": "bot.js",
+  "type": "module",
+  "scripts": {
+    "start": "node bot.js",
+    "deploy": "node ./config/deploy-commands.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.17.3",
+    "dotenv": "^16.5.0"
+  }
+}
