@@ -1,6 +1,7 @@
-import { permissions } from '../config.json'
+import config from '../config.json' assert { type: 'json' };
 import { PermissionsBitField } from 'discord.js'
 
+const permissions = config.permissions
 class PermissionsManager {
 	constructor(data) {
 		if (!data) {

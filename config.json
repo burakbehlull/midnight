@@ -3,7 +3,7 @@
         "isOwners": true,
 		"isRole": true,
         "isAuthority": true,
-        "roles": [],
-        "owners": []
+        "roles": ["874738363175960606"],
+        "owners": ["677194506621288448"]
     }
 }
