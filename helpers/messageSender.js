@@ -5,13 +5,13 @@ class messageSender {
 		this.client = client;
 	}
 
-	embed({ title, description, image, thumbnail, fields=[], color=0x0099FF, footer }){
+	embed({ title, description, image, thumbnail, fields=[], author, color=0x0099FF, footer }){
        const guild = this.client
 		
-	   const user = guild.author ?? guild.user
-       const IFooter = footer ?? {
-		text: user.username,
-		iconURL: user.displayAvatarURL()
+	    const user = guild.author ?? guild.user
+        const IFooter = footer ?? {
+			text: user.username,
+			iconURL: user.displayAvatarURL()
 		};
 		
         const IEmbed= new EmbedBuilder()
@@ -19,10 +19,11 @@ class messageSender {
         .setTitle(title)
         .setTimestamp()
         .setFooter(IFooter)
+		if (author) IEmbed.setAuthor(author)
 		if (description) IEmbed.setDescription(description)
-		if (image) embed.setImage(image);
-		if (thumbnail) embed.setThumbnail(thumbnail);
-		if (fields.length) embed.addFields(...fields);
+		if (image) IEmbed.setImage(image);
+		if (thumbnail) IEmbed.setThumbnail(thumbnail);
+		if (fields.length) IEmbed.addFields(...fields);
         return IEmbed
     }
 
@@ -40,7 +41,6 @@ class messageSender {
 	
 	reply(content, userSees){
 		const type = typeof(content)
-		console.log("TYPE", type)
 		if(type == "object"){
 			this.client.reply({ embeds: [content], ephemeral: userSees })
 			return
