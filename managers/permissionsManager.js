@@ -2,6 +2,7 @@ import config from '../config.json' assert { type: 'json' };
 import { PermissionsBitField } from 'discord.js'
 
 const permissions = config.permissions
+
 class PermissionsManager {
 	constructor(data) {
 		if (!data) {
@@ -18,6 +19,20 @@ class PermissionsManager {
 
 		this.permissions = permissions
 		this.flags = PermissionsBitField.Flags
+	}
+
+	async control(...authorityFlags){
+		const IsRoles = await this.isRoles();
+		const IsOwner = await this.isOwner();
+		const IsAuthority = await this.isAuthority(authorityFlags);
+
+		const checks = [];
+		if (this.permissions.isRole) checks.push(IsRoles);
+		if (this.permissions.isOwners) checks.push(IsOwner);
+		if (this.permissions.isAuthority) checks.push(IsAuthority);
+
+		const hasAtLeastOnePermission = checks.includes(true);
+		return hasAtLeastOnePermission
 	}
 
 	async isOwner() {
