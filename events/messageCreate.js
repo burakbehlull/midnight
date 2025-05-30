@@ -1,9 +1,11 @@
 import { Events } from 'discord.js';
-
+import messageCreateHandler from "../handlers/messageCreateHandler.js"
 export default {
-  name: Events.MessageCreate, // Events sınıfından MessageCreate kullanımı
+  name: Events.MessageCreate, 
   async execute(client, message) {
     const prefix = client.config.PREFIX;
+
+	await messageCreateHandler(message);
 
     if (!message.content.startsWith(prefix) || message.author.bot) return;
 

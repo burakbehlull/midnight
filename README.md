@@ -37,8 +37,9 @@ Create ` config.json ` file and set permission settings:
 | command | comment | situation |
 | ------ | ------ | ------ |
 | **set** | Adjusts bot settings | stable |
-| **ban** |  ban the user | stable |
-| **tag** | Sets the server tag | incomplete but stable |
+| **ban** |  Ban the user | stable |
+| **tag** | Sets the server tag | stable |
+| **afk** | AFK mode | stable |
 
 **Permission Manager** functions and uses:
 | Function | Values | Use | 
