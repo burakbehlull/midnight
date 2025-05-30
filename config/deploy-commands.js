@@ -12,7 +12,7 @@ const {
 const commands = [];
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
-const commandsPath = path.join(dirname, '.', 'commands/slash-commands');
+const commandsPath = path.join(dirname, '..', 'commands/slash-commands');
 
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 

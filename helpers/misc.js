@@ -22,6 +22,6 @@ function itentsAll(){
 
 export {
 	randomColor,
-	ItentsMiddle,
-	ItentsAll
+	itentsMiddle,
+	itentsAll
 }
