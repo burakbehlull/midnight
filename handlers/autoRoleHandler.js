@@ -1,6 +1,6 @@
 import Settings from '../models/Settings.js';
 
-export async function autoRoleHandler(member) {
+export default async function autoRoleHandler(member) {
   try {
     const guildId = member.guild.id;
     const settings = await Settings.findOne({ guildId });

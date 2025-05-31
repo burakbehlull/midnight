@@ -1,36 +1,52 @@
 import { REST, Routes } from 'discord.js';
 import fs from 'node:fs';
 import path from 'node:path';
-import { pathToFileURL,fileURLToPath } from 'url';
-import 'dotenv/config'
+import { pathToFileURL, fileURLToPath } from 'url';
 
-const {
-	BOT_ID,
-	TOKEN
-} = process.env;
+import 'dotenv/config';
+const { BOT_ID, TOKEN } = process.env;
 
-const commands = [];
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
-const commandsPath = path.join(dirname, '..', 'commands/slash-commands');
+const commandsPath = path.join(dirname, '..', 'commands', 'slash-commands');
 
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+const commands = [];
 
-for (const commandFile of commandFiles) {
+function getAllJsFiles(dir) {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  const files = [];
 
-    const commandPath = path.join(commandsPath, commandFile);
-    const commandUrl = pathToFileURL(commandPath).href;
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
 
-  const { default: command } = await import(commandUrl);
-  if ('data' in command && 'execute' in command) {
-    commands.push(command.data.toJSON());
-  } else {
-    console.log(`[WARNING] The command at ${commandFile} is missing a required "data" or "execute" property.`);
+    if (entry.isDirectory()) {
+      files.push(...getAllJsFiles(fullPath));
+    } else if (entry.isFile() && entry.name.endsWith('.js')) {
+      files.push(fullPath);
+    }
+  }
+
+  return files;
+}
+
+const commandFiles = getAllJsFiles(commandsPath);
+
+for (const filePath of commandFiles) {
+  const commandUrl = pathToFileURL(filePath).href;
+
+  try {
+    const { default: command } = await import(commandUrl);
+    if ('data' in command && 'execute' in command) {
+      commands.push(command.data.toJSON());
+    } else {
+      console.warn(`⚠️ The command at ${filePath} is missing "data" or "execute".`);
+    }
+  } catch (err) {
+    console.error(`❌ Failed to load command at ${filePath}:`, err);
   }
 }
 
-const rest = new REST()
-.setToken(TOKEN);
+const rest = new REST().setToken(TOKEN);
 
 (async () => {
   try {
@@ -41,8 +57,8 @@ const rest = new REST()
       { body: commands },
     );
 
-    console.log(`Successfully reloaded ${data.length} application (/) commands.`);
+    console.log(`✅ Successfully reloaded ${data.length} application (/) commands.`);
   } catch (error) {
-    console.error(error);
+    console.error('❌ Failed to refresh commands:', error);
   }
 })();

@@ -1,5 +1,5 @@
 import { Events } from 'discord.js';
-import { autoRoleHandler } from '../handlers/index.js';
+import { autoRoleHandler } from '../../handlers/index.js';
 
 export default {
   name: Events.GuildMemberAdd,

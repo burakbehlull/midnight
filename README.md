@@ -50,6 +50,10 @@ Create ` config.json ` file and set permission settings:
 | **vip** | Gives vip role | user | stable |
 | **sil** | Deletes messages | amount | stable |
 
+### events:
+| feature | comment | set command |
+| ------ | ------ | ------ | 
+| otorole | Gives automatic roles to users | Can be set with the /set Auto Role command |
 
 **Permission Manager** functions and uses:
 | Function | Values | Use | 
