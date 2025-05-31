@@ -1,5 +1,5 @@
 import { Events } from 'discord.js';
-import messageCreateHandler from "../handlers/messageCreateHandler.js"
+import { messageCreateHandler } from "../../handlers/index.js"
 export default {
   name: Events.MessageCreate, 
   async execute(client, message) {
