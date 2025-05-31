@@ -1,5 +1,5 @@
-import { readdirSync } from 'fs';
-import path from 'path';
+import { readdirSync, statSync  } from 'fs';
+import path, { dirname as pathDirname} from 'path';
 import { pathToFileURL, fileURLToPath } from 'url';
 import { Collection } from 'discord.js';
 
@@ -96,31 +96,47 @@ class Base {
 	  }
 	}
 	
-	async loadEvents(){
-	  const client = this.client
+	async loadEvents() {
+	  const client = this.client;
 	  const filename = fileURLToPath(import.meta.url);
-	  const dirname = path.dirname(filename);
+	  const dirname = pathDirname(filename);
 	  const eventsPath = path.join(dirname, '..', 'events');
 
-	  const eventFiles = readdirSync(eventsPath).filter((file) => file.endsWith('.js'));
+	  function getAllEventFiles(dir) {
+		let results = [];
+		const list = readdirSync(dir);
+
+		for (const file of list) {
+		  const filePath = path.join(dir, file);
+		  const stat = statSync(filePath);
+
+		  if (stat && stat.isDirectory()) {
+			results = results.concat(getAllEventFiles(filePath)); // Recursive call
+		  } else if (file.endsWith('.js')) {
+			results.push(filePath);
+		  }
+		}
+
+		return results;
+	  }
+
+	  const eventFiles = getAllEventFiles(eventsPath);
 
 	  let loadedCount = 0;
 	  let failedCount = 0;
 	  let failedEvents = [];
 
-	  for (const file of eventFiles) {
-		const filePath = path.join(eventsPath, file);
+	  for (const filePath of eventFiles) {
 		const fileUrl = pathToFileURL(filePath).href;
 
 		try {
 		  const event = await import(fileUrl);
-
 		  const { name, once, execute } = event.default;
 
 		  if (!name || !execute) {
-			console.warn(`⚠️ ${file} event is missing "name" or "execute" property.`);
+			console.warn(`⚠️ ${filePath} event is missing "name" or "execute" property.`);
 			failedCount++;
-			failedEvents.push(file);
+			failedEvents.push(filePath);
 			continue;
 		  }
 
@@ -132,18 +148,18 @@ class Base {
 
 		  loadedCount++;
 		} catch (error) {
-		  console.error(`❌ Error loading event from ${file}:`, error);
+		  console.error(`❌ Error loading event from ${filePath}:`, error);
 		  failedCount++;
-		  failedEvents.push(file);
+		  failedEvents.push(filePath);
 		}
 	  }
 
 	  const message = loadedCount 
-	  ? `📦 ${loadedCount} event loaded successfully`
-	  : 'No event found to load.';
+		? `📦 ${loadedCount} event(s) loaded successfully`
+		: 'No event found to load.';
 
 	  console.log(message);
-	  
+
 	  if (failedCount) {
 		console.error(`⚠️ Total failed events: ${failedCount}`);
 		console.error(`Failed event files: ${failedEvents.join(', ')}`);
