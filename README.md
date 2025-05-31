@@ -34,14 +34,21 @@ Create ` config.json ` file and set permission settings:
 ```
 
 ### contents:
-| command | comment | situation |
-| ------ | ------ | ------ |
-| **set** | Adjusts bot settings | stable |
-| **ban** |  Ban the user | stable |
-| **kick** |  Kick the user | stable |
-| **snipe** |  ... | stable |
-| **tag** | Sets the server tag | stable |
-| **afk** | AFK mode | stable |
+| command | comment | values | situation |
+| ------ | ------ | ------ | ------ |
+| **set** | Adjusts bot settings | options, role, user, value | stable |
+| **yaz** | This command allows you to write from the bot | text | stable |
+| **ban** |  Ban the user | user -ticket, id- | stable |
+| **unban** |  Unban the user | user id | stable |
+| **kick** |  Kick the user | user -ticket, id- | stable |
+| **snipe** |  Shows last deleted message | .. | stable |
+| **tag** | Sets the server tag | .. | stable |
+| **afk** | AFK mode | .. | stable |
+| **avatar** | Shows user avatar | user | stable |
+| **nuke** | Refreshes the channel | channel | stable |
+| **streamer** | Gives streamer role | user | stable |
+| **vip** | Gives vip role | user | stable |
+| **sil** | Deletes messages | amount | stable |
 
 
 **Permission Manager** functions and uses:
@@ -53,3 +60,10 @@ Create ` config.json ` file and set permission settings:
 | .isAuthority() | authorities | .isAuthority(userId, new PermissionManager().flags.Administrator) | 
 | .selectOwnerIds() | status, userIds | ... | 
 | .selectRolesId() | status, userIds | For example, you can open "whitelist": [user ids] in config.json and then use the whitelist as the key and use the incoming id as a fixed list. | 
+
+
+**helpers** functions and uses:
+| Helper | Comment | Use | 
+| -------- | -------- | -------- | 
+| messageSender | Helps with responsiveness and rich embed creation | new messageSender() | 
+| misc | Contains many auxiliary functions | misc.callFunction() | 
