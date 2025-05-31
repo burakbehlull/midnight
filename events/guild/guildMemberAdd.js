@@ -5,7 +5,7 @@ export default {
   name: Events.GuildMemberAdd,
   once: false,
   
-  async execute(member) {
+  async execute(client, member) {
     await autoRoleHandler(member);
   }
   
