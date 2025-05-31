@@ -1,5 +1,5 @@
 import { EmbedBuilder } from 'discord.js';
-import { messageSender } from '../../helpers/index.js';
+import { messageSender } from '../../../helpers/index.js';
 
 export default {
   name: 'avatar',

@@ -1,4 +1,4 @@
-import { PermissionsManager } from '../../managers/index.js';
+import { PermissionsManager } from '../../../managers/index.js';
 
 export default {
   name: 'sil',

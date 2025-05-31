@@ -1,5 +1,5 @@
-import { PermissionsManager } from '../../managers/index.js';
-import { messageSender } from '../../helpers/index.js';
+import { PermissionsManager } from '../../../managers/index.js';
+import { messageSender } from '../../../helpers/index.js';
 
 export default {
   name: 'kick',

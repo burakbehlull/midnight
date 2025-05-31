@@ -1,4 +1,4 @@
-import Afk from '../../models/Afk.js';
+import Afk from '../../../models/Afk.js';
 
 export default {
   name: 'afk',

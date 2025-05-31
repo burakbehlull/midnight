@@ -8,76 +8,82 @@ class Base {
 		this.client = client
 	}
 	
-	async loadCommands(){
-	  const client = this.client
-	  
+	async loadCommands() {
+	  const client = this.client;
+
 	  client.config = {
-			PREFIX: process.env.PREFIX
+		PREFIX: process.env.PREFIX
 	  };
+
 	  client.prefixCommands = new Collection();
 	  client.slashCommands = new Collection();
-	  
+
 	  const filename = fileURLToPath(import.meta.url);
 	  const dirname = path.dirname(filename);
 
 	  const prefixCommandsPath = path.join(dirname, '..', 'commands', 'prefix-commands');
 	  const slashCommandsPath = path.join(dirname, '..', 'commands', 'slash-commands');
 
-	  const prefixCommandFiles = readdirSync(prefixCommandsPath).filter((file) => file.endsWith('.js'));
-	  const slashCommandFiles = readdirSync(slashCommandsPath).filter((file) => file.endsWith('.js'));
+	  function getAllJsFiles(dir) {
+		let results = [];
+		const list = readdirSync(dir);
+		for (const file of list) {
+		  const filePath = path.join(dir, file);
+		  const stat = statSync(filePath);
+		  if (stat && stat.isDirectory()) {
+			results = results.concat(getAllJsFiles(filePath));
+		  } else if (file.endsWith('.js')) {
+			results.push(filePath);
+		  }
+		}
+		return results;
+	  }
+
+	  const prefixCommandFiles = getAllJsFiles(prefixCommandsPath);
+	  const slashCommandFiles = getAllJsFiles(slashCommandsPath);
 
 	  let prefixCount = 0;
 	  let slashCount = 0;
 	  let failedCount = 0;
 	  let failedCommands = [];
 
-	  for (const file of prefixCommandFiles) {
-		const filePath = path.join(prefixCommandsPath, file);
+	  for (const filePath of prefixCommandFiles) {
 		const fileUrl = pathToFileURL(filePath).href;
-
 		try {
 		  const command = await import(fileUrl);
-
 		  const { name, execute } = command.default;
-
 		  if (!name || !execute) {
-			console.warn(`⚠️ ${file} command is missing "name" or "execute" property.`);
+			console.warn(`⚠️ ${filePath} is missing "name" or "execute".`);
 			failedCount++;
-			failedCommands.push(file);
+			failedCommands.push(filePath);
 			continue;
 		  }
-
 		  client.prefixCommands.set(name, execute);
 		  prefixCount++;
 		} catch (error) {
-		  console.error(`❌ Error loading prefix command from ${file}:`, error);
+		  console.error(`❌ Error loading prefix command from ${filePath}:`, error);
 		  failedCount++;
-		  failedCommands.push(file);
+		  failedCommands.push(filePath);
 		}
 	  }
 
-	  for (const file of slashCommandFiles) {
-		const filePath = path.join(slashCommandsPath, file);
+	  for (const filePath of slashCommandFiles) {
 		const fileUrl = pathToFileURL(filePath).href;
-
 		try {
 		  const command = await import(fileUrl);
-
 		  const { data, execute } = command.default;
-
 		  if (!data || !execute) {
-			console.warn(`⚠️ ${file} command is missing "data" or "execute" property.`);
+			console.warn(`⚠️ ${filePath} is missing "data" or "execute".`);
 			failedCount++;
-			failedCommands.push(file);
+			failedCommands.push(filePath);
 			continue;
 		  }
-
 		  client.slashCommands.set(data.name, execute);
 		  slashCount++;
 		} catch (error) {
-		  console.error(`❌ Error loading slash command from ${file}:`, error);
+		  console.error(`❌ Error loading slash command from ${filePath}:`, error);
 		  failedCount++;
-		  failedCommands.push(file);
+		  failedCommands.push(filePath);
 		}
 	  }
 
@@ -97,7 +103,7 @@ class Base {
 	}
 	
 	async loadEvents() {
-	  const client = this.client;
+	 const client = this.client;
 	  const filename = fileURLToPath(import.meta.url);
 	  const dirname = pathDirname(filename);
 	  const eventsPath = path.join(dirname, '..', 'events');

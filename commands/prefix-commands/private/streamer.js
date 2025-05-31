@@ -1,5 +1,5 @@
-import Settings from '../../models/Settings.js'; 
-import { PermissionsManager } from '../../managers/index.js';
+import Settings from '../../../models/Settings.js'; 
+import { PermissionsManager } from '../../../managers/index.js';
 
 export default {
     name: 'streamer',
