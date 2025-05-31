@@ -1,11 +1,12 @@
 import { Events } from 'discord.js';
-import { messageCreateHandler } from "../../handlers/index.js"
+import { afkHandler } from "../../handlers/index.js"
+
 export default {
   name: Events.MessageCreate, 
   async execute(client, message) {
     const prefix = client.config.PREFIX;
 
-	await messageCreateHandler(message);
+	await afkHandler(message);
 
     if (!message.content.startsWith(prefix) || message.author.bot) return;
 

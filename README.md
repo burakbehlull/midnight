@@ -43,7 +43,7 @@ Create ` config.json ` file and set permission settings:
 | **kick** |  Kick the user | user -ticket, id- | stable |
 | **snipe** |  Shows last deleted message | .. | stable |
 | **tag** | Sets the server tag | .. | stable |
-| **afk** | AFK mode | .. | stable |
+| **afk** | AFK mode | reason | stable |
 | **avatar** | Shows user avatar | user | stable |
 | **nuke** | Refreshes the channel | channel | stable |
 | **streamer** | Gives streamer role | user | stable |

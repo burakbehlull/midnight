@@ -15,7 +15,7 @@ export default {
           { name: 'Yetkiler', value: 'yetkiler' },
           { name: 'Vip', value: 'vip' },
           { name: 'Streamer', value: 'streamer' },
-          { name: 'Güvenli', value: 'güvenli' }
+          { name: 'Oto Rol', value: 'otorol' }
         )
     )
     .addStringOption(opt =>
@@ -82,20 +82,11 @@ export default {
       return interaction.reply({ content: `Streamer rolü ${role} olarak ayarlandı.`, ephemeral: true });
     }
 
-    if (option === 'güvenli') {
-      if (!role && !user) return interaction.reply({ content: '❌ Lütfen bir kullanıcı veya rol belirtin.', ephemeral: true });
-
-      if (role) {
-        if (!settings.safeRoles.includes(role.id)) settings.safeRoles.push(role.id);
-        await settings.save();
-        return interaction.reply({ content: `${role} rolü güvenli listeye eklendi.`, ephemeral: true });
-      }
-
-      if (user) {
-        if (!settings.safeUsers.includes(user.id)) settings.safeUsers.push(user.id);
-        await settings.save();
-        return interaction.reply({ content: `${user} güvenli kullanıcı listesine eklendi.`, ephemeral: true });
-      }
+    if (option === 'otorol') {
+      if (!role) return interaction.reply({ content: '❌ Lütfen bir rol belirtin.', ephemeral: true });
+      settings.autoRoleId = role.id;
+      await settings.save();
+      return interaction.reply({ content: `Otorol başarıyla ${role} olarak ayarlandı.`, ephemeral: true });
     }
 
     return interaction.reply({ content: '❌ Geçersiz işlem.', ephemeral: true });

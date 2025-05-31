@@ -1,6 +1,6 @@
 import Afk from '../models/Afk.js';
 
-export default async function messageCreateHandler(message) {
+export default async function afkHandler(message) {
   if (!message.guild || message.author.bot) return;
 
   const mentioned = message.mentions.users.first();
