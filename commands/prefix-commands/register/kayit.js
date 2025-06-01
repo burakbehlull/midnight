@@ -2,10 +2,10 @@ import Settings from "../../../models/Settings.js";
 import { PermissionsManager } from '../../../managers/index.js';
 import { messageSender } from '../../../helpers/index.js';
 import { Button } from '../../../helpers/index.js';
-import { EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, ComponentType } from 'discord.js';
 
 export default {
-  name: 'k',
+  name: 'kayit',
   async execute(client, message, args) {
     const sender = new messageSender(message);
     const PM = new PermissionsManager(message);
@@ -23,15 +23,15 @@ export default {
     const btn = new Button();
     btn.add("erkek_btn", "Erkek", btn.style.Primary);
     btn.add("kadin_btn", "Kadın", btn.style.Danger);
-
+	const row = btn.build();
     const msg = await message.channel.send({
       embeds: [
         new EmbedBuilder()
-          .setTitle("👤 Kayıt")
+          .setTitle("Kayıt")
           .setDescription(`${member} için cinsiyet seçin:`)
           .setColor("Blurple")
       ],
-      components: [btn.build()]
+      components: [row]
     });
 
     const collector = msg.createMessageComponentCollector({ componentType: ComponentType.Button, time: 60_000 });
