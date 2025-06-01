@@ -6,7 +6,10 @@ const settingsSchema = new mongoose.Schema({
   yetkiler: { type: Boolean, default: true },
   vipRoleId: { type: String, default: null },
   streamerRoleId: { type: String, default: null },
-  autoRoleId: { type: String, default: null }
+  autoRoleId: { type: String, default: null },
+  erkekRoleId: { type: String, default: null },
+  kizRoleId: { type: String, default: null },
+  kayitsizRoleId: { type: String, default: null }
 });
 
 export default mongoose.model('Settings', settingsSchema);

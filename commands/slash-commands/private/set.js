@@ -15,7 +15,10 @@ export default {
           { name: 'Yetkiler', value: 'yetkiler' },
           { name: 'Vip', value: 'vip' },
           { name: 'Streamer', value: 'streamer' },
-          { name: 'Oto Rol', value: 'otorol' }
+          { name: 'Oto Rol', value: 'otorol' },
+          { name: 'Erkek Kayıt Rolü', value: 'erkek' },
+          { name: 'Kız Kayıt Rolü', value: 'kiz' },
+          { name: 'Kayıtsız Rolü', value: 'kayitsiz' },
         )
     )
     .addStringOption(opt =>
@@ -87,6 +90,27 @@ export default {
       settings.autoRoleId = role.id;
       await settings.save();
       return interaction.reply({ content: `Otorol başarıyla ${role} olarak ayarlandı.`, ephemeral: true });
+    }
+	
+	if (option === 'erkek') {
+      if (!role) return interaction.reply({ content: '❌ Lütfen bir rol belirtin.', ephemeral: true });
+      settings.erkekRoleId = role.id;
+      await settings.save();
+      return interaction.reply({ content: `Erkek kayıt rolü başarıyla ${role} olarak ayarlandı.`, ephemeral: true });
+    }
+	
+	if (option === 'kiz') {
+      if (!role) return interaction.reply({ content: '❌ Lütfen bir rol belirtin.', ephemeral: true });
+      settings.kizRoleId = role.id;
+      await settings.save();
+      return interaction.reply({ content: `Kız kayıt rolü başarıyla ${role} olarak ayarlandı.`, ephemeral: true });
+    }
+	
+	if (option === 'kayitsiz') {
+      if (!role) return interaction.reply({ content: '❌ Lütfen bir rol belirtin.', ephemeral: true });
+      settings.kayitsizRoleId = role.id;
+      await settings.save();
+      return interaction.reply({ content: `Kayıtsız rolü başarıyla ${role} olarak ayarlandı.`, ephemeral: true });
     }
 
     return interaction.reply({ content: '❌ Geçersiz işlem.', ephemeral: true });
