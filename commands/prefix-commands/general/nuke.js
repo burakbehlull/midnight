@@ -1,4 +1,4 @@
-import { PermissionsManager } from '../../../managers/index.js';
+import { PermissionsManager } from '#managers';
 
 export default {
   name: 'nuke',
@@ -18,20 +18,9 @@ export default {
       const user = message.author;
 
       // Yetki kontrolleri
-      const IsRoles = await PM.isRoles();
-      const IsOwner = await PM.isOwner();
-      const IsAuthority = await PM.isAuthority(PM.flags.BanMembers, PM.flags.Administrator);
+      const ctrl = await PM.control(PM.flags.Administrator);
+	  if (!ctrl) return interaction.reply({ content: '❌ Bu komutu kullanmak için yetkin yok.', ephemeral: true });
 
-      const checks = [];
-      if (PM.permissions.isRole) checks.push(IsRoles);
-      if (PM.permissions.isOwners) checks.push(IsOwner);
-      if (PM.permissions.isAuthority) checks.push(IsAuthority);
-
-      const hasAtLeastOnePermission = checks.includes(true);
-
-      if (!hasAtLeastOnePermission) {
-        return message.reply('❌ Bu komutu kullanmak için yeterli yetkin yok.');
-      }
 
       if (!channel.isTextBased?.()) {
         return message.reply('❌ Bu komut yalnızca metin kanallarında kullanılabilir.');

@@ -1,6 +1,7 @@
 import ms from 'ms';
-import { PermissionsManager } from '../../../managers/index.js';
-import { messageSender } from '../../../helpers/index.js';
+
+import { PermissionsManager } from '#managers';
+import { messageSender } from '#helpers';
 
 export default {
   name: 'vmute',
@@ -10,8 +11,8 @@ export default {
       const PM = new PermissionsManager(message);
       const sender = new messageSender(message);
 
-      const kontrol = await PM.control(PM.flags.MuteMembers);
-      if (!kontrol) return sender.reply("❌ Bu komutu kullanmak için `Üyeleri Sustur` yetkin olmalı.", true);
+      const ctrl = await PM.control(PM.flags.MuteMembers);
+      if (!ctrl) return sender.reply("❌ Bu komutu kullanmak için `Üyeleri Sustur` yetkin olmalı.", true);
 
       const hedef = message.mentions.members.first();
       if (!hedef) return sender.reply("❌ Lütfen bir kullanıcı etiketleyin.", true);

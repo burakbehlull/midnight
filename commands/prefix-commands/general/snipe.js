@@ -1,4 +1,4 @@
-import DeletedMessage from '../../../models/DeletedMessage.js';
+import { DeletedMessage } from '#models';
 
 export default {
   name: 'snipe',

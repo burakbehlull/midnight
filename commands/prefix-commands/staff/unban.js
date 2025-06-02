@@ -1,4 +1,4 @@
-import { PermissionsManager } from '../../../managers/index.js';
+import { PermissionsManager } from '#managers';
 
 export default {
   name: 'unban',
@@ -14,20 +14,8 @@ export default {
     }
 
     // Yetki Kontrolü
-    const IsRoles = await PM.isRoles();
-    const IsOwner = await PM.isOwner();
-    const IsAuthority = await PM.isAuthority(PM.flags.BanMembers, PM.flags.Administrator);
-
-    const checks = [];
-    if (PM.permissions.isRole) checks.push(IsRoles);
-    if (PM.permissions.isOwners) checks.push(IsOwner);
-    if (PM.permissions.isAuthority) checks.push(IsAuthority);
-
-    const hasAtLeastOnePermission = checks.includes(true);
-
-    if (!hasAtLeastOnePermission) {
-      return message.reply("❌ Bu komutu kullanmak için yeterli yetkin yok.");
-    }
+    const ctrl = await PM.control(PM.flags.ManageRoles, PM.flags.Administrator)
+	if (!ctrl) return message.reply('❌ Bu komutu kullanmak için yetkin yok.');
 
     try {
       await guild.bans.remove(userId);

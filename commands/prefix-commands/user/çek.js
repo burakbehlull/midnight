@@ -1,21 +1,23 @@
-import { PermissionsManager } from '../../../managers/index.js';
-import { messageSender, Button } from '../../../helpers/index.js';
+import { PermissionsManager } from '#managers';
+import { messageSender, Button } from '#helpers';
 
 export default {
   name: 'çek',
   description: 'Etiketlenen kullanıcıdan onay alarak onu bulunduğun odaya çeker.',
   async execute(client, message, args) {
     try {
-      const PM = new PermissionsManager(message);
+		
       const sender = new messageSender(message);
+	  /*
+	  const PM = new PermissionsManager(message);	  
+      const ctrl = await PM.control(PM.flags.MoveMembers);
+      if (!ctrl) return sender.reply("❌ Bu komutu kullanmak için `Üyeleri Taşı` yetkin olmalı.", true);
+	  */
+	  
+      const target = message.mentions.members.first();
+      if (!target) return sender.reply("❌ Lütfen bir kullanıcı etiketleyin.", true);
 
-      const kontrol = await PM.control(PM.flags.MoveMembers);
-      if (!kontrol) return sender.reply("❌ Bu komutu kullanmak için `Üyeleri Taşı` yetkin olmalı.", true);
-
-      const hedef = message.mentions.members.first();
-      if (!hedef) return sender.reply("❌ Lütfen bir kullanıcı etiketleyin.", true);
-
-      if (!hedef.voice.channel) return sender.reply("❌ Bu kullanıcı bir ses kanalında değil.", true);
+      if (!target.voice.channel) return sender.reply("❌ Bu kullanıcı bir ses kanalında değil.", true);
       if (!message.member.voice.channel) return sender.reply("❌ Önce bir ses kanalına girmen gerekiyor.", true);
 
       const btn = new Button();
@@ -24,12 +26,12 @@ export default {
       const row = btn.build();
 
       const sentMsg = await message.channel.send({
-        content: `${hedef}, ${message.author} seni bulunduğu odaya çekmek istiyor. Kabul ediyor musun?`,
+        content: `${target}, ${message.author} seni bulunduğu odaya çekmek istiyor. Kabul ediyor musun?`,
         components: [row]
       });
 
       const filter = (i) =>
-        i.user.id === hedef.id &&
+        i.user.id === target.id &&
         (i.customId === `cek-accept-${message.author.id}` || i.customId === `cek-deny-${message.author.id}`);
 
       const collector = sentMsg.createMessageComponentCollector({ filter, time: 30000 });
@@ -37,14 +39,14 @@ export default {
       collector.on("collect", async (interaction) => {
         await interaction.deferUpdate();
         if (interaction.customId === `cek-accept-${message.author.id}`) {
-          await hedef.voice.setChannel(message.member.voice.channel);
+          await target.voice.setChannel(message.member.voice.channel);
           await interaction.editReply({
-            content: `${hedef} başarıyla ${message.author}'ın yanına çekildi.`,
+            content: `${target} başarıyla ${message.author}'ın yanına çekildi.`,
             components: []
           });
         } else {
           await interaction.editReply({
-            content: `❌ ${hedef}, ${message.author}'ın çekme isteğini reddetti.`,
+            content: `❌ ${target}, ${message.author}'ın çekme isteğini reddetti.`,
             components: []
           });
         }

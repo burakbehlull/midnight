@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from 'discord.js';
-import { PermissionsManager } from '../../../managers/index.js';
+import { PermissionsManager } from '#managers';
 
 
 export default {

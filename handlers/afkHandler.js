@@ -1,4 +1,4 @@
-import Afk from '../models/Afk.js';
+import { Afk } from '#models';
 
 export default async function afkHandler(message) {
   if (!message.guild || message.author.bot) return;

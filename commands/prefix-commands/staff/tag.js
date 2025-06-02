@@ -1,4 +1,4 @@
-import Settings from '../../../models/Settings.js';
+import { Settings } from '#models';
 
 export default {
   name: 'tag',

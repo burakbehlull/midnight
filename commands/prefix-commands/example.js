@@ -1,5 +1,5 @@
-import { PermissionsManager } from '../../managers/index.js';
-import { messageSender } from '../../helpers/index.js';
+import { PermissionsManager } from '#managers';
+import { messageSender } from '#helpers';
 
 export default {
   name: 'example',

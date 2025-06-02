@@ -1,13 +1,16 @@
-import Settings from "../../../models/Settings.js";
-import { PermissionsManager } from '../../../managers/index.js';
-import { messageSender } from '../../../helpers/index.js';
+import { Settings } from "#models";
+import { PermissionsManager } from '#managers';
+import { messageSender } from '#helpers';
 
 export default {
   name: 'kayıtsız',
   async execute(client, message, args) {
+	  
     const sender = new messageSender(message);
     const PM = new PermissionsManager(message);
-    if (!await PM.control(PM.flags.ManageRoles)) return sender.reply("❌ Yetkin yok.", true);
+	const ctrl = PM.control(PM.flags.ManageRoles)
+	
+    if (!ctrl) return sender.reply("❌ Yetkin yok.", true);
 
     const member = message.mentions.members.first();
     if (!member) return sender.reply("❌ Kullanıcı etiketle.", true);

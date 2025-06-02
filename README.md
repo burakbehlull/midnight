@@ -54,7 +54,8 @@ Create ` config.json ` file and set permission settings:
 | **kayit** | Saves the user you tagged in | user, name, age | stable |
 | **kayitsiz** | Gives the user | user | stable |
 | **vmute** | Throws voice mute on tagged user | user, second -exp. 10m -, reason | stable |
-| **vunmute** | Throws voice unmute on tagged user | user | stable |
+| **rolal** | Takes the user | user, role | stable |
+| **rolver** | Gives the user | user, role | stable |
 
 ### events:
 | feature | comment | set command |

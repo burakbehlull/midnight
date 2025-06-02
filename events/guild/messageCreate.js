@@ -1,5 +1,5 @@
 import { Events } from 'discord.js';
-import { afkHandler } from "../../handlers/index.js"
+import { afkHandler } from "#handlers"
 
 export default {
   name: Events.MessageCreate, 

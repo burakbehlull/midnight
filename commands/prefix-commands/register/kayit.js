@@ -1,15 +1,19 @@
-import Settings from "../../../models/Settings.js";
-import { PermissionsManager } from '../../../managers/index.js';
-import { messageSender } from '../../../helpers/index.js';
-import { Button } from '../../../helpers/index.js';
 import { EmbedBuilder, ComponentType } from 'discord.js';
+
+import { Settings } from "#models";
+import { PermissionsManager } from '#managers';
+import { messageSender, Button } from '#helpers';
+
 
 export default {
   name: 'kayit',
   async execute(client, message, args) {
+	  
     const sender = new messageSender(message);
     const PM = new PermissionsManager(message);
-    if (!await PM.control(PM.flags.ManageRoles)) return sender.reply("❌ Yetkin yok.", true);
+	const ctrl = PM.control(PM.flags.ManageRoles)
+	
+    if (!ctrl) return sender.reply("❌ Yetkin yok.", true);
 
     const member = message.mentions.members.first();
     if (!member || !args[1] || !args[2]) return sender.reply("❌ Kullanım: `.k @kullanıcı İsim Yaş`", true);

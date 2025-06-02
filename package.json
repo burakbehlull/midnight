@@ -6,6 +6,13 @@
   "license": "MIT",
   "main": "bot.js",
   "type": "module",
+  "imports": {
+    "#helpers": "./helpers/index.js",
+	"#libs": "./libs/index.js",
+	"#managers": "./managers/index.js",
+	"#handlers": "./handlers/index.js",
+	"#models": "./models/index.js"
+  },
   "scripts": {
     "start": "node bot.js",
     "bot": "node bot.js",
