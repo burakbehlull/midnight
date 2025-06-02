@@ -10,13 +10,13 @@ export default {
       const sender = new messageSender(message);
       
       const ctrl = await PM.control(PM.flags.KickMembers, PM.flags.Administrator);
-      if (!ctrl) return message.reply('❌ Bu komutu kullanmak için yetkin yok.');
+      if (!ctrl) return sender.reply(sender.errorEmbed('❌ Bu komutu kullanmak için yetkin yok.'));
 
       const target = message.mentions.members.first() || await message.guild.members.fetch(args[0]).catch(() => null);
       const reason = args.slice(1).join(' ') || 'Sebep belirtilmedi.';
 
-      if (!target) return message.reply('❌ Atılacak kullanıcıyı etiketlemeli veya ID girmelisin.');
-      if (!target.kickable) return message.reply('❌ Bu kullanıcıyı atamıyorum. Rolü benden yüksek olabilir.');
+      if (!target) return sender.reply(sender.errorEmbed('❌ Atılacak kullanıcıyı etiketlemeli veya ID girmelisin.'));
+      if (!target.kickable) return sender.reply(sender.errorEmbed('❌ Bu kullanıcıyı atamıyorum. Rolü benden yüksek olabilir.'));
 
       await target.kick(reason);
 
@@ -33,7 +33,7 @@ export default {
 
     } catch (err) {
       console.error('Kick komutu hatası: ', err);
-      message.reply('❌ Bir hata oluştu. Konsola bak.');
+      sender.reply(sender.errorEmbed('❌ Bir hata oluştu. Konsola bak.'));
     }
   }
 };

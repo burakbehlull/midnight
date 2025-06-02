@@ -27,7 +27,7 @@ class messageSender {
         return IEmbed
     }
 
-	send(embed, channelId) {
+	send(embed, channelId, components) {
 		const id = channelId
 		const channel = this.client.channels.cache.get(id);
 
@@ -36,16 +36,36 @@ class messageSender {
 			return;
 		}
 
-		channel.send({ embeds: [embed] }).catch(console.error);
+		channel.send({ embeds: [embed], components: components }).catch(console.error);
 	}
 	
-	reply(content, userSees){
+	reply(content, userSees, components){
 		const type = typeof(content)
 		if(type == "object"){
-			this.client.reply({ embeds: [content], ephemeral: userSees })
+			this.client.reply({ embeds: [content], components: components, ephemeral: userSees })
 			return
 		}
-		this.client.reply({ content, ephemeral: userSees })
+		this.client.reply({ content, components: components, ephemeral: userSees })
+	}
+	
+	errorEmbed(description){
+		const msg = this.client
+		return this.embed({
+		  author: { name: msg.guild.name, iconURL: msg.guild.iconURL()},
+		  color: 0xFF0000,
+		  title: null,
+		  description: description
+		})
+	}
+	
+	classic(description){
+		const msg = this.client
+		return this.embed({
+		  author: { name: msg.guild.name, iconURL: msg.guild.iconURL()},
+		  color: 0x89CFF0,
+		  title: null,
+		  description: description
+		})
 	}
 
 

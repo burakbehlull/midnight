@@ -10,22 +10,22 @@ export default {
       const sender = new messageSender(message);
 
       const kontrol = await PM.control(PM.flags.MuteMembers);
-      if (!kontrol) return sender.reply("❌ Bu komutu kullanmak için `Üyeleri Sustur` yetkin olmalı.", true);
+      if (!kontrol) return sender.reply(sender.errorEmbed("❌ Bu komutu kullanmak için `Üyeleri Sustur` yetkin olmalı."), true);
 
       const hedef = message.mentions.members.first();
-      if (!hedef) return sender.reply("❌ Lütfen bir kullanıcı etiketleyin.", true);
-      if (!hedef.voice.channel) return sender.reply("❌ Bu kullanıcı bir ses kanalında değil.", true);
+      if (!hedef) return sender.reply(sender.errorEmbed("❌ Lütfen bir kullanıcı etiketleyin."), true);
+	  
+      if (!hedef.voice.channel) return sender.reply(sender.errorEmbed("❌ Bu kullanıcı bir ses kanalında değil."),true);
 
-      if (!hedef.voice.serverMute) {
-        return sender.reply("❌ Bu kullanıcı zaten susturulmamış.", true);
-      }
+      if (!hedef.voice.serverMute) return sender.reply(sender.errorEmbed("❌ Bu kullanıcı zaten susturulmamış."), true);
+      
 
       await hedef.voice.setMute(false, "Manuel olarak susturma kaldırıldı");
-      await sender.reply(`🔊 ${hedef} kullanıcısının susturması kaldırıldı.`, true);
+      await sender.reply(sender.classic(`🔊 ${hedef} kullanıcısının susturması kaldırıldı.`), true);
 
     } catch (err) {
       console.error("error: ", err);
-      message.reply("❌ Bir hata oluştu.");
+      sender.reply(sender.errorEmbed("❌ Bir hata oluştu."));
     }
   },
 };

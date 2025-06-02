@@ -54,6 +54,7 @@ Create ` config.json ` file and set permission settings:
 | **kayit** | Saves the user you tagged in | user, name, age | stable |
 | **kayitsiz** | Gives the user | user | stable |
 | **vmute** | Throws voice mute on tagged user | user, second -exp. 10m -, reason | stable |
+| **vunmute** | Unmute | user, reason | stable |
 | **rolal** | Takes the user | user, role | stable |
 | **rolver** | Gives the user | user, role | stable |
 
@@ -78,3 +79,4 @@ Create ` config.json ` file and set permission settings:
 | -------- | -------- | -------- | 
 | messageSender | Helps with responsiveness and rich embed creation | new messageSender() | 
 | misc | Contains many auxiliary functions | misc.callFunction() | 
+| components | A class that makes the components offered by Discord Js more useful | new Button(), new Modal() | 

@@ -10,13 +10,13 @@ export default {
 	  const sender = new messageSender(message);
 	  
       const ctrl = await PM.control(PM.flags.BanMembers, PM.flags.Administrator)
-	  if (!ctrl) return message.reply('❌ Bu komutu kullanmak için yetkin yok.');
+	  if (!ctrl) return sender.reply(sender.errorEmbed('❌ Bu komutu kullanmak için yetkin yok.'));
 
       const target = message.mentions.members.first() || await message.guild.members.fetch(args[0]).catch(() => null);
       const reason = args.slice(1).join(' ') || 'Sebep belirtilmedi.';
       
-	  if (!target) return message.reply('❌ Banlanacak kullanıcıyı etiketlemeli veya ID girmelisin.');
-	  if (!target.bannable) return message.reply('❌ Kendini ve rolü senden yüksek olanları banlayamazsın.');
+	  if (!target) return sender.reply(sender.errorEmbed('❌ Banlanacak kullanıcıyı etiketlemeli veya ID girmelisin.'));
+	  if (!target.bannable) return sender.reply(sender.errorEmbed('❌ Kendini ve rolü senden yüksek olanları banlayamazsın.'));
       
       await target.ban({ reason });
 	  
@@ -34,7 +34,7 @@ export default {
 	  
     } catch (err) {
       console.error('Ban komutu hatası: ', err);
-      message.reply('❌ Bir hata oluştu. Konsola bak.');
+      sender.reply(sender.errorEmbed('❌ Bir hata oluştu. Konsola bak.'));
     }
   }
 };

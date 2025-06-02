@@ -10,25 +10,26 @@ export default {
 	  /*
       const PM = new PermissionsManager(message);
       const ctrl = await PM.control(PM.flags.MoveMembers);
-      if (!ctrl) return sender.reply("❌ Bu komutu kullanmak için `Üyeleri Taşı` yetkin olmalı.", true);
+      if (!ctrl) return sender.reply(sender.errorEmbed("❌ Bu komutu kullanmak için `Üyeleri Taşı` yetkin olmalı."));
 	  */
 	  
       const targetUser = message.mentions.members.first();
-      if (!targetUser) return sender.reply("❌ Lütfen bir kullanıcı etiketleyin.", true);
+      if (!targetUser) return sender.reply(sender.errorEmbed("❌ Lütfen bir kullanıcı etiketleyin."));
 
-      if (!targetUser.voice.channel) return sender.reply("❌ Bu kullanıcı bir ses kanalında değil.", true);
-      if (!message.member.voice.channel) return sender.reply("❌ Önce bir ses kanalına girmen gerekiyor.", true);
+      if (!targetUser.voice.channel) return sender.reply(sender.errorEmbed("❌ Bu kullanıcı bir ses kanalında değil."));
+      if (!message.member.voice.channel) return sender.reply(sender.errorEmbed("❌ Önce bir ses kanalına girmen gerekiyor."));
 
       const btn = new Button();
       btn.add(`git-accept-${message.author.id}`, "✅ Kabul Et", btn.style.Success);
       btn.add(`git-deny-${message.author.id}`, "❌ Reddet", btn.style.Danger);
       const row = btn.build();
 
+	  const sentEmbed = sender.classic(`${targetUser} \n ${message.author} senin yanına gelmek istiyor. Kabul ediyor musun?`)
       await message.channel.send({
-        content: `${targetUser} \n ${message.author} senin yanına gelmek istiyor. Kabul ediyor musun?`,
+        embeds: [sentEmbed],
         components: [row]
       }).catch(() => {
-        return sender.reply("❌ Kullanıcının DM kutusu kapalı olduğu için istek gönderilemedi.");
+        return sender.reply(sender.errorEmbed("❌ İstek gönderilemedi."));
       });
 
       const filter = (i) =>
@@ -41,22 +42,25 @@ export default {
         await interaction.deferUpdate();
         if (interaction.customId === `git-accept-${message.author.id}`) {
           await message.member.voice.setChannel(targetUser.voice.channel);
-          await interaction.followUp({ content: `✅${message.author} başarıyla yanına taşındı.`, ephemeral: true });
+		  const embed = sender.classic(`${message.author} başarıyla yanına taşındı.`)
+          await interaction.followUp({ embeds: [embed], ephemeral: true });
         } else {
-          await interaction.followUp({ content: `❌ ${message.author} isteği reddedildi.`, ephemeral: true });
+		  const embed = sender.errorEmbed(`❌ ${message.author} isteği reddedildi.`)
+          await interaction.followUp({ embeds: [embed], ephemeral: true });
         }
         collector.stop();
       });
 
       collector.on("end", (_, reason) => {
+		const embed = sender.errorEmbed("⏰ İstek zaman aşımına uğradı.")
         if (reason === "time") {
-          targetUser.send("⏰ İstek zaman aşımına uğradı.");
+          targetUser.send({embeds: [embed]});
         }
       });
 
     } catch (err) {
       console.error('error: ', err);
-      message.reply("❌ Bir hata oluştu.");
+      message.reply(sender.errorEmbed("❌ Bir hata oluştu."));
     }
   },
 };
