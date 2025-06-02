@@ -13,14 +13,14 @@ export default {
     const PM = new PermissionsManager(message);
 	const ctrl = PM.control(PM.flags.ManageRoles)
 	
-    if (!ctrl) return sender.reply("❌ Yetkin yok.", true);
+    if (!ctrl) return sender.reply(sender.errorEmbed("❌ Yetkin yok."));
 
     const member = message.mentions.members.first();
-    if (!member || !args[1] || !args[2]) return sender.reply("❌ Kullanım: `.k @kullanıcı İsim Yaş`", true);
+    if (!member || !args[1] || !args[2]) return sender.reply(sender.errorEmbed("❌ Kullanım: `.k @kullanıcı İsim Yaş`"));
 
     const settings = await Settings.findOne({ guildId: message.guild.id });
     if (!settings?.erkekRoleId || !settings?.kizRoleId)
-      return sender.reply("❌ Roller ayarlanmamış. `/set` komutunu kullan.", true);
+      return sender.reply(sender.errorEmbed("❌ Roller ayarlanmamış. `/set` komutunu kullan."));
 
     await member.setNickname(`${args[1]} | ${args[2]}`);
 
@@ -42,14 +42,15 @@ export default {
 
     collector.on("collect", async (i) => {
       if (i.user.id !== message.author.id)
-        return i.reply({ content: "❌ Bu buton sana ait değil.", ephemeral: true });
+		const IEmbed = sender.errorEmbed("❌ Bu buton sana ait değil.")
+        return i.reply({ embeds: [IEmbed], ephemeral: true });
 
       if (i.customId === "erkek_btn") {
         await member.roles.add(settings.erkekRoleId);
-        await i.update({ content: `<@&${settings.erkekRoleId}> rolü verildi.`, embeds: [], components: [] });
+        await i.update({ embeds: [sender.classic(`<@&${settings.erkekRoleId}> rolü verildi.`)], components: [] });
       } else if (i.customId === "kadin_btn") {
         await member.roles.add(settings.kizRoleId);
-        await i.update({ content: `<@&${settings.kizRoleId}> rolü verildi.`, embeds: [], components: [] });
+        await i.update({ embeds: [sender.classic(`<@&${settings.kizRoleId}> rolü verildi.`)], components: [] });
       }
     });
   }

@@ -1,4 +1,5 @@
 import { PermissionsManager } from '#managers';
+import { messageSender } from '#helpers';
 
 export default {
   name: 'nuke',
@@ -7,7 +8,7 @@ export default {
   async execute(client, message, args) {
     try {
       const PM = new PermissionsManager(message);
-
+	  const sender = new messageSender(message);
       // Kanalı belirle
       const channel = message.mentions.channels.first() || message.channel;
 
@@ -19,16 +20,15 @@ export default {
 
       // Yetki kontrolleri
       const ctrl = await PM.control(PM.flags.Administrator);
-	  if (!ctrl) return interaction.reply({ content: '❌ Bu komutu kullanmak için yetkin yok.', ephemeral: true });
+	  if (!ctrl) return sedner.reply(sender.errorEmbed('❌ Bu komutu kullanmak için yetkin yok.'));
 
 
-      if (!channel.isTextBased?.()) {
-        return message.reply('❌ Bu komut yalnızca metin kanallarında kullanılabilir.');
-      }
+      if (!channel.isTextBased?.()) return sender.reply(sender.errorEmbed('❌ Bu komut yalnızca metin kanallarında kullanılabilir.'));
+    
 
       // Kanalı sil ve yeniden oluştur
       await channel.delete().catch(err => {
-        return message.reply(`❌ Kanal silinirken bir hata oluştu: ${err.message}`);
+        return sender.reply(sender.errorEmbed(`❌ Kanal silinirken bir hata oluştu: ${err.message}`));
       });
 
       const newChannel = await message.guild.channels.create({
@@ -43,7 +43,7 @@ export default {
 
     } catch (err) {
       console.error('Nuke komutu hatası:', err.message);
-      message.reply('❌ Bir hata oluştu. Konsolu kontrol et.');
+      sender.reply(sender.errorEmbed('❌ Bir hata oluştu. Konsolu kontrol et.'));
     }
   }
 };

@@ -10,15 +10,15 @@ export default {
     const PM = new PermissionsManager(message);
 	const ctrl = PM.control(PM.flags.ManageRoles)
 	
-    if (!ctrl) return sender.reply("❌ Yetkin yok.", true);
+    if (!ctrl) return sender.reply(sender.errorEmbed("❌ Yetkin yok."));
 
     const member = message.mentions.members.first();
-    if (!member) return sender.reply("❌ Kullanıcı etiketle.", true);
+    if (!member) return sender.reply(sender.errorEmbed("❌ Kullanıcı etiketle."));
 
     const settings = await Settings.findOne({ guildId: message.guild.id });
-    if (!settings?.kayitsizRoleId) return sender.reply("❌ Kayıtsız rolü ayarlanmamış. `/set` komutunu kullan.", true);
+    if (!settings?.kayitsizRoleId) return sender.reply(sender.errorEmbed("❌ Kayıtsız rolü ayarlanmamış. `/set` komutunu kullan."));
 
     await member.roles.set([settings.kayitsizRoleId]);
-    await sender.reply(`${member} adlı kullanıcıya kayıtsız rolü verildi.`);
+    await sender.reply(sender.classic(`${member} adlı kullanıcıya kayıtsız rolü verildi.`));
   }
 }

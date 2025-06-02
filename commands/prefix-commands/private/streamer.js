@@ -1,5 +1,6 @@
 import { Settings } from '#models'; 
 import { PermissionsManager } from '#managers';
+import { messageSender } from '#helpers';
 
 export default {
     name: 'streamer',
@@ -10,29 +11,29 @@ export default {
         const targetUser = message.mentions.members.first();
         const guildId = message.guild.id;
 
-        if (!targetUser) return message.reply('Lütfen bir kullanıcı etiketleyin.');
+        if (!targetUser) return sender.reply(sender.errorEmbed('Lütfen bir kullanıcı etiketleyin.'));
         
 		const PM = new PermissionsManager(message);
       
 		const ctrl = await PM.control(PM.flags.ManageRoles, PM.flags.Administrator);
-		if (!ctrl) return message.reply('❌ Bu komutu kullanmak için yetkin yok.');
+		if (!ctrl) return sender.reply(sender.errorEmbed('❌ Bu komutu kullanmak için yetkin yok.'));
 
 
         try {
             const settings = await Settings.findOne({ guildId });
 
-            if (!settings || !settings.streamerRoleId) return message.reply('Streamer rolü bu sunucu için ayarlanmamış!');
+            if (!settings || !settings.streamerRoleId) return sender.reply(sender.errorEmbed('Streamer rolü bu sunucu için ayarlanmamış!'));
             
 
             const streamerRole = message.guild.roles.cache.get(settings.streamerRoleId);
-            if (!streamerRole) return message.reply('Ayarlanan Streamer rolü sunucuda bulunamıyor!');
+            if (!streamerRole) return sender.reply(sender.errorEmbed('Ayarlanan Streamer rolü sunucuda bulunamıyor!'));
 
             await targetUser.roles.add(streamerRole);
-            return message.reply(`${targetUser} kullanıcısına streamer rolü verildi.`);
+            return sender.reply(sender.classic(`${targetUser} kullanıcısına streamer rolü verildi.`));
 
         } catch (err) {
             console.error('Hata:', err);
-            return message.reply('❌ Bir hata oluştu, lütfen daha sonra tekrar deneyin.');
+            return sender.reply(sender.errorEmbed('❌ Bir hata oluştu, lütfen daha sonra tekrar deneyin.'));
         }
     }
 };

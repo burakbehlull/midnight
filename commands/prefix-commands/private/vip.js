@@ -15,7 +15,7 @@ export default {
 		const PM = new PermissionsManager(message);
       
 		const ctrl = await PM.control(PM.flags.ManageRoles, PM.flags.Administrator);
-		if (!ctrl) return message.reply('❌ Bu komutu kullanmak için yetkin yok.');
+		if (!ctrl) return sender.reply(sender.errorEmbed('❌ Bu komutu kullanmak için yetkin yok.'));
 
 
         try {
@@ -25,14 +25,14 @@ export default {
             
 
             const vipRole = message.guild.roles.cache.get(settings.vipRoleId);
-            if (!vipRole) return message.reply('Ayarlanan Vip rolü sunucuda bulunamıyor!');
+            if (!vipRole) return sender.reply(sender.errorEmbed('Ayarlanan Vip rolü sunucuda bulunamıyor!'));
 
             await targetUser.roles.add(vipRole);
-            return message.reply(`${targetUser} kullanıcısına vip rolü verildi.`);
+            return sender.reply(sender.classic(`${targetUser} kullanıcısına vip rolü verildi.`));
 
         } catch (err) {
             console.error('Hata:', err);
-            return message.reply('❌ Bir hata oluştu, lütfen daha sonra tekrar deneyin.');
+            return sender.reply(sender.errorEmbed('❌ Bir hata oluştu, lütfen daha sonra tekrar deneyin.'));
         }
     }
 };
