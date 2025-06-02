@@ -30,10 +30,11 @@ export default {
 	const row = btn.build();
     const msg = await message.channel.send({
       embeds: [
-        new EmbedBuilder()
-          .setTitle("Kayıt")
-          .setDescription(`${member} için cinsiyet seçin:`)
-          .setColor("Blurple")
+		sender.embed({
+			title: "Kayıt",
+			description: `${member} için cinsiyet seçin: `,
+			color: "Blurple"
+		})
       ],
       components: [row]
     });
@@ -42,8 +43,7 @@ export default {
 
     collector.on("collect", async (i) => {
       if (i.user.id !== message.author.id)
-		const IEmbed = sender.errorEmbed("❌ Bu buton sana ait değil.")
-        return i.reply({ embeds: [IEmbed], ephemeral: true });
+        return i.reply({ embeds: [sender.errorEmbed("❌ Bu buton sana ait değil.")], ephemeral: true });
 
       if (i.customId === "erkek_btn") {
         await member.roles.add(settings.erkekRoleId);

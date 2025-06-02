@@ -43,6 +43,6 @@ export default {
     
 
     await member.roles.add(mutedRole);
-    return message.reply(sender.classic(`<@${member.id}> susturuldu.`));
+    return sender.reply(sender.classic(`<@${member.id}> susturuldu.`));
   }
 };

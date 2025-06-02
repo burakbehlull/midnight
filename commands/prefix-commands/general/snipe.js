@@ -20,7 +20,7 @@ export default {
         `💬 **Son silinen mesaj:**\n` +
         `👤 Yazan: \`${lastDeletedMessage.authorTag}\`\n` +
         `📨 Mesaj: \`${lastDeletedMessage.messageContent}\``
-      );
+      ));
     } catch (error) {
       console.error('Snipe hatası:', error.message);
       return sender.reply(sender.errorEmbed('❌ Silinen mesaj alınırken bir hata oluştu.'));
