@@ -5,7 +5,6 @@ import { messageSender } from '#helpers';
 export default {
   name: 'kayıtsız',
   async execute(client, message, args) {
-	  
     const sender = new messageSender(message);
     const PM = new PermissionsManager(message);
 	const ctrl = PM.control(PM.flags.ManageRoles)

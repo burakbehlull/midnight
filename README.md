@@ -55,8 +55,11 @@ Create ` config.json ` file and set permission settings:
 | **kayitsiz** | Gives the user | user | stable |
 | **vmute** | Throws voice mute on tagged user | user, second -exp. 10m -, reason | stable |
 | **vunmute** | Unmute | user, reason | stable |
+| **mute** | Throws chat mute on tagged user | user, reason | stable |
+| **unmute** | user unmute for chat | user, reason | stable |
 | **rolal** | Takes the user | user, role | stable |
 | **rolver** | Gives the user | user, role | stable |
+| **say** | Guild information | ... | stable |
 
 ### events:
 | feature | comment | set command |
