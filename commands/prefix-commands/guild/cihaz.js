@@ -18,7 +18,7 @@ export default {
     };
 
     const devices = Object.keys(status).map(key => deviceMap[key] || key).join(', ');
-	const IEmbed = sender.classic(`${member.user.tag} şu cihaz(lar)da aktif: **${devices}**`)
+	const IEmbed = sender.classic(`${member.user.globalName} şu cihaz(lar)da aktif: **${devices}**`)
 	
     return message.channel.send({embeds: [IEmbed]});
   }
