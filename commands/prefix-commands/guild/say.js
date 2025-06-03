@@ -3,6 +3,7 @@ import { messageSender } from '#helpers';
 export default {
   name: 'say',
   description: 'Sunucudaki istatistikleri gösterir.',
+  usage: 'say',
   async execute(client, message, args) {
     const { guild } = message;
 	const sender = new messageSender(message);

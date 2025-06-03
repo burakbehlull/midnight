@@ -4,6 +4,7 @@ import { messageSender } from '#helpers';
 export default {
   name: 'afk',
   description: 'AFK moduna geçersin.',
+  usage: 'afk <reason/sebep>',
   async execute(client, message, args) {
     const reason = args.join(' ') || 'Sebep belirtilmedi.';
     const existing = await Afk.findOne({ userId: message.author.id });

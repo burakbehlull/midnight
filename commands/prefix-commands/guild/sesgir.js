@@ -4,6 +4,7 @@ import { messageSender } from "#helpers"
 export default {
   name: 'sesgir',
   description: 'Bot belirtilen ses kanalına katılır',
+  usage: 'sesgir',
   async execute(client, message, args) {
     const channel = message.mentions.channels.first() || message.guild.channels.cache.get(args[0]);
 	const sender = new messageSender(message)

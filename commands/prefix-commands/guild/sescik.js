@@ -4,6 +4,7 @@ import { messageSender } from "#helpers"
 export default {
   name: 'sescik',
   description: 'Bot ses kanalından çıkar',
+  usage: 'ses gir <#channel / channelId>',
   async execute(client, message) {
 	const sender = new messageSender(message)
 	

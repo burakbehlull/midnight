@@ -4,7 +4,7 @@ import { messageSender } from '#helpers';
 export default {
   name: 'nuke',
   description: 'Bulunduğun ya da belirttiğin metin kanalını yeniler.',
-  usage: 'nuke [#kanal]',
+  usage: 'nuke #kanal',
   async execute(client, message, args) {
     try {
       const PM = new PermissionsManager(message);

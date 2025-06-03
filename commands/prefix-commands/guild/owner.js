@@ -3,6 +3,7 @@ import { messageSender } from '#helpers';
 export default {
   name: 'owner',
   description: 'Sunucu sahibini gösterir.',
+  usage: 'owner',
   async execute(client, message) {
     if (!message.guild) return;
 	const sender = new messageSender(message)

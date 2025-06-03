@@ -4,7 +4,7 @@ import { messageSender } from '#helpers';
 export default {
   name: 'avatar',
   description: 'Etiketlenen kullanıcının veya kendi avatarını gösterir.',
-  usage: 'avatar [@kullanıcı]',
+  usage: 'avatar @kullanıcı',
   async execute(client, message, args) {
     const sender = new messageSender(message);
 
