@@ -48,24 +48,30 @@ class Base {
 	  let failedCommands = [];
 
 	  for (const filePath of prefixCommandFiles) {
-		const fileUrl = pathToFileURL(filePath).href;
-		try {
-		  const command = await import(fileUrl);
-		  const { name, execute } = command.default;
-		  if (!name || !execute) {
-			console.warn(`⚠️ ${filePath} is missing "name" or "execute".`);
+		  const fileUrl = pathToFileURL(filePath).href;
+		  try {
+			const command = await import(fileUrl);
+			const { name, aliases = [], execute } = command.default;
+
+			if (!name || !execute) {
+			  console.warn(`⚠️ ${filePath} is missing "name" or "execute".`);
+			  failedCount++;
+			  failedCommands.push(filePath);
+			  continue;
+			}
+
+			client.prefixCommands.set(name, execute);
+			for (const alias of aliases) {
+			  client.prefixCommands.set(alias, execute);
+			}
+			prefixCount++;
+		  } catch (error) {
+			console.error(`❌ Error loading prefix command from ${filePath}:`, error);
 			failedCount++;
 			failedCommands.push(filePath);
-			continue;
 		  }
-		  client.prefixCommands.set(name, execute);
-		  prefixCount++;
-		} catch (error) {
-		  console.error(`❌ Error loading prefix command from ${filePath}:`, error);
-		  failedCount++;
-		  failedCommands.push(filePath);
-		}
 	  }
+
 
 	  for (const filePath of slashCommandFiles) {
 		const fileUrl = pathToFileURL(filePath).href;

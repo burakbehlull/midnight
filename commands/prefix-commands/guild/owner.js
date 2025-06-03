@@ -3,6 +3,7 @@ import { messageSender } from '#helpers';
 export default {
   name: 'owner',
   description: 'Sunucu sahibini gösterir.',
+  aliases: ['tac'],
   usage: 'owner',
   async execute(client, message) {
     if (!message.guild) return;
