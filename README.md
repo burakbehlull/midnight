@@ -63,6 +63,9 @@ Create ` config.json ` file and set permission settings:
 | **kilit** | lock to Chat | aç | stable |
 | **sesgir** | Join voice channel | channelId | stable |
 | **sescik** | Leave voice channel | .. | stable |
+| **cihaz** | Shows user device | user | stable |
+| **allvmute** | Mutes all user in channel | channel | stable |
+| **allvunmute** | Unmutes all user in channel | channel | stable |
 
 ### events:
 | feature | comment | set command |
