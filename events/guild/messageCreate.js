@@ -1,10 +1,11 @@
 import { Events } from 'discord.js';
 import { afkHandler } from "#handlers"
+import "dotenv/config"
 
 export default {
   name: Events.MessageCreate, 
   async execute(client, message) {
-    const prefix = client.config.PREFIX;
+    const prefix = process.env.PREFIX
 
 	await afkHandler(message);
 

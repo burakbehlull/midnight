@@ -8,10 +8,10 @@
   "type": "module",
   "imports": {
     "#helpers": "./helpers/index.js",
-	"#libs": "./libs/index.js",
-	"#managers": "./managers/index.js",
-	"#handlers": "./handlers/index.js",
-	"#models": "./models/index.js"
+    "#libs": "./libs/index.js",
+    "#managers": "./managers/index.js",
+    "#handlers": "./handlers/index.js",
+    "#models": "./models/index.js"
   },
   "scripts": {
     "start": "node bot.js",
@@ -20,6 +20,7 @@
     "deploy": "node ./config/deploy-commands.js"
   },
   "dependencies": {
+    "@discordjs/voice": "^0.18.0",
     "discord.js": "^14.17.3",
     "dotenv": "^16.5.0",
     "mongoose": "^8.15.1",

@@ -60,6 +60,9 @@ Create ` config.json ` file and set permission settings:
 | **rolal** | Takes the user | user, role | stable |
 | **rolver** | Gives the user | user, role | stable |
 | **say** | Guild information | ... | stable |
+| **kilit** | lock to Chat | aç | stable |
+| **sesgir** | Join voice channel | channelId | stable |
+| **sescik** | Leave voice channel | .. | stable |
 
 ### events:
 | feature | comment | set command |
