@@ -4,7 +4,7 @@ import { PermissionsManager } from '#managers';
 export default {
     name: 'allvmute',
 	usage: 'allvmute #VoiceChannel',
-    execute(client, message, args) {
+    async execute(client, message, args) {
 		const sender = new messageSender(message);
 		const PM = new PermissionsManager(message);
 		

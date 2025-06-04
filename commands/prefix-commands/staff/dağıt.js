@@ -4,17 +4,14 @@ import { PermissionsManager } from '#managers';
 
 export default {
     name: 'dağıt',
-    execute(client, message) {
+    async execute(client, message) {
         const voiceChannel = message.member.voice.channel;
 		
 		const sender = new messageSender(message);
 		const PM = new PermissionsManager(message);
 		
 		const ctrl = await PM.control(PM.flags.Administrator)
-		console.log(ctrl)
-		
-		if(true) return
-		// if (!ctrl) return sender.reply(sender.errorEmbed("❌ Yetkin yok."));
+		if (!ctrl) return sender.reply(sender.errorEmbed("❌ Yetkin yok."));
 		
 		
         if (!voiceChannel) return sender.reply(sender.errorEmbed('Önce bir ses kanalına gir!'));
