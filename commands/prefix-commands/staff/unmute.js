@@ -8,9 +8,9 @@ export default {
   
   async execute(client, message, args) {
 	  
-	const PM = new PermissionsManager(message);
 	const sender = new messageSender(message)
 	
+	const PM = new PermissionsManager(message);
     const ctrl = await PM.control(PM.flags.ManageMessages, PM.flags.Administrator)
 	if (!ctrl) return sender.reply(sender.errorEmbed("❌ Bu komutu kullanmak için yetkin yok."));
 	  

@@ -1,5 +1,7 @@
 import { joinVoiceChannel, getVoiceConnection } from '@discordjs/voice'
 import { messageSender } from "#helpers"
+import { PermissionsManager } from '#managers';
+
 
 export default {
   name: 'sesgir',
@@ -8,6 +10,11 @@ export default {
   async execute(client, message, args) {
     const channel = message.mentions.channels.first() || message.guild.channels.cache.get(args[0]);
 	const sender = new messageSender(message)
+	
+	const PM = new PermissionsManager(message);
+    const ctrl = await PM.control(PM.flags.Administrator)
+	if (!ctrl) return sender.reply(sender.errorEmbed("❌ Bu komutu kullanmak için yetkin yok."));
+	  
 	
     if (!channel || channel.type !== 2) return sender.reply(sender.errorEmbed('Geçerli bir ses kanalı belirtmelisin.'));
     

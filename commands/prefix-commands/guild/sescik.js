@@ -1,5 +1,6 @@
 import { getVoiceConnection } from '@discordjs/voice'
 import { messageSender } from "#helpers"
+import { PermissionsManager } from '#managers';
 
 export default {
   name: 'sescik',
@@ -7,6 +8,11 @@ export default {
   usage: 'ses gir <#channel / channelId>',
   async execute(client, message) {
 	const sender = new messageSender(message)
+	
+	const PM = new PermissionsManager(message);
+    const ctrl = await PM.control(PM.flags.Administrator)
+	if (!ctrl) return sender.reply(sender.errorEmbed("❌ Bu komutu kullanmak için yetkin yok."));
+	  
 	
     const connection = getVoiceConnection(message.guild.id);
 	

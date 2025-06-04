@@ -1,10 +1,16 @@
 import { messageSender } from '#helpers';
+import { PermissionsManager } from '#managers';
 
 export default {
     name: 'allvmute',
 	usage: 'allvmute #VoiceChannel',
     execute(client, message, args) {
 		const sender = new messageSender(message);
+		const PM = new PermissionsManager(message);
+		
+		const ctrl = PM.control(PM.flags.ManageChannels, PM.flags.Administrator)
+		if (!ctrl) return sender.reply(sender.errorEmbed("❌ Yetkin yok."));
+		
 		
         const channel = message.mentions.channels.first() || message.guild.channels.cache.get(args[0]);
         if (!channel || channel.type !== 2) return sender.reply(sender.errorEmbed('Geçerli bir ses kanalı belirtmelisin.'));

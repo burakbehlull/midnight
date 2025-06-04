@@ -9,7 +9,7 @@ export default {
 		const sender = new messageSender(message);
 		const PM = new PermissionsManager(message);
 		
-		const ctrl = PM.control(PM.flags.ManageChannels)
+		const ctrl = PM.control(PM.flags.ManageChannels, PM.flags.Administrator)
 		if (!ctrl) return sender.reply(sender.errorEmbed("❌ Yetkin yok."));
 		
 		const choose = args[0]
