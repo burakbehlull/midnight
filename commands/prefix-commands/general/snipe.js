@@ -11,9 +11,8 @@ export default {
     try {
       const lastDeletedMessage = await DeletedMessage.findOne({ channelId }).sort({ createdAt: -1 });
 
-      if (!lastDeletedMessage) {
-        return sender.reply(sender.errorEmbed('❌ Bu kanalda henüz silinen bir mesaj yok!'));
-      }
+      if (!lastDeletedMessage) return sender.reply(sender.errorEmbed('❌ Bu kanalda henüz silinen bir mesaj yok!'));
+      
 
       return sender.reply(
 		sender.classic(

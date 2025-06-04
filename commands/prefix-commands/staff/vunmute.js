@@ -9,8 +9,8 @@ export default {
       const PM = new PermissionsManager(message);
       const sender = new messageSender(message);
 
-      const kontrol = await PM.control(PM.flags.MuteMembers);
-      if (!kontrol) return sender.reply(sender.errorEmbed("❌ Bu komutu kullanmak için `Üyeleri Sustur` yetkin olmalı."), true);
+      const ctrl = await PM.control(PM.flags.MuteMembers);
+      if (!ctrl) return sender.reply(sender.errorEmbed("❌ Bu komutu kullanmak için `Üyeleri Sustur` yetkin olmalı."), true);
 
       const hedef = message.mentions.members.first();
       if (!hedef) return sender.reply(sender.errorEmbed("❌ Lütfen bir kullanıcı etiketleyin."), true);

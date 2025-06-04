@@ -8,7 +8,7 @@ export default {
 		const sender = new messageSender(message);
 		const PM = new PermissionsManager(message);
 		
-		const ctrl = PM.control(PM.flags.ManageChannels, PM.flags.Administrator)
+		const ctrl = await PM.control(PM.flags.ManageChannels, PM.flags.Administrator)
 		if (!ctrl) return sender.reply(sender.errorEmbed("❌ Yetkin yok."));
 		
 		

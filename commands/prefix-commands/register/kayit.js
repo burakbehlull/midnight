@@ -11,7 +11,7 @@ export default {
 	  
     const sender = new messageSender(message);
     const PM = new PermissionsManager(message);
-	const ctrl = PM.control(PM.flags.ManageRoles)
+	const ctrl = await PM.control(PM.flags.ManageRoles)
 	
     if (!ctrl) return sender.reply(sender.errorEmbed("❌ Yetkin yok."));
 

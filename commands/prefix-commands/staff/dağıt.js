@@ -10,8 +10,11 @@ export default {
 		const sender = new messageSender(message);
 		const PM = new PermissionsManager(message);
 		
-		const ctrl = PM.control(PM.flags.ManageChannels)
-		if (!ctrl) return sender.reply(sender.errorEmbed("❌ Yetkin yok."));
+		const ctrl = await PM.control(PM.flags.Administrator)
+		console.log(ctrl)
+		
+		if(true) return
+		// if (!ctrl) return sender.reply(sender.errorEmbed("❌ Yetkin yok."));
 		
 		
         if (!voiceChannel) return sender.reply(sender.errorEmbed('Önce bir ses kanalına gir!'));

@@ -23,7 +23,7 @@ export default {
       if (isUserHasRole) return sender.reply(sender.errorEmbed('❌ Kullanıcı zaten bu role sahip!'));
 
       // Yetki Kontrolleri
-       const ctrl = await PM.control(PM.flags.ManageRoles, PM.flags.Administrator)
+      const ctrl = await PM.control(PM.flags.ManageRoles, PM.flags.Administrator)
 	  if (!ctrl) return sender.reply(sender.errorEmbed('❌ Bu komutu kullanmak için yetkin yok.'));
 	  
       await member.roles.add(role);
