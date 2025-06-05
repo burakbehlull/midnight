@@ -3,6 +3,8 @@ import { messageSender } from '#helpers';
 
 export default {
     name: "kilit",
+	aliases: ["lock"],
+	usage: "kilit <aç>",
     async execute(client, message, args) {
         const channel = message.channel;
 		

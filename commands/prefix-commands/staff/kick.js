@@ -4,6 +4,7 @@ import { messageSender } from '#helpers';
 export default {
   name: 'kick',
   description: 'Kullanıcıyı sunucudan atar. m!kick @kullanıcı sebep veya m!kick kullanıcıID sebep',
+  usage: 'kick <@user / userID> <reason>',
   async execute(client, message, args) {
     try {
       const PM = new PermissionsManager(message);

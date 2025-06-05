@@ -66,6 +66,8 @@ Create ` config.json ` file and set permission settings:
 | **cihaz** | Shows user device | user | stable |
 | **allvmute** | Mutes all user in channel | channel | stable |
 | **allvunmute** | Unmutes all user in channel | channel | stable |
+| **emojiekle** | Add emoji to guilds | emoji or url, name | stable |
+| **timeout** | Add emoji to guilds | user, time | stable |
 
 ### events:
 | feature | comment | set command |

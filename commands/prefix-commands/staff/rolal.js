@@ -5,6 +5,7 @@ export default {
   name: 'rolal',
   description: 'Kullanıcının rolünü alır.',
   usage: '.rolal @kullanıcı @rol',
+  aliases: ['take-role'],
   async execute(client, message, args) {
     try {
       const PM = new PermissionsManager(message);

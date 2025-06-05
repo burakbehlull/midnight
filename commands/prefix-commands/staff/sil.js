@@ -5,6 +5,7 @@ export default {
   name: 'sil',
   description: 'Mesajları siler',
   usage: 'sil <1-100>',
+  aliases: ["clear"],
   async execute(client, message, args) {
     const PM = new PermissionsManager(message);
 	const sender = new messageSender(message);

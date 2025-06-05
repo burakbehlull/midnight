@@ -4,7 +4,7 @@ import { messageSender } from '#helpers';
 export default {
   name: 'unban',
   description: 'Belirtilen ID\'ye sahip kullanıcının banını kaldırır.',
-  usage: 'unban <kullanıcıID>',
+  usage: 'unban <userId>',
   async execute(client, message, args) {
     const PM = new PermissionsManager(message);
 	const sender = new messageSender(message);

@@ -6,44 +6,58 @@ export default {
   description: 'Bulunduğun ya da belirttiğin metin kanalını yeniler.',
   usage: 'nuke #kanal',
   async execute(client, message, args) {
+    const sender = new messageSender(message);
+    const PM = new PermissionsManager(message);
+
+    // Yetki kontrolü
+    const ctrl = await PM.control(PM.flags.ManageChannels);
+    if (!ctrl) return sender.reply(sender.errorEmbed('❌ Bu komutu kullanmak için **kanalları yönetme** yetkin olmalı.'));
+
+    const channel = message.mentions.channels.first() || message.channel;
+
+    if (!channel.isTextBased?.()) {
+      return sender.reply(sender.errorEmbed('❌ Bu komut sadece metin tabanlı kanallarda kullanılabilir.'));
+    }
+
+    const {
+      name,
+      type,
+      topic,
+      parentId,
+      position,
+      nsfw,
+      rateLimitPerUser,
+      permissionOverwrites
+    } = channel;
+
+    const overwritesArray = permissionOverwrites.cache.map(overwrite => ({
+      id: overwrite.id,
+      allow: overwrite.allow.bitfield,
+      deny: overwrite.deny.bitfield,
+      type: overwrite.type
+    }));
+
     try {
-      const PM = new PermissionsManager(message);
-	  const sender = new messageSender(message);
-      // Kanalı belirle
-      const channel = message.mentions.channels.first() || message.channel;
-
-      const channelPosition = channel.position;
-      const channelName = channel.name;
-      const channelTopic = channel.topic || '';
-      const channelParentId = channel.parentId;
-      const user = message.author;
-
-      // Yetki kontrolleri
-      const ctrl = await PM.control(PM.flags.Administrator);
-	  if (!ctrl) return sedner.reply(sender.errorEmbed('❌ Bu komutu kullanmak için yetkin yok.'));
-
-
-      if (!channel.isTextBased?.()) return sender.reply(sender.errorEmbed('❌ Bu komut yalnızca metin kanallarında kullanılabilir.'));
-    
-
-      // Kanalı sil ve yeniden oluştur
-      await channel.delete().catch(err => {
-        return sender.reply(sender.errorEmbed(`❌ Kanal silinirken bir hata oluştu: ${err.message}`));
-      });
+      await channel.delete();
 
       const newChannel = await message.guild.channels.create({
-        name: channelName,
-        type: channel.type,
-        topic: channelTopic,
-        parent: channelParentId,
-        position: channelPosition
+        name,
+        type,
+        topic,
+        nsfw,
+        rateLimitPerUser,
+        parent: parentId,
+        position,
+        permissionOverwrites: overwritesArray
       });
 
-      await newChannel.send(`**Kanal yenilendi.** \`${user.username}\``);
+      await newChannel.send({
+        content: `**Kanal yenilendi.** \`${message.author.globalName}\``
+      });
 
     } catch (err) {
-      console.error('Nuke komutu hatası:', err.message);
-      sender.reply(sender.errorEmbed('❌ Bir hata oluştu. Konsolu kontrol et.'));
+      console.error('Nuke komutu hatası:', err);
+      return sender.reply(sender.errorEmbed('❌ Kanal yenilenirken bir hata oluştu.'));
     }
   }
 };

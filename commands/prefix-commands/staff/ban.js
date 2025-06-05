@@ -4,6 +4,8 @@ import { messageSender } from '#helpers';
 export default {
   name: 'ban',
   description: 'Kullanıcıyı banlar. m!ban @kullanıcı sebep veya m!ban kullanıcıID sebep',
+  usage: 'ban <@user / userID> <reason>',
+  aliases: ['hüplet'],
   async execute(client, message, args) {
     try {
       const PM = new PermissionsManager(message);
