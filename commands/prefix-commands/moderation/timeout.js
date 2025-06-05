@@ -32,7 +32,7 @@ export default {
 
     try {
       await member.timeout(msDuration, reason);
-      return sender.reply(sender.classic(`${member} kullanıcısı ${duration} boyunca susturuldu.\n**Sebep:** ${reason}`));
+      return sender.reply(sender.classic(`${member} kullanıcısı ${duration} boyunca susturuldu.**Sebep:** ${reason}`));
     } catch (err) {
       console.error('Timeout hatası:', err);
       return sender.reply(sender.errorEmbed('❌ Kullanıcı susturulurken bir hata oluştu.'));
