@@ -6,10 +6,14 @@ export default {
   description: 'Kullanıcıyı sunucudan atar. m!kick @kullanıcı sebep veya m!kick kullanıcıID sebep',
   usage: 'kick <@user / userID> <reason>',
   async execute(client, message, args) {
+    const PM = new PermissionsManager(message);
+    const sender = new messageSender(message);
+
+    if (!message.guild || !message.member) {
+      return sender.reply(sender.errorEmbed('❌ Bu komut sadece sunucularda kullanılabilir.'));
+    }
+
     try {
-      const PM = new PermissionsManager(message);
-      const sender = new messageSender(message);
-      
       const ctrl = await PM.control(PM.flags.KickMembers, PM.flags.Administrator);
       if (!ctrl)
         return sender.reply(sender.errorEmbed('❌ Bu komutu kullanmak için yetkin yok.'));
@@ -23,11 +27,17 @@ export default {
       if (target.id === message.author.id)
         return sender.reply(sender.errorEmbed('❌ Kendini atamazsın.'));
 
-      if (message.member.roles.highest.position <= target.roles.highest.position && message.guild.ownerId !== message.author.id)
-        return sender.reply(sender.errorEmbed('❌ Senden yüksek veya eşit yetkide birini atamazsın.'));
+      if (target.roles?.highest && message.member.roles?.highest) {
+        if (
+          message.member.roles.highest.position <= target.roles.highest.position &&
+          message.guild.ownerId !== message.author.id
+        ) {
+          return sender.reply(sender.errorEmbed('❌ Senden yüksek veya eşit yetkide birini atamazsın.'));
+        }
+      }
 
       if (!target.kickable)
-        return sender.reply(sender.errorEmbed('❌ Bu kullanıcı bot tarafından atılamıyor. Rolü bottan yüksek olabilir.'));
+        return sender.reply(sender.errorEmbed('❌ Kendini ve senden yüksek roldekileri banlayamazsın'));
 
       await target.kick(reason);
 
