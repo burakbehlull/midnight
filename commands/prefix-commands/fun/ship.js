@@ -7,7 +7,7 @@ export default {
     name: "ship",
     usage: "ship [@miguel / ID / Random]",
     aliases: ["ships", "kalp"],
-    description: 'Ship Yaparsınız',
+    description: 'Ship yapma komutu',
     execute: async (client, message, args) => {
 		const sender = new messageSender(message);
         let user = message.mentions.members.first() || message.guild.members.cache.get(args[0]) || message.guild.members.cache.random();
@@ -23,7 +23,7 @@ export default {
             .build();
 
         message.reply({
-            content: `${message.author.tag} & ${user.user.tag}`,
+            content: `<@!${message.author.id}> & <@!${user.user.id}>`,
             files: [{
                 attachment: ship,
                 name: `ship-${message.member.id}.png`

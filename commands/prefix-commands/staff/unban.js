@@ -13,19 +13,18 @@ export default {
     const guild = message.guild;
 
     if (!userId) {
-      return sender.reply(sender.errorMessage("❌ Lütfen bir kullanıcı ID'si belirtin."));
+      return sender.reply(sender.errorEmbed("❌ Lütfen bir kullanıcı ID'si belirtin."));
     }
 
-    // Yetki Kontrolü
     const ctrl = await PM.control(PM.flags.ManageRoles, PM.flags.Administrator)
-	if (!ctrl) return message.reply(sender.errorMessage('❌ Bu komutu kullanmak için yetkin yok.'));
+	if (!ctrl) return sender.reply(sender.errorEmbed('❌ Bu komutu kullanmak için yetkin yok.'));
 
     try {
       await guild.bans.remove(userId);
-      await message.reply(sender.classic(`<@${userId.id || userId}> adlı kullanıcının banı kaldırıldı.`));
+      await sender.reply(sender.classic(`<@${userId.id || userId}> adlı kullanıcının banı kaldırıldı.`));
     } catch (err) {
       console.error('Ban kaldırma hatası:', err);
-      await message.reply(sender.errorMessage('❌ Kullanıcının banı kaldırılırken bir hata oluştu!'));
+      await sender.reply(sender.errorEmbed('❌ Kullanıcının banı kaldırılırken bir hata oluştu!'));
     }
   }
 };
