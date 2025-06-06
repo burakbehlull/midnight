@@ -10,6 +10,7 @@ export default {
     async execute(client, message, args) {
         const targetUser = message.mentions.members.first();
         const guildId = message.guild.id;
+		const sender = new messageSender(message)
 
         if (!targetUser) return sender.reply(sender.errorEmbed('Lütfen bir kullanıcı etiketleyin.'));
         

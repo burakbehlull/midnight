@@ -68,6 +68,8 @@ Create ` config.json ` file and set permission settings:
 | **allvunmute** | Unmutes all user in channel | channel | stable |
 | **emojiekle** | Add emoji to guilds | emoji or url, name | stable |
 | **timeout** | Add emoji to guilds | user, time | stable |
+| **spotify** | .. | .. | stable |
+| **ship** | ships | user | stable |
 
 ### events:
 | feature | comment | set command |

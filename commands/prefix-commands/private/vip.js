@@ -1,5 +1,6 @@
 import { Settings } from '#models'; 
 import { PermissionsManager } from '#managers';
+import { messageSender } from '#helpers';
 
 export default {
     name: 'vip',
@@ -9,8 +10,9 @@ export default {
     async execute(client, message, args) {
         const targetUser = message.mentions.members.first();
         const guildId = message.guild.id;
+		const sender = new messageSender(message)
 
-        if (!targetUser) return message.reply('Lütfen bir kullanıcı etiketleyin.');
+        if (!targetUser) return sender.reply(sender.errorEmbed('Lütfen bir kullanıcı etiketleyin.'));
         
 		const PM = new PermissionsManager(message);
       

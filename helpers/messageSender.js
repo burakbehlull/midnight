@@ -5,7 +5,7 @@ class messageSender {
 		this.client = client;
 	}
 
-	embed({ title, description, image, thumbnail, fields=[], author, color=0x0099FF, footer }){
+	embed({ title, description, image, thumbnail, fields=[], author, color=0x0099FF, footer, timestamp}){
        const guild = this.client
 		
 	    const user = guild.author ?? guild.user
@@ -17,7 +17,7 @@ class messageSender {
         const IEmbed= new EmbedBuilder()
         .setColor(color)
         .setTitle(title)
-        .setTimestamp()
+        .setTimestamp(timestamp)
         .setFooter(IFooter)
 		if (author) IEmbed.setAuthor(author)
 		if (description) IEmbed.setDescription(description)
