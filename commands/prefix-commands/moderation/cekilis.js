@@ -103,7 +103,7 @@ export default {
                         value: `**${timeInfo.relative}** (${timeInfo.exact})`,
                         inline: false
                     });
-                    await giveawayMessage.edit({ embeds: [embed] });
+                    await giveawayMessage?.edit({ embeds: [embed] });
                 }, 1000);
             } else {
                 const timeInfo = formatTimeLeft(timeLeft);
@@ -112,7 +112,7 @@ export default {
                     value: `**${timeInfo.relative}** (${timeInfo.exact})`,
                     inline: false
                 });
-                await giveawayMessage.edit({ embeds: [embed] });
+                await giveawayMessage?.edit({ embeds: [embed] });
             }
         }, 10_000);
 
