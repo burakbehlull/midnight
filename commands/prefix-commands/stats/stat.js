@@ -11,7 +11,7 @@ export default {
     if (!stats) return sender.reply(sender.errorEmbed('Bu kullanıcıya ait istatistik verisi bulunamadı.'));
 	const embed = sender.embed({
 		author: { name: message.guild.name, iconURL: message.guild.iconURL()},
-		title: `${user.globalName} adlı kullanıcının istatistikleri`,
+		title: `**${user.globalName}** adlı kullanıcının istatistikleri`,
 		color: 'Blue',
 		fields: [
 			{ name: '**Kapsam**', value: `**${stats.days}** günlük veri`, inline: true },

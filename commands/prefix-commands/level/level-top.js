@@ -62,15 +62,38 @@ export default {
       const member = await guild.members.fetch(id).catch(() => null);
 	return member ? `${member.user.username}` : `Unknown (${id})`;
     };
-	embed.setDescription(`
-		**Mesaj**:  \`${await getUsername(topMessage.userId)}\` / ${topMessage.messageXP} XP
-		
-		**Ses**:  \`${await getUsername(topVoice.userId)}\` / ${topVoice.voiceXP} XP
-		
-		**Yayın**:  \`${await getUsername(topStreamer.userId)}\` / ${topStreamer.totalStreams}
-		
-		**Kamera**:  \`${await getUsername(topCamera.userId)}\` / ${topCamera.totalCameraOpens}
-	`)
+	
+	const descLines = [];
+
+	if (topMessage?.messageXP > 0) {
+	  const name = await getUsername(topMessage.userId);
+	  if (name) descLines.push(`**Mesaj**:  \`${name}\` / ${topMessage.messageXP} XP`);
+	} else {
+	  descLines.push(`**Mesaj**:  Veri yok`);
+	}
+
+	if (topVoice?.voiceXP > 0) {
+	  const name = await getUsername(topVoice.userId);
+	  if (name) descLines.push(`**Ses**:  \`${name}\` / ${topVoice.voiceXP} XP`);
+	} else {
+	  descLines.push(`**Ses**:  Veri yok`);
+	}
+
+	if (topStreamer?.totalStreams > 0) {
+	  const name = await getUsername(topStreamer.userId);
+	  if (name) descLines.push(`**Yayın**:  \`${name}\` / ${topStreamer.totalStreams}`);
+	} else {
+	  descLines.push(`**Yayın**:  Veri yok`);
+	}
+
+	if (topCamera?.totalCameraOpens > 0) {
+	  const name = await getUsername(topCamera.userId);
+	  if (name) descLines.push(`**Kamera**:  \`${name}\` / ${topCamera.totalCameraOpens}`);
+	} else {
+	  descLines.push(`**Kamera**:  Veri yok`);
+	}
+
+	embed.setDescription(descLines.join('\n'));
 
     message.channel.send({ embeds: [embed] });
   }
