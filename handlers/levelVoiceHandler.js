@@ -1,7 +1,6 @@
 import { Level } from "#models";
 import { misc } from "#helpers";
 
-
 export async function handleVoiceActivity(userId, guildId, durationMinutes, guild) {
   const user = await Level.findOneAndUpdate(
     { userId, guildId },

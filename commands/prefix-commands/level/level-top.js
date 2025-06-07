@@ -12,7 +12,7 @@ const formatTopUsers = async (array, fieldName, guild) => {
 };
 
 export default {
-  name: "top",
+  name: "level-top",
   description: "Lider tablosunu gösterir",
   async execute(client, message, args) {
     const { guild } = message;
@@ -64,8 +64,11 @@ export default {
     };
 	embed.setDescription(`
 		**Mesaj**:  \`${await getUsername(topMessage.userId)}\` / ${topMessage.messageXP} XP
+		
 		**Ses**:  \`${await getUsername(topVoice.userId)}\` / ${topVoice.voiceXP} XP
+		
 		**Yayın**:  \`${await getUsername(topStreamer.userId)}\` / ${topStreamer.totalStreams}
+		
 		**Kamera**:  \`${await getUsername(topCamera.userId)}\` / ${topCamera.totalCameraOpens}
 	`)
 

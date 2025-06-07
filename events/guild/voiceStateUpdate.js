@@ -1,6 +1,8 @@
 import { Events } from 'discord.js';
-import { levelVoiceHandler } from '#handlers';
+import { levelVoiceHandler, statsUtilsHandler } from '#handlers';
 
+
+// level system
 const activeUsers = new Map();
 const intervalUsers = new Map();
 
@@ -9,9 +11,12 @@ const XP_INTERVAL = 60000;
 setInterval(async () => {
   for (const [userId, userData] of intervalUsers.entries()) {
     const { guildId, guild } = userData;
-    await levelVoiceHandler.handleVoiceActivity(userId, guildId, 1, guild);
+    await levelVoiceHandler.handleVoiceActivity(userId, guildId, 5, guild);
   }
 }, XP_INTERVAL);
+// level system  /
+
+const voiceJoinTimestamps = new Map(); // stats
 
 export default {
   name: Events.VoiceStateUpdate,
@@ -52,6 +57,21 @@ export default {
       intervalUsers.delete(userId);
     }
 	// level system /
+	
+	// stats system
+	if (!oldState.channelId && newState.channelId) {
+      voiceJoinTimestamps.set(userId, { time: Date.now(), channelId: newState.channelId });
+    }
+
+    if (oldState.channelId && !newState.channelId) {
+      const data = voiceJoinTimestamps.get(userId);
+      if (data) {
+        const duration = Date.now() - data.time;
+        await statsUtilsHandler.updateVoiceStats(userId, guildId, data.channelId, duration);
+        voiceJoinTimestamps.delete(userId);
+      }
+    }
+	// stats system /
 	
   },
 };
