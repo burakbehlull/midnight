@@ -71,6 +71,9 @@ Create ` config.json ` file and set permission settings:
 | **spotify** | .. | .. | stable |
 | **ship** | ships | user | stable |
 | **level** | shows user level | user | stable |
+| **level-top** | shows server top level | .. | stable |
+| **stat** | shows user statics | user | stable |
+| **stat-top** | shows server users statics | .. | stable |
 
 ### events:
 | feature | comment | set command |
