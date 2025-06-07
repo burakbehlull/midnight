@@ -17,6 +17,9 @@ setInterval(async () => {
 export default {
   name: Events.VoiceStateUpdate,
   async execute(client, oldState, newState) {
+	  
+	if(message.author.bot) return
+	
     const userId = newState.id;
     const guildId = newState.guild.id;
 

@@ -7,7 +7,6 @@ export default {
   async execute(client, message) {
     const prefix = process.env.PREFIX
 	await levelMessageHandler(message.author.id, message.guild.id, message);
-
 	await afkHandler(message);
 	
 

@@ -70,6 +70,7 @@ Create ` config.json ` file and set permission settings:
 | **timeout** | Add emoji to guilds | user, time | stable |
 | **spotify** | .. | .. | stable |
 | **ship** | ships | user | stable |
+| **level** | shows user level | user | stable |
 
 ### events:
 | feature | comment | set command |

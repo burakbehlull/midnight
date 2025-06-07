@@ -5,6 +5,7 @@ export function calculateLevel(xp) {
 }
 
 export default async function levelMessageHandler(userId, guildId, message) {
+  if(message.author.bot) return
   const user = await Level.findOneAndUpdate(
     { userId, guildId },
     { $inc: { messageXP: 5 } },

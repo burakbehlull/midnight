@@ -14,12 +14,11 @@ export default {
 	const sender = new messageSender(message)
 
     const userData = await Level.findOne({ userId, guildId });
-
     if (!userData) return message.channel.send({embeds: [sender.errorEmbed(`${target} için bir kayıt bulunamadı.`)]});
     
 	const embed = sender.embed({
 		author: { name: message.guild.name, iconURL: message.guild.iconURL()},
-		title: `Seviye Bilgileri: \` ${target.globalName} \``,
+		title: `Seviye Bilgileri: \` ${target.globalName || target.username} \``,
 		color: "Blue",
 		fields: [
 			{ name: "Mesaj XP", value: `**${userData.messageXP}**`, inline: true },
