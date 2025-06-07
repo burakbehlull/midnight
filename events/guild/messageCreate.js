@@ -1,13 +1,15 @@
 import { Events } from 'discord.js';
-import { afkHandler } from "#handlers"
+import { afkHandler, levelMessageHandler } from "#handlers"
 import "dotenv/config"
 
 export default {
   name: Events.MessageCreate, 
   async execute(client, message) {
     const prefix = process.env.PREFIX
+	await levelMessageHandler(message.author.id, message.guild.id, message);
 
 	await afkHandler(message);
+	
 
     if (!message.content.startsWith(prefix) || message.author.bot) return;
 

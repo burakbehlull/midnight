@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const deletedMessageSchema = new mongoose.Schema({
     messageContent: {
         type: String,
-        required: true
+        required: false
     },
     authorTag: {
         type: String,
