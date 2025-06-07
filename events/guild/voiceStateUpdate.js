@@ -6,7 +6,6 @@ const intervalUsers = new Map();
 
 const XP_INTERVAL = 60000; 
 
-
 setInterval(async () => {
   for (const [userId, userData] of intervalUsers.entries()) {
     const { guildId, guild } = userData;
@@ -18,8 +17,8 @@ export default {
   name: Events.VoiceStateUpdate,
   async execute(client, oldState, newState) {
 	  
-	if(message.author.bot) return
 	
+	// level system
     const userId = newState.id;
     const guildId = newState.guild.id;
 
@@ -52,5 +51,7 @@ export default {
 
       intervalUsers.delete(userId);
     }
+	// level system /
+	
   },
 };
