@@ -60,7 +60,7 @@ export default {
 
     const getUsername = async (id) => {
       const member = await guild.members.fetch(id).catch(() => null);
-      return member ? member.user.globalName : `Unknown (${id})`;
+	return member ? `${member.user.username}` : `Unknown (${id})`;
     };
 	embed.setDescription(`
 		**Mesaj**:  \`${await getUsername(topMessage.userId)}\` / ${topMessage.messageXP} XP

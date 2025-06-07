@@ -1,8 +1,6 @@
 import { Level } from "#models";
+import { misc } from "#helpers";
 
-export function calculateLevel(xp) {
-  return Math.floor(0.1 * Math.sqrt(xp));
-}
 
 export async function handleVoiceActivity(userId, guildId, durationMinutes, guild) {
   const user = await Level.findOneAndUpdate(
@@ -11,7 +9,7 @@ export async function handleVoiceActivity(userId, guildId, durationMinutes, guil
     { upsert: true, new: true }
   );
 
-  const newLevel = calculateLevel(user.voiceXP);
+  const newLevel = misc.calculateLevel(user.voiceXP);
   if (newLevel > user.voiceLevel) {
     user.voiceLevel = newLevel;
     await user.save();
