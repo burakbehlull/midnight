@@ -7,7 +7,7 @@ import { misc } from "#helpers"
 import DB from "./config/db.js"
 
 const client = new Client({
-    intents: misc.itentsMiddle()
+    intents: misc.itentsAll()
 })
 
 DB()
