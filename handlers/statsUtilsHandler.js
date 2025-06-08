@@ -23,7 +23,7 @@ async function updateMessageStats(userId, guildId, channelId) {
     { upsert: true, new: true }
   );
 
-  const channel = stats.messageChannels.find(c => c.channelId === channelId);
+  let channel = stats.messageChannels.find(c => c.channelId === channelId);
   if (channel) {
     channel.count += 1;
   } else {
@@ -48,7 +48,7 @@ async function updateVoiceStats(userId, guildId, channelId, durationMs) {
     { upsert: true, new: true }
   );
 
-  const channel = stats.voiceChannels.find(c => c.channelId === channelId);
+  let channel = stats.voiceChannels.find(c => c.channelId === channelId);
   if (channel) {
     channel.duration += durationMs;
   } else {

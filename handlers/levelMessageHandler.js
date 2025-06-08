@@ -1,4 +1,4 @@
-import { Level } from "#models";
+import { Level, Settings } from "#models";
 import { misc } from "#helpers";
 import { EmbedBuilder } from "discord.js";
 
@@ -6,6 +6,15 @@ import { EmbedBuilder } from "discord.js";
 
 export default async function levelMessageHandler(userId, guildId, message) {
   if (message.author.bot) return;
+  
+  const guild = message.guild;
+  if (!guild) return;
+
+  const settings = await Settings.findOne({ guildId: guild.id });
+  if (!settings || !settings.levelSystemStatus) return;
+
+  let getChannel = guild.channels.cache.get(settings.levelSystemStatus);
+  if (!getChannel) return;
 
   const user = await Level.findOneAndUpdate(
     { userId, guildId },

@@ -5,7 +5,7 @@ export default async function autoRoleHandler(member) {
     const guildId = member.guild.id;
     const settings = await Settings.findOne({ guildId });
 
-    if (!settings || !settings.autoRoleId) return;
+    if (!settings || !settings.otorolStatus ||!settings.autoRoleId) return;
 
     const role = member.guild.roles.cache.get(settings.autoRoleId);
     if (!role) return;

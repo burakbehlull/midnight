@@ -74,6 +74,8 @@ Create ` config.json ` file and set permission settings:
 | **level-top** | shows server top level | .. | stable |
 | **stat** | shows user statics | user | stable |
 | **stat-top** | shows server users statics | .. | stable |
+| **invites** | shows invite statics | user | stable |
+| **invite-top** | shows server users invites statics | .. | stable |
 
 ### events:
 | feature | comment | set command |

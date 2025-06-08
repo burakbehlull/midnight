@@ -1,10 +1,15 @@
-import { EmbedBuilder } from 'discord.js';
-import { InviteModel, InviteCacheSchema } from '#models';
-import { messageSender } from '#helpers' 
-const CHANNEL_ID = '946118868290646077';
+import { InviteModel, InviteCacheSchema, Settings } from '#models';
+import { messageSender } from '#helpers'
 
 const inviteHandler = async (client, member) => {
   const guild = member.guild;
+  
+  const settings = await Settings.findOne({ guildId: guild.id });
+  
+  if (!settings || !settings.inviteLogStatus ||!settings.inviteLogChannelId) return;
+  let getChannelIH = guild.channels.cache.get(settings.inviteLogChannelId);
+  if (!getChannelIH) return;
+  
   const sender = new messageSender(member)
 
   let inviter = null;
@@ -33,7 +38,7 @@ const inviteHandler = async (client, member) => {
     );
   }
 
-  const channel = guild.channels.cache.get(CHANNEL_ID);
+  const channel = guild.channels.cache.get(settings.inviteLogChannelId);
   if (!channel) return console.error('Davet log kanalı bulunamadı.');
 
   let description = '';

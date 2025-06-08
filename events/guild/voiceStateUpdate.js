@@ -1,6 +1,6 @@
 import { Events } from 'discord.js';
 import { levelVoiceHandler, statsUtilsHandler } from '#handlers';
-
+import { Settings } from "#models";
 
 // level system
 const activeUsers = new Map();
@@ -22,56 +22,57 @@ export default {
   name: Events.VoiceStateUpdate,
   async execute(client, oldState, newState) {
 	  
+	const guild = newState.guild;
+    const settings = await Settings.findOne({ guildId: guild.id });
 	
+	const userId = newState.id;
+	const guildId = newState.guild.id;
 	// level system
-    const userId = newState.id;
-    const guildId = newState.guild.id;
+	if(settings.levelSystemStatus){
+		if (!oldState.streaming && newState.streaming) await levelVoiceHandler.handleStream(userId, guildId);
+		
 
-    if (!oldState.streaming && newState.streaming) {
-      await levelVoiceHandler.handleStream(userId, guildId);
-    }
+		if (!oldState.selfVideo && newState.selfVideo) await levelVoiceHandler.handleCamera(userId, guildId);
+		
 
-    if (!oldState.selfVideo && newState.selfVideo) {
-      await levelVoiceHandler.handleCamera(userId, guildId);
-    }
+		if (!oldState.channel && newState.channel) {
+		  activeUsers.set(userId, Date.now());
 
-    if (!oldState.channel && newState.channel) {
-      activeUsers.set(userId, Date.now());
+		  intervalUsers.set(userId, {
+			guildId,
+			guild: newState.guild
+		  });
+		}
 
-      intervalUsers.set(userId, {
-        guildId,
-        guild: newState.guild
-      });
-    }
+		if (oldState.channel && !newState.channel) {
+		  if (activeUsers.has(userId)) {
+			const joinTime = activeUsers.get(userId);
+			const durationMin = Math.floor((Date.now() - joinTime) / 60000);
 
-    if (oldState.channel && !newState.channel) {
-      if (activeUsers.has(userId)) {
-        const joinTime = activeUsers.get(userId);
-        const durationMin = Math.floor((Date.now() - joinTime) / 60000);
+			activeUsers.delete(userId);
 
-        activeUsers.delete(userId);
+			await levelVoiceHandler.handleVoiceActivity(userId, guildId, durationMin, newState.guild);
+		  }
 
-        await levelVoiceHandler.handleVoiceActivity(userId, guildId, durationMin, newState.guild);
-      }
-
-      intervalUsers.delete(userId);
-    }
-	// level system /
+		  intervalUsers.delete(userId);
+		}
+	}
 	
 	// stats system
-	if (!oldState.channelId && newState.channelId) {
-      voiceJoinTimestamps.set(userId, { time: Date.now(), channelId: newState.channelId });
-    }
+	if(settings.statSystemStatus){
+		if (!oldState.channelId && newState.channelId) {
+		  voiceJoinTimestamps.set(userId, { time: Date.now(), channelId: newState.channelId });
+		}
 
-    if (oldState.channelId && !newState.channelId) {
-      const data = voiceJoinTimestamps.get(userId);
-      if (data) {
-        const duration = Date.now() - data.time;
-        await statsUtilsHandler.updateVoiceStats(userId, guildId, data.channelId, duration);
-        voiceJoinTimestamps.delete(userId);
-      }
-    }
-	// stats system /
+		if (oldState.channelId && !newState.channelId) {
+		  const data = voiceJoinTimestamps.get(userId);
+		  if (data) {
+			const duration = Date.now() - data.time;
+			await statsUtilsHandler.updateVoiceStats(userId, guildId, data.channelId, duration);
+			voiceJoinTimestamps.delete(userId);
+		  }
+		}
+	}
 	
   },
 };
