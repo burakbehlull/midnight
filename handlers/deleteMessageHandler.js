@@ -1,6 +1,7 @@
 import { DeletedMessage } from '#models';
 
 export default async function deleteMessageHandler(message) {
+  if(message.author.bot || message.content==="") return
   try {
 	   const deletedMessage = new DeletedMessage({
             messageContent: message.content,
