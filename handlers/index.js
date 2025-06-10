@@ -8,6 +8,7 @@ import * as levelVoiceHandler from "./levelVoiceHandler.js"
 import * as statsUtilsHandler from "./statsUtilsHandler.js"
 
 import inviteHandler from "./inviteHandler.js"
+import ticketHandler from "./ticketHandler.js"
 
 export {
 	afkHandler,
@@ -18,5 +19,7 @@ export {
 	levelVoiceHandler,
 	
 	statsUtilsHandler,
-	inviteHandler
+	
+	inviteHandler,
+	ticketHandler
 }

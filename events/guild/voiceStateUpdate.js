@@ -22,6 +22,9 @@ export default {
   name: Events.VoiceStateUpdate,
   async execute(client, oldState, newState) {
 	  
+	const member = newState.member ?? oldState.member;
+	if (!member || member.user.bot) return;
+	  
 	const guild = newState.guild;
     const settings = await Settings.findOne({ guildId: guild.id });
 	

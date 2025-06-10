@@ -1,8 +1,13 @@
 import { Events } from 'discord.js';
+import { ticketHandler } from "#handlers"
+
 
 export default {
   name: Events.InteractionCreate,
   async execute(client, interaction) {
+	  
+	if (interaction.isButton()) return ticketHandler(interaction);
+    
     if (!interaction.isChatInputCommand()) return;
 
     const command = interaction.client.slashCommands.get(interaction.commandName);

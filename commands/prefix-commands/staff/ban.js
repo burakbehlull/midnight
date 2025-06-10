@@ -14,14 +14,14 @@ export default {
     }
 
     try {
-      const hasPerm = await PM.control(PM.flags.BanMembers, PM.flags.Administrator);
-      if (!hasPerm) {
-        return sender.reply(sender.errorEmbed('❌ Bu komutu kullanmak için yeterli yetkin yok.'));
-      }
+      const hasPerm = await PM.control(PM.flags.Administrator);
+      if (!hasPerm) return sender.reply(sender.errorEmbed('❌ Bu komutu kullanmak için yeterli yetkin yok.'));
+      
 
       let target = message.mentions.members.first();
       if (!target && args[0]) {
         target = await message.guild.members.fetch(args[0]).catch(() => null);
+		if(!target) target = message.guild.members.cache.get(args[0]);
       }
       if (!target) {
         return sender.reply(sender.errorEmbed('❌ Banlanacak kullanıcıyı etiketlemeli veya geçerli bir ID girmelisin.'));
