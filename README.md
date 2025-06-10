@@ -23,20 +23,15 @@ MONGO_URI =
 Create ` config.json ` file and set permission settings:
 ```json
 {
-    "permissions": {
-        "isOwners": true, // Güvenli kişi yetkisi açık
-		"isRole": true, // Güvenli rol yetkisi açık
-        "isAuthority": true, // Tanımlanan yetkiler açık olacak mı?
-        "roles": [], // Güvenli Roller
-        "owners": [] // Güvenli Kişiler
-    }
+    "BOT_OWNER_IDS": [] // safe bot owner ids
 }
 ```
 
 ### contents:
 | command | comment | values | situation |
 | ------ | ------ | ------ | ------ |
-| **set** | Adjusts bot settings | options, role, user, value | stable |
+| **settings** | Adjusts bot settings | options, role, channel,  user, value | stable |
+| **authority** | Adjusts authorities settings | options, role, user, value | stable |
 | **yaz** | This command allows you to write from the bot | text | stable |
 | **ban** |  Ban the user | user -ticket, id- | stable |
 | **unban** |  Unban the user | user id | stable |
@@ -81,19 +76,18 @@ Create ` config.json ` file and set permission settings:
 ### events:
 | feature | comment | set command |
 | ------ | ------ | ------ | 
-| otorole | Gives automatic roles to users | Can be set with the /set Auto Role command |
+| otorole | Gives automatic roles to users | Can be set with the /settings Auto Role command |
 
 **Permission Manager** functions and uses:
 | Function | Values | Use | 
 | -------- | -------- | -------- | 
 | .control() | Checks the permissions and returns true accordingly. | .control(...flags) | 
-| .isOwners() | userId | Returns true if there is an id equal to the specified id. | 
+| .isOwners() | .. | Returns true if there is an id equal to the specified id. | 
 | .isRoles() | ... | Returns true if there is an id equal to the specified id. | 
 | .isAuthority() | authorities | .isAuthority(userId, new PermissionManager().flags.Administrator) | 
-| .selectOwnerIds() | status, userIds | ... | 
-| .selectRolesId() | status, userIds | For example, you can open "whitelist": [user ids] in config.json and then use the whitelist as the key and use the incoming id as a fixed list. | 
-
-
+| .isGuildOwner() | .. | Returns true if the user using the command is the owner. PM.isGuildOwner() | 
+| .selectOwnerIds() | ..userIds | Returns true if the user using the command is the users. PM.selectOwnerIds(userId) | 
+|
 **helpers** functions and uses:
 | Helper | Comment | Use | 
 | -------- | -------- | -------- | 

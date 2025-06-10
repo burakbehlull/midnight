@@ -1,9 +1,3 @@
 {
-    "permissions": {
-        "isOwners": true,
-		"isRole": true,
-        "isAuthority": true,
-        "roles": ["874738363175960606"],
-        "owners": ["677194506621288448"]
-    }
+	"BOT_OWNER_IDS": []
 }

@@ -14,7 +14,6 @@ export default {
         .addChoices(
 		  { name: 'Hepsini Göster', value: 'allshow' },
           { name: 'Tag', value: 'tag' },
-          { name: 'Yetkiler', value: 'yetkiler' },
           { name: 'Vip', value: 'vip' },
           { name: 'Streamer', value: 'streamer' },
           { name: 'Oto Rol', value: 'otorol' },
@@ -116,19 +115,6 @@ export default {
       return interaction.reply({ content: `Tag başarıyla **${stringValue}** olarak ayarlandı.`, ephemeral: true });
     }
 
-    if (option === 'yetkiler') {
-      if (!stringValue || !['aç', 'kapat'].includes(stringValue.toLowerCase())) {
-        return interaction.reply({ content: '❌ "aç" veya "kapat" şeklinde belirtmelisin.', ephemeral: true });
-      }
-
-      const mode = stringValue.toLowerCase() === 'aç';
-      settings.isAuthority = mode;
-      settings.isOwners = mode;
-      settings.isRole = mode;
-      await settings.save();
-      return interaction.reply({ content: `Tüm yetkiler **${stringValue.toUpperCase()}** olarak ayarlandı.`, ephemeral: true });
-    }
-
     if (option === 'vip') {
       if (!role) return interaction.reply({ content: '❌ Lütfen bir rol belirt.', ephemeral: true });
       settings.vipRoleId = role.id;
@@ -156,6 +142,7 @@ export default {
       await settings.save();
       return interaction.reply({ content: `Kız kayıt rolü başarıyla ${role} olarak ayarlandı.`, ephemeral: true });
     }
+	
 	if (option === 'kayitsiz') {
       if (!role) return interaction.reply({ content: '❌ Lütfen bir rol belirtin.', ephemeral: true });
       settings.kayitsizRoleId = role.id;

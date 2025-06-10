@@ -5,6 +5,7 @@ import Level from "./Level.js"
 import UserStats from "./UserStats.js"
 import InviteModel from "./InviteModel.js"
 import InviteCacheSchema from "./InviteCacheSchema.js"
+import GuildPermission from "./GuildPermission.js"
 
 export {
 	Afk,
@@ -13,5 +14,6 @@ export {
 	Level,
 	UserStats,
 	InviteModel,
-	InviteCacheSchema
+	InviteCacheSchema,
+	GuildPermission
 }

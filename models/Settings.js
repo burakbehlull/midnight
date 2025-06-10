@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const settingsSchema = new mongoose.Schema({
   guildId: { type: String, required: true, unique: true },
   tag: { type: String, default: null },
-  yetkiler: { type: Boolean, default: true },
+  
   vipRoleId: { type: String, default: null },
   streamerRoleId: { type: String, default: null },
   autoRoleId: { type: String, default: null },
@@ -11,12 +11,11 @@ const settingsSchema = new mongoose.Schema({
   kizRoleId: { type: String, default: null },
   kayitsizRoleId: { type: String, default: null },
   inviteLogChannelId: { type: String, default: null },
+  
   inviteLogStatus: { type: Boolean, default: false },
   otorolStatus: { type: Boolean, default: false },
-  
   levelSystemStatus: { type: Boolean, default: false },
   statSystemStatus: { type: Boolean, default: false },
-  
   
 });
 
