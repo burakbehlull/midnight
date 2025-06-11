@@ -11,7 +11,7 @@ export default {
       type: 'joinLeave',
       title: "Çıkış Log",
 	  description: `<@${member.id}> adlı kullanıcı sunucudan çıkış yaptı!`,
-	  // footer: { text: member.user.tag, iconURL: member.user.displayAvatarURL() }
+	  footer: { text: member.user.tag, iconURL: member.user.displayAvatarURL() }
 
     });
   }

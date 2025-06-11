@@ -8,6 +8,7 @@ export default {
     const logger = new modLogger(client);
     const member = newState.member;
     const guild = newState.guild;
+	const user = newState.member.user;
 
     if (member.user.bot) return;
 
@@ -30,5 +31,31 @@ export default {
 		footer: { text: member.user.tag, iconURL: member.user.displayAvatarURL() }
       });
     }
+	
+	
+	// MUTE LOG
+	if (!oldState.serverMute && newState.serverMute) {
+      await logger.logEvent({
+        guild: newState.guild,
+		author: { name: guild.name, iconURL: guild.iconURL() },
+        type: 'mute-voice',
+        title: null,
+        description: `<@${user.id}> adlı kullanıcı, <#${newState.channelId}> kanalında susturuldu.`,
+		footer: { text: member.user.tag, iconURL: member.user.displayAvatarURL() }
+      });
+    }
+
+    if (oldState.serverMute && !newState.serverMute) {
+      await logger.logEvent({
+        guild: newState.guild,
+		author: { name: guild.name, iconURL: guild.iconURL() },
+        type: 'mute-voice',
+        title: null,
+        description: `<@${user.id}>, kullanıcının <#${newState.channelId}> kanalındaki susturulması kaldırıldı.`,
+		
+        footer: { text: member.user.tag, iconURL: member.user.displayAvatarURL() }
+      });
+    }
+	
   }
 };
