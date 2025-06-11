@@ -29,7 +29,7 @@ class messageSender {
 
 	send(embed, channelId, components) {
 		const id = channelId
-		const channel = this.client.channels.cache.get(id);
+		const channel = this.client.channels.cache.get(id) || this.client.channels.fetch(id);
 
 		if (!channel) {
 			console.warn(`[messageSender] Kanal bulunamadı: ${id}`);

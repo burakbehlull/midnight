@@ -7,6 +7,8 @@ import InviteModel from "./InviteModel.js"
 import InviteCacheSchema from "./InviteCacheSchema.js"
 import GuildPermission from "./GuildPermission.js"
 
+import LogSettings from "./LogSettings.js"
+
 export {
 	Afk,
 	DeletedMessage,
@@ -15,5 +17,7 @@ export {
 	UserStats,
 	InviteModel,
 	InviteCacheSchema,
-	GuildPermission
+	GuildPermission,
+	
+	LogSettings
 }
