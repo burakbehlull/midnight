@@ -132,7 +132,7 @@ export default {
           type: 'role',
 		  color: 0xFF0000,
           title: null,
-          description: `<@${newMember.id}> kullanıcısından <@&${role.id}> rolü ${entry?.executor ? `tarafından <@${entry.executor.id}>` : ''} alındı.`,
+          description: `<@${newMember.id}> kullanıcısından <@&${role.id}> rolü ${entry?.executor ? `<@${entry.executor.id}> tarafından` : ''} alındı.`,
           footer: { text: entry?.executor?.tag || 'Bilinmiyor', iconURL: entry?.executor?.displayAvatarURL() }
         });
       }
