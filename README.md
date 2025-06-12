@@ -32,6 +32,7 @@ Create ` config.json ` file and set permission settings:
 | ------ | ------ | ------ | ------ |
 | **settings** | Adjusts bot settings | options, role, channel,  user, value | stable |
 | **authority** | Adjusts authorities settings | options, role, user, value | stable |
+| **modlog** | Adjusts modlog settings | options, role, value | stable |
 | **yaz** | This command allows you to write from the bot | text | stable |
 | **ban** |  Ban the user | user -ticket, id- | stable |
 | **unban** |  Unban the user | user id | stable |
