@@ -13,11 +13,12 @@ export default {
       guild,
       type: 'message',
       title: 'Mesaj Güncellendi',
+	  color: '#f7e21e',
 	  description: `
 		**Kişi**: <@${newMessage.author.id}>
 		**Kanal**: <#${newMessage.channel.id}>
 		**Eski Mesaj**: \` ${oldMessage.content || "yok"} \`
-		**Eski Mesaj**: \` ${newMessage.content || "yok"} \`
+		**Yeni Mesaj**: \` ${newMessage.content || "yok"} \`
 	  `,
       author: { name: newMessage.guild.name, iconURL: newMessage.guild.iconURL() },
 	  footer: { text: newMessage.author.tag, iconURL: newMessage.author.displayAvatarURL() }

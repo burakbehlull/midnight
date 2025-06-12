@@ -12,7 +12,8 @@ export default {
 	  guild: message.guild,
 	  author: { name: message.guild.name, iconURL: message.guild.iconURL() },
       type: 'message',
-      title: 'Mesaj Silindi',
+      title: null,
+	  color: '#d90f0f',
 	  description: `
 		**Kişi**: <@${message.author.id}>
 		**Kanal**: <#${message.channel.id}>

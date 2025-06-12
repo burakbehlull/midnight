@@ -9,7 +9,8 @@ export default {
       guild: member.guild,
 	  author: { name: member.guild.name, iconURL: member.guild.iconURL() },
       type: 'joinLeave',
-      title: "Giriş Log",
+      title: null,
+	  color: '#6A9BD8',
 	  description: `<@${member.id}> adlı kullanıcı sunucuya giriş yaptı!`,
 	  footer: { text: member.user.tag, iconURL: member.user.displayAvatarURL() }
     });

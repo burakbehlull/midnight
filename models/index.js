@@ -1,13 +1,15 @@
 import Afk from "./Afk.js"
 import DeletedMessage from "./DeletedMessage.js"
-import Settings from "./Settings.js"
+
 import Level from "./Level.js"
 import UserStats from "./UserStats.js"
 import InviteModel from "./InviteModel.js"
 import InviteCacheSchema from "./InviteCacheSchema.js"
-import GuildPermission from "./GuildPermission.js"
 
-import LogSettings from "./LogSettings.js"
+import Settings from "./Settings.js"
+import GuildPermission from "./GuildPermission.js"
+import ModLogConfig from "./ModLogConfig.js"
+
 
 export {
 	Afk,
@@ -19,5 +21,5 @@ export {
 	InviteCacheSchema,
 	GuildPermission,
 	
-	LogSettings
+	ModLogConfig
 }

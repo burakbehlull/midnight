@@ -1,4 +1,4 @@
-// import ModLogConfig from '../models/ModLogConfig.js';
+import { ModLogConfig } from '#models';
 import { messageSender } from '#helpers';
 
 class ModLogger {
@@ -6,12 +6,17 @@ class ModLogger {
     this.client = client;
     this.sender = new messageSender(client);
   }
+  
+  async getLogStatus(guildId){
+	  const result = ModLogConfig.findOne({ guildId });
+	  return !result?.modLogStatus || false
+  }
 
   async getLogChannelId(guildId, logType) {
-    const config = {}
-    if (!config) return null;
-
-    return "1246874463241506920" || config?.logs[logType] || config?.generalLogChannel || null;
+    const config = await ModLogConfig.findOne({ guildId });
+    if (!config || !config.modLogStatus) return null;
+	
+    return config?.logs[logType] || config?.generalLogChannel || null;
   }
 
   async sendLog({ guild, type, embed }) {
@@ -24,13 +29,14 @@ class ModLogger {
     channel.send({ embeds: [embed] }).catch(console.error);
   }
 
-  async logEvent({ guild, type, title, description, fields = [], author, footer }) {
+  async logEvent({ guild, type, title, description, color, fields = [], author, footer }) {
     if (!guild) return;
 
     const embed = this.sender.embed({
       title,
       description,
       author,
+	  color,
       fields,
 	  footer,
       timestamp: new Date()
