@@ -2,8 +2,8 @@ import { messageSender } from '#helpers';
 import { PermissionsManager } from '#managers';
 
 export default {
-  name: 'emoji-yükle',
-  aliases: ['emojiekle', 'emojiyükle'],
+  name: 'emoji',
+  aliases: ['emojiekle', 'emojiyükle', 'emoji-ekle'],
   description: 'Bir emoji veya bağlantı ile sunucuya emoji ekler.',
   usage: 'emoji-yükle <emoji | url> <isim>',
   async execute(client, message, args) {

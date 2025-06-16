@@ -8,7 +8,7 @@ export default {
     if (!newMember.guild) return;
 
     const logger = new modLogger(client);
-    const guild = newMember.guild;
+    const guild = newMember?.guild ?? oldMember.guild;
     const now = Date.now();
 
     // TIMEOUT (Ekleme / Kaldırma)

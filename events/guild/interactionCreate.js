@@ -1,13 +1,16 @@
 import { Events } from 'discord.js';
-import { ticketHandler } from "#handlers"
+import { ticketHandler, itirafHandler } from "#handlers"
+import { Modal } from "#helpers"
 
 
 export default {
   name: Events.InteractionCreate,
   async execute(client, interaction) {
-	  
-	if (interaction.isButton()) return ticketHandler(interaction);
-    
+	if (interaction.isButton()){ 
+		await ticketHandler(interaction);
+	}
+    await itirafHandler(interaction);
+	
     if (!interaction.isChatInputCommand()) return;
 
     const command = interaction.client.slashCommands.get(interaction.commandName);

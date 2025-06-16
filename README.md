@@ -73,6 +73,7 @@ Create ` config.json ` file and set permission settings:
 | **invites** | shows invite statics | user | stable |
 | **invite-top** | shows server users invites statics | .. | stable |
 | **ticket-setup** | creates embed tickets | .. | stable |
+| **itiraf-setup** | people are open or anonymous confessors | channel | stable |
 
 ### events:
 | feature | comment | set command |

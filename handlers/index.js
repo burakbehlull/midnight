@@ -10,6 +10,8 @@ import * as statsUtilsHandler from "./statsUtilsHandler.js"
 import inviteHandler from "./inviteHandler.js"
 import ticketHandler from "./ticketHandler.js"
 
+import itirafHandler from "./itirafHandler.js"
+
 export {
 	afkHandler,
 	autoRoleHandler,
@@ -21,5 +23,6 @@ export {
 	statsUtilsHandler,
 	
 	inviteHandler,
-	ticketHandler
+	ticketHandler,
+	itirafHandler,
 }
