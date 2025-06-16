@@ -2,10 +2,14 @@ import { messageSender } from '#helpers';
 
 export default {
   name: 'cihaz',
+  aliases: ['device'],
+  description: 'Kişinin cihazını gösterir.',
+  usage: 'cihaz @user',
+  category: 'moderation',
   async execute(client, message, args) {
 	const sender = new messageSender(message);
 
-    const member = message.mentions.members.first() || message.guild.members.cache.get(args[0]);
+    const member = message.mentions.members.first() || message.guild.members.cache.get(args[0]) || message.author || message.author;
     if (!member) return sender.reply(sender.errorEmbed('Kullanıcı bulunamadı.'));
 
     const status = member.presence?.clientStatus;

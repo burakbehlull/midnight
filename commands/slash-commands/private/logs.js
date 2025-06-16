@@ -58,6 +58,9 @@ export default {
         )
         .setRequired(false)
     ),
+  description: 'Log sistemini ayarlar',
+  usage: '/logs <seçenekler> <aç/kapat> <#kanal>',
+  category: 'server',
 
   async execute(interaction) {
     const sender = new messageSender(interaction);

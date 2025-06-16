@@ -6,6 +6,9 @@ import { messageSender } from '#helpers';
 export default {
   name: 'vmute',
   description: 'Etiketlenen kullanıcıyı belirli bir süre boyunca ses kanalında susturur.',
+  usage: '.vunmute <@kullanıcı> <süre | 1m | 1h> <sebep>',
+  category: 'moderation',
+  
   async execute(client, message, args) {
     try {
       const PM = new PermissionsManager(message);

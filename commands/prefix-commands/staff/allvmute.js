@@ -5,6 +5,8 @@ export default {
     name: 'allvmute',
 	usage: 'allvmute #VoiceChannel',
 	aliases: ["hepsini-mutele"],
+	category: 'moderation',
+
     async execute(client, message, args) {
 		const sender = new messageSender(message);
 		const PM = new PermissionsManager(message);

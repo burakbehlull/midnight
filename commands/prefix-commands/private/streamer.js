@@ -6,6 +6,7 @@ export default {
     name: 'streamer',
     description: 'Etiketlenen kullanıcıya streamer rolünü verir.',
     usage: '.streamer @kullanıcı',
+	category: 'moderation',
 	
     async execute(client, message, args) {
         const targetUser = message.mentions.members.first();

@@ -5,6 +5,10 @@ export default {
   name: 'mute',
   description: 'Kullanıcıyı susturur.',
   usage: '.mute @kullanıcı',
+  aliases: ["sustur"],
+  category: 'moderation',
+  
+  
   async execute(client, message, args) {
 	  
 	const PM = new PermissionsManager(message);

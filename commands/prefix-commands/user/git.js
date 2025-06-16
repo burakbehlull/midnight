@@ -3,7 +3,10 @@ import { messageSender, Button } from '#helpers';
 
 export default {
   name: 'git',
+  aliases: ["go"],
   description: 'Belirtilen kullanıcıdan izin alarak onun olduğu odaya gider.',
+  category: 'user',
+  
   async execute(client, message, args) {
     try {
       const sender = new messageSender(message);

@@ -6,6 +6,8 @@ export default {
     name: 'allvunmute',
 	usage: "Tüm kullanıcıların mutesini açar",
 	aliases: ["hepsinin-mute-aç"],
+	category: 'moderation',
+
     async execute(client, message, args) {
 		const sender = new messageSender(message);
 		const PM = new PermissionsManager(message);

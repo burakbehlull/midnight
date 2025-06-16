@@ -8,6 +8,7 @@ export default {
     usage: "ship [@miguel / ID / Random]",
     aliases: ["ships", "kalp"],
     description: 'Ship yapma komutu',
+	category: "fun",
     execute: async (client, message, args) => {
 		const sender = new messageSender(message);
         let user = message.mentions.members.first() || message.guild.members.cache.get(args[0]) || message.guild.members.cache.random();

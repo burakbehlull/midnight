@@ -6,6 +6,8 @@ export default {
   description: 'Kullanıcıyı banlar. m!ban @kullanıcı sebep veya m!ban kullanıcıID sebep',
   aliases: ["hüplet", "yargı"],
   usage: 'ban <@user / userID> <sebep>',
+  category: 'moderation',
+
   async execute(client, message, args) {
     const PM = new PermissionsManager(message);
     const sender = new messageSender(message);

@@ -4,6 +4,11 @@ import { messageSender } from '#helpers';
 
 export default {
   name: 'kayıtsız',
+  aliases: ["unregistered"],
+  description: "Kullanıcıya kayıtsız rolü verir.",
+  usage: ".kayıtsız @user",
+  category: 'register',
+  
   async execute(client, message, args) {
     const sender = new messageSender(message);
     const PM = new PermissionsManager(message);

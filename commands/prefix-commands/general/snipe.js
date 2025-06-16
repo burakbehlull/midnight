@@ -5,6 +5,7 @@ export default {
   name: 'snipe',
   description: 'Bulunduğun kanalda silinen son mesajları gösterir (Varsayılan: 1, Maksimum: 10).',
   usage: 'snipe [sayı]',
+  category: 'moderation',
   async execute(client, message, args) {
     const channelId = message.channel.id;
     const sender = new messageSender(message);

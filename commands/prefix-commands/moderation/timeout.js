@@ -8,6 +8,7 @@ export default {
   aliases: ['sustur'],
   description: 'Belirtilen kullanıcıyı süreli olarak susturur (timeout).',
   usage: 'timeout @kullanıcı <süre> [sebep]',
+  category: 'moderation',
   
   async execute(client, message, args) {
     const sender = new messageSender(message);

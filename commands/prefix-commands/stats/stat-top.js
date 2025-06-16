@@ -4,6 +4,10 @@ import { messageSender } from '#helpers';
 
 export default {
   name: 'stat-top',
+  description: 'Sunucuda en çok konuşan kişileri listeler',
+  usage: 'stat-top',
+  category: 'stat',
+  
   async execute(client, message) {
     const topMessages = await statsUtilsHandler.getTopMessageUsers(message.guild.id);
     const topVoices = await statsUtilsHandler.getTopVoiceUsers(message.guild.id);

@@ -13,7 +13,9 @@ const formatTopUsers = async (array, fieldName, guild) => {
 
 export default {
   name: "level-top",
-  description: "Lider tablosunu gösterir",
+  usage: ".level-top <message | voice | streamer | camera>",
+  description: "Lider tablosunu gösterir.",
+  category: 'level',
   async execute(client, message, args) {
     const { guild } = message;
 

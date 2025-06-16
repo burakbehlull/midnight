@@ -4,6 +4,9 @@ import { messageSender } from '#helpers';
 export default {
   name: 'vunmute',
   description: 'Etiketlenen kullanıcının ses kanalındaki susturmasını kaldırır.',
+  usage: '.vunmute @kullanıcı',
+  category: 'moderation',
+  
   async execute(client, message, args) {
     try {
       const PM = new PermissionsManager(message);

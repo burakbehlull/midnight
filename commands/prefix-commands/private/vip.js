@@ -6,6 +6,7 @@ export default {
     name: 'vip',
     description: 'Etiketlenen kullanıcıya vip rolünü verir.',
     usage: '.vip @kullanıcı',
+	category: 'moderation',
 	
     async execute(client, message, args) {
         const targetUser = message.mentions.members.first();

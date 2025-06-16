@@ -6,6 +6,7 @@ export default {
   aliases: ["davet-tablosu", "invites-top", "davet-sıralama"],
   description: 'Sunucunun en çok davet eden ilk 5 kişisini gösterir.',
   usage: "invite-top",
+  category: 'invite',
   async execute(client, message, args) {
 	const sender = new messageSender(message);
 

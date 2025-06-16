@@ -3,7 +3,9 @@ import { messageSender, Button } from '#helpers';
 
 export default {
   name: 'çek',
+  aliases: ["pull"],
   description: 'Etiketlenen kullanıcıdan onay alarak onu bulunduğun odaya çeker.',
+  category: 'user',
   async execute(client, message, args) {
     try {
 		

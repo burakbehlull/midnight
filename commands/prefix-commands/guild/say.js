@@ -4,6 +4,7 @@ export default {
   name: 'say',
   description: 'Sunucudaki istatistikleri gösterir.',
   usage: 'say',
+  category: 'moderation',
   async execute(client, message, args) {
     const { guild } = message;
 	const sender = new messageSender(message);

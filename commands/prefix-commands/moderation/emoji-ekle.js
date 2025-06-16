@@ -6,6 +6,7 @@ export default {
   aliases: ['emojiekle', 'emojiyükle', 'emoji-ekle'],
   description: 'Bir emoji veya bağlantı ile sunucuya emoji ekler.',
   usage: 'emoji-yükle <emoji | url> <isim>',
+  category: 'server',  
   async execute(client, message, args) {
 	const PM = new PermissionsManager(message);
     const sender = new messageSender(message);

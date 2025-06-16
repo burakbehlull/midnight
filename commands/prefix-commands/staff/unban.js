@@ -5,6 +5,8 @@ export default {
   name: 'unban',
   description: 'Belirtilen ID\'ye sahip kullanıcının banını kaldırır.',
   usage: 'unban <userId>',
+  category: 'moderation',
+  
   async execute(client, message, args) {
     const PM = new PermissionsManager(message);
 	const sender = new messageSender(message);

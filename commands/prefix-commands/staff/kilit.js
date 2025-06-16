@@ -5,6 +5,9 @@ export default {
     name: "kilit",
 	aliases: ["lock"],
 	usage: "kilit <aç>",
+	category: 'moderation',
+	
+	
     async execute(client, message, args) {
         const channel = message.channel;
 		

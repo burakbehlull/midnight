@@ -54,6 +54,9 @@ export default {
 		.setDescription('Log kanalını seçin')
 		.setRequired(false)
 	),
+   description: 'Sunucu sistemini ayarlar',
+   usage: '/settings <seçenekler> <aç/kapat> <#channel> <@user> <@role>',
+   category: 'server',
 
   async execute(interaction) {
     const PM = new PermissionsManager(interaction);

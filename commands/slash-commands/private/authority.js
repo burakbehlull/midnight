@@ -43,6 +43,9 @@ export default {
         .setDescription('Güvenli kullanıcı')
         .setRequired(false)
     ),
+   description: 'Sunucu yetki sistemini ayarlar',
+   usage: '/authority <seçenekler> <aç/kapat> <#channel> <@role>',
+   category: 'server',
 
   async execute(interaction) {
     const PM = new PermissionsManager(interaction);

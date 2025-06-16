@@ -5,6 +5,8 @@ export default {
   name: 'unmute',
   description: 'Kullanıcının susturmasını kaldırır.',
   usage: '.unmute @kullanıcı',
+  category: 'moderation',
+  
   
   async execute(client, message, args) {
 	  

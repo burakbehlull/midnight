@@ -7,6 +7,7 @@ export default {
   aliases: ["seviye"],
   description: "Kullanıcının level bilgisini gösterir",
   usage: ".level <me/@user>",
+  category: 'level',
   async execute(client, message, args) {
     const target = message.mentions.users.first() || message.author;
     const userId = target.id;

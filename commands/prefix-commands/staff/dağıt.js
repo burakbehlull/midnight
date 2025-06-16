@@ -4,6 +4,11 @@ import { PermissionsManager } from '#managers';
 
 export default {
     name: 'dağıt',
+	description: 'Sesteki tüm kullanıcıları dağıtır.',
+	aliases: ["distribute", "dagit"],
+	usage: '.dağıt',
+	category: 'moderation',
+
     async execute(client, message) {
         const voiceChannel = message.member.voice.channel;
 		

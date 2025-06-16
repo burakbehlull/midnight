@@ -6,6 +6,8 @@ export default {
   name: 'sescik',
   description: 'Bot ses kanalından çıkar',
   usage: 'ses gir <#channel / channelId>',
+  category: 'server',
+  
   async execute(client, message) {
 	const sender = new messageSender(message)
 	

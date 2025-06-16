@@ -5,6 +5,9 @@ export default {
   name: 'kick',
   description: 'Kullanıcıyı sunucudan atar. m!kick @kullanıcı sebep veya m!kick kullanıcıID sebep',
   usage: 'kick <@user / userID> <sebep>',
+  category: 'moderation',
+  
+  
   async execute(client, message, args) {
     const PM = new PermissionsManager(message);
     const sender = new messageSender(message);

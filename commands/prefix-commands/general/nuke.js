@@ -5,6 +5,7 @@ export default {
   name: 'nuke',
   description: 'Bulunduğun ya da belirttiğin metin kanalını yeniler.',
   usage: 'nuke #kanal',
+  category: 'moderation',
   async execute(client, message, args) {
     const sender = new messageSender(message);
     const PM = new PermissionsManager(message);

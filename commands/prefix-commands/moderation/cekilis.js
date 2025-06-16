@@ -34,6 +34,8 @@ export default {
     aliases: ["gstart", "giveaway"],
     description: "Belirttiğin süreyle çekiliş başlatır.",
     usage: ".çekiliş <süre> <kazanan_sayısı> <ödül>",
+	category: 'extra',
+	
 
     execute: async (client, message, args) => {
 		const sender = new messageSender(message)

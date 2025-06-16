@@ -3,6 +3,8 @@ import { Settings } from '#models';
 export default {
   name: 'tag',
   description: 'Sunucunun ayarlı olan tag bilgisini gösterir.',
+  category: 'moderation',
+  
   async execute(client, message, args) {
     try {
       const guildId = message.guild.id;

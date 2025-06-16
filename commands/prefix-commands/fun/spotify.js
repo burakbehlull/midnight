@@ -8,6 +8,7 @@ export default {
     description: "Spotify'da dinlenen şarkıyı sadece görsel olarak gösterir.",
     aliases: ["spoti", "şarkı", "dinlediğim", "müzik", "spotfy"],
     usage: "spotify [@etiket / ID]",
+	category: "fun",
     execute: async (client, message, args) => {
 		const sender = new messageSender(message);
         const member = message.mentions.members.first() ||

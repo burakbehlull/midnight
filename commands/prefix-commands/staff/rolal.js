@@ -6,12 +6,13 @@ export default {
   description: 'Kullanıcının rolünü alır.',
   usage: '.rolal @kullanıcı @rol | .rolal kullanıcıID rolID',
   aliases: ['take-role'],
+  category: 'moderation',
+  
   async execute(client, message, args) {
     try {
       const PM = new PermissionsManager(message);
       const sender = new messageSender(message);
 
-      // Kullanıcıyı belirle
       let member = message.mentions.members.first();
       if (!member && args[0]) {
         const fetchedMember = await message.guild.members.fetch(args[0]).catch(() => null);

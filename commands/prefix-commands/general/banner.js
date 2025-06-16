@@ -5,6 +5,7 @@ export default {
   name: 'banner',
   description: 'Etiketlenen kullanıcının veya kendi bannerını gösterir.',
   usage: 'banner @kullanıcı',
+  category: 'user',
   async execute(client, message, args) {
     const sender = new messageSender(message);
     const user = message.mentions.users.first() || message.author;

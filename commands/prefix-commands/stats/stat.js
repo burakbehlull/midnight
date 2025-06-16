@@ -3,6 +3,10 @@ import { messageSender } from '#helpers';
 
 export default {
   name: 'stat',
+  description: 'Sunucudaki toplam verilerini gösterir.',
+  usage: 'stat',
+  category: 'stat',
+  
   async execute(client, message, args) {
     const user = message.mentions.users.first() || message.author;
     const stats = await statsUtilsHandler?.getUserStats(user.id, message.guild.id);

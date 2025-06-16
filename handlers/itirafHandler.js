@@ -48,8 +48,7 @@ export default async function itirafHandler(interaction) {
       }
 
       await channel.send({ embeds: [embed] });
-
-      return sender.reply(sender.classic("İtirafın başarıyla gönderildi!"));
+	  return
     }
   } catch (error) {
 	  console.log(3)

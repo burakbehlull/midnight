@@ -6,6 +6,7 @@ export default {
   aliases: ["davet"],
   description: 'Kullanıcının davet sayısını gösterir.',
   usage: "invites @kullanıcı",
+  category: 'invite',
   async execute(client, message, args) {
 	const sender = new messageSender(message);
 

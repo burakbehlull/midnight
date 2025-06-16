@@ -5,6 +5,7 @@ export default {
   name: 'avatar',
   description: 'Etiketlenen kullanıcının veya kendi avatarını gösterir.',
   usage: 'avatar @kullanıcı',
+  category: 'user',
   async execute(client, message, args) {
     const sender = new messageSender(message);
 

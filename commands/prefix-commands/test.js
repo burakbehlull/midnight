@@ -11,7 +11,7 @@ export default {
 	  const sender = new messageSender(message)
 	
 	  
-	  sender.reply("he")
+	  sender.reply("test")
 	  
       
     } catch (err) {

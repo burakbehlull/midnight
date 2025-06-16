@@ -7,6 +7,11 @@ import { messageSender, Button } from '#helpers';
 
 export default {
   name: 'kayit',
+  aliases: ["register", "kayıt", "k"],
+  description: "Kullanıcıya kayıt rolü verir.",
+  usage: ".kayıt @user isim | yaş",
+  category: 'register',
+  
   async execute(client, message, args) {
 	  
     const sender = new messageSender(message);

@@ -6,7 +6,9 @@ import { PermissionsManager } from '#managers';
 
 export default {
   name: 'itiraf-setup',
-  description: 'İtiraf sistemini kurar',
+  description: 'İtiraf sistemini kurar, sadece yöneticiler kullanabilir.',
+  usage: 'itiraf-setup <#channel>',
+  category: "fun",
   async execute(client, message, args) {
 	  
 	const PM = new PermissionsManager(message);
