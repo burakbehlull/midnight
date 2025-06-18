@@ -109,7 +109,7 @@ class Base {
 	}
 	
 	async loadEvents() {
-	 const client = this.client;
+	  const client = this.client;
 	  const filename = fileURLToPath(import.meta.url);
 	  const dirname = pathDirname(filename);
 	  const eventsPath = path.join(dirname, '..', 'events');

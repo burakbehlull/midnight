@@ -48,7 +48,7 @@ export default async function itirafHandler(interaction) {
       }
 
       await channel.send({ embeds: [embed] });
-	  return
+	  return interaction.reply({content: "İtiraf gönderildi", ephemeral: true})
     }
   } catch (error) {
 	  console.log(3)

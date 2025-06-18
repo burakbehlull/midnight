@@ -1,5 +1,5 @@
 import { Events } from 'discord.js';
-import { afkHandler, levelMessageHandler, statsUtilsHandler } from "#handlers"
+import { afkHandler, levelMessageHandler, statsUtilsHandler, handleCooldown } from "#handlers"
 import "dotenv/config"
 
 export default {
@@ -22,6 +22,18 @@ export default {
     const command = client.prefixCommands.get(commandName);
 
     if (!command) return;
+	
+	// cooldown
+	const passed = await handleCooldown({
+      userId: message.author.id,
+      commandName: command.name,
+      cooldownInSeconds: command.cooldown ?? 3,
+      client,
+      context: message,
+      send: (embed) => message.reply({ embeds: [embed] }),
+    });
+
+    if (!passed) return;
 
     try {
       await command(client, message, args);

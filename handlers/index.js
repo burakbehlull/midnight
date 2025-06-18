@@ -11,8 +11,11 @@ import inviteHandler from "./inviteHandler.js"
 import ticketHandler from "./ticketHandler.js"
 
 import itirafHandler from "./itirafHandler.js"
+import handleCooldown from "./handleCooldown.js"
 
 export {
+	handleCooldown,
+	
 	afkHandler,
 	autoRoleHandler,
 	deleteMessageHandler,

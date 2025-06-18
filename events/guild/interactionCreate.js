@@ -1,5 +1,5 @@
 import { Events } from 'discord.js';
-import { ticketHandler, itirafHandler } from "#handlers"
+import { ticketHandler, itirafHandler, handleCooldown } from "#handlers"
 import { Modal } from "#helpers"
 
 
@@ -19,6 +19,21 @@ export default {
       console.error(`No command matching ${interaction.commandName} was found.`);
       return;
     }
+	
+	const passed = await handleCooldown({
+      userId: interaction.user.id,
+      commandName: command.name,
+      cooldownInSeconds: command.cooldown ?? 3,
+      client,
+      context: interaction,
+      send: (embed) =>
+        interaction.reply({
+          embeds: [embed],
+          ephemeral: true,
+        }),
+    });
+
+    if (!passed) return;
 
     try {
       await command(interaction);

@@ -18,7 +18,6 @@ const colors = {
   pastelPink: '#F1C0E8',
   lightBlue2: '#6A9BD8',
   darkBlue: '#3A5F8A'
-  
 };
 
 class messageSender {
