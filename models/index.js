@@ -10,6 +10,8 @@ import Settings from "./Settings.js"
 import GuildPermission from "./GuildPermission.js"
 import ModLogConfig from "./ModLogConfig.js"
 
+import Room from "./Room.js"
+
 
 export {
 	Afk,
@@ -21,5 +23,6 @@ export {
 	InviteCacheSchema,
 	GuildPermission,
 	
-	ModLogConfig
+	ModLogConfig,
+	Room
 }

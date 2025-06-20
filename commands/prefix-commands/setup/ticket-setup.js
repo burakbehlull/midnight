@@ -4,6 +4,7 @@ import { PermissionsManager } from '#managers';
 export default {
   name: 'ticket-setup',
   description: 'Ticket sistemi kurar',
+  cooldown: 10,
   category: 'server',
   async execute(client, message, args) {
     const sender = new messageSender(message);

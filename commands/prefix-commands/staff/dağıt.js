@@ -6,6 +6,7 @@ export default {
     name: 'dağıt',
 	description: 'Sesteki tüm kullanıcıları dağıtır.',
 	aliases: ["distribute", "dagit"],
+	cooldown: 5,
 	usage: '.dağıt',
 	category: 'moderation',
 

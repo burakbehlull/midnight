@@ -6,6 +6,7 @@ export default {
   description: 'Kullanıcıyı banlar. m!ban @kullanıcı sebep veya m!ban kullanıcıID sebep',
   aliases: ["hüplet", "yargı"],
   usage: 'ban <@user / userID> <sebep>',
+  cooldown: 10,
   category: 'moderation',
 
   async execute(client, message, args) {

@@ -8,6 +8,7 @@ export default {
   name: 'itiraf-setup',
   description: 'İtiraf sistemini kurar, sadece yöneticiler kullanabilir.',
   usage: 'itiraf-setup <#channel>',
+  cooldown: 10,
   category: "fun",
   async execute(client, message, args) {
 	  

@@ -6,6 +6,7 @@ export default {
   description: 'Mesajları siler',
   usage: 'sil <1-100>',
   aliases: ["clear"],
+  cooldown: 5,
   category: 'moderation',
   
   async execute(client, message, args) {

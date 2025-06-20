@@ -5,6 +5,7 @@ export default {
   name: 'kick',
   description: 'Kullanıcıyı sunucudan atar. m!kick @kullanıcı sebep veya m!kick kullanıcıID sebep',
   usage: 'kick <@user / userID> <sebep>',
+  cooldown: 10,
   category: 'moderation',
   
   

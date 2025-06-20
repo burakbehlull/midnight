@@ -1,5 +1,5 @@
 import { Events } from 'discord.js';
-import { ticketHandler, itirafHandler, handleCooldown } from "#handlers"
+import { ticketHandler, itirafHandler, handleCooldown, handleInteractionCreate } from "#handlers"
 import { Modal } from "#helpers"
 
 
@@ -10,6 +10,7 @@ export default {
 		await ticketHandler(interaction);
 	}
     await itirafHandler(interaction);
+	await handleInteractionCreate(interaction)
 	
     if (!interaction.isChatInputCommand()) return;
 

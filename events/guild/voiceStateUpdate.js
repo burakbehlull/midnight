@@ -1,5 +1,5 @@
 import { Events } from 'discord.js';
-import { levelVoiceHandler, statsUtilsHandler } from '#handlers';
+import { levelVoiceHandler, statsUtilsHandler, handleVoiceRoomCreate } from '#handlers';
 import { Settings } from "#models";
 
 // level system
@@ -24,6 +24,8 @@ export default {
 	  
 	const member = newState.member ?? oldState.member;
 	if (!member || member.user.bot) return;
+	
+	await handleVoiceRoomCreate(oldState, newState)
 	  
 	const guild = newState.guild;
     const settings = await Settings.findOne({ guildId: guild.id });

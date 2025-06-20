@@ -13,6 +13,8 @@ import ticketHandler from "./ticketHandler.js"
 import itirafHandler from "./itirafHandler.js"
 import handleCooldown from "./handleCooldown.js"
 
+import { handleVoiceRoomCreate, handleInteractionCreate } from "./privateRoomHandler.js"
+
 export {
 	handleCooldown,
 	
@@ -28,4 +30,7 @@ export {
 	inviteHandler,
 	ticketHandler,
 	itirafHandler,
+	
+	handleVoiceRoomCreate, 
+	handleInteractionCreate
 }
