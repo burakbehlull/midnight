@@ -70,14 +70,14 @@ export async function handleInteractionCreate(interaction) {
         const roomname = interaction.fields.getTextInputValue('roomname');
         if (!roomname) return;
         await c.edit({ name: roomname });
-        return await c.send(`Oda adı: ${roomname} olarak ayarlandı!`);
+        return await interaction.reply({content: `Oda adı: ${roomname} olarak ayarlandı!`, ephemeral: true});
       }
 
       if (interaction.customId === 'limitmodal') {
         const roomlimit = interaction.fields.getTextInputValue('roomlimit');
         if (!roomlimit) return;
         await c.edit({ userLimit: roomlimit });
-        return await c.send(`Oda limiti: ${roomlimit} olarak ayarlandı!`);
+        return await interaction.reply({content: `Oda limiti: ${roomlimit} olarak ayarlandı!`, ephemeral: true});
       }
 
       if (interaction.customId === 'adduserModal') {
@@ -85,7 +85,7 @@ export async function handleInteractionCreate(interaction) {
         if (!roomuserid) return;
         const user = await interaction.guild.members.fetch(roomuserid);
         await c.permissionOverwrites.edit(user, { Connect: true });
-        return await c.send(`<@${roomuserid}> kullanıcıya, ${c.name} adlı odaya girme izni verildi.`);
+	  return await interaction.reply({content: `<@${roomuserid}> kullanıcıya, ${c.name} adlı odaya girme izni verildi.`, ephemeral: true});
       }
 
       if (interaction.customId === 'deleteuserModal') {
@@ -93,7 +93,7 @@ export async function handleInteractionCreate(interaction) {
         if (!roomuserid) return;
         const user = await interaction.guild.members.fetch(roomuserid);
         await c.permissionOverwrites.edit(user, { Connect: false });
-        return await c.send(`<@${roomuserid}> kullanıcının, ${c.name} adlı odaya girme izni alındı.`);
+        return await interaction.reply({content:`<@${roomuserid}> kullanıcının, ${c.name} adlı odaya girme izni alındı.`, ephemeral:true});
       }
 
       if (interaction.customId === 'kickuserModal') {
@@ -102,7 +102,7 @@ export async function handleInteractionCreate(interaction) {
         const user = await interaction.guild.members.fetch(kickuserid);
         if (user.voice.channelId !== c.id) return await c.send('Belirtilen kullanıcı bu kanalda değil.');
         await user.voice.setChannel(null);
-        return await c.send(`<@${kickuserid}> kullanıcı, ${c.name} adlı odadan atıldı!`);
+        return await interaction.reply({content:`<@${kickuserid}> kullanıcı, ${c.name} adlı odadan atıldı!`, ephemeral: true});
       }
     }
 
@@ -129,7 +129,7 @@ export async function handleInteractionCreate(interaction) {
           ManageChannels: false,
           ManageRoles: false,
         });
-        return await c.send(`${c.name} adlı oda kitlendi!`);
+        return await interaction.reply({content: `${c.name} adlı oda kitlendi!`, ephemeral: true});
       }
 
       if (interaction.customId === 'adduserbtn') {
