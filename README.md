@@ -75,6 +75,7 @@ Create ` config.json ` file and set permission settings:
 | **ticket-setup** | creates embed tickets | .. | stable |
 | **itiraf-setup** | people are open or anonymous confessors | channel | stable |
 | **help** | helps user | .. | un-stable |
+| **room-setup** | private room creater | .. | stable |
 
 ### events:
 | feature | comment | set command |
