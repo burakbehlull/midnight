@@ -1,4 +1,4 @@
-export async function fetchPartialIfNeeded(obj) {
+export async function fetchPartialNeed(obj) {
   if (!obj) return null;
   try {
     if (obj.partial && typeof obj.fetch === 'function') {

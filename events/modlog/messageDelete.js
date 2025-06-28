@@ -1,26 +1,41 @@
 import { Events } from 'discord.js';
-import { modLogger } from '#helpers';
+import { modLogger, fetchPartialNeed } from '#helpers';
 
 export default {
   name: Events.MessageDelete,
   async execute(client, message) {
-    if (message.author?.bot) return;
+    message = await fetchPartialNeed(message);
+
+    if (!message.author || message.author.bot) return;
 
     const logger = new modLogger(client);
-	
-	await logger.logEvent({
-	  guild: message.guild,
-	  author: { name: message.guild.name, iconURL: message.guild.iconURL() },
-      type: 'message',
-      title: null,
-	  color: '#d90f0f',
-	  description: `
+    const guild = message.guild;
+
+    const content = message.content?.trim() || null;
+    const attachmentInfo = message.attachments.size > 0
+      ? `**Ekler**: ${[...message.attachments.values()].map(a => a.url).join("\n")}`
+      : '';
+
+    const description = `
 		**Kişi**: <@${message.author.id}>
 		**Kanal**: <#${message.channel.id}>
-		**Silinen Mesaj**: \` ${message.content || "boş"} \`
-	  `,
-	  footer: { text: message.author.tag, iconURL: message.author.displayAvatarURL() }
+		**Silinen Mesaj**: ${content ? `\`${content}\`` : "*Boş içerik veya sadece embed vardı*"}
+		${attachmentInfo}`.trim();
+
+    await logger.logEvent({
+      guild,
+      type: 'message',
+      color: '#d90f0f',
+      title: 'Mesaj Silindi',
+      author: {
+        name: guild?.name ?? "Sunucu",
+        iconURL: guild?.iconURL() ?? null
+      },
+      footer: {
+        text: message.author.tag,
+        iconURL: message.author.displayAvatarURL()
+      },
+      description
     });
-	
   }
 };
