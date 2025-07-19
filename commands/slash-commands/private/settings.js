@@ -87,6 +87,7 @@ export default {
 				Streamer Rol: **${settings.streamerRoleId ? `<@${settings.streamerRoleId}>` : "Yok"}**
 				
 				Yetkili Rolü: **${settings.staffRole ? `<@!${settings.staffRole}>` : "Yok"}**
+				Jail Rolü: **${settings.jailRoleId ? `<@!${settings.jailRoleId}>` : "Yok"}**
 				Erkek Rolü: **${settings.erkekRoleId ? `<@!${settings.erkekRoleId}>` : "Yok"}**
 				Kız Rolü: **${settings.kizRoleId ? `<@!${settings.kizRoleId}>` : "Yok"}**
 				Kayıtsız Rolü: **${settings.kayitsizRoleId ? `<@!${settings.kayitsizRoleId}>` : "Yok"}**
