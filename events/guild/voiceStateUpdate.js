@@ -33,7 +33,7 @@ export default {
 	const userId = newState.id;
 	const guildId = newState.guild.id;
 	// level system
-	if(settings.levelSystemStatus){
+	if(settings?.levelSystemStatus){
 		if (!oldState.streaming && newState.streaming) await levelVoiceHandler.handleStream(userId, guildId);
 		
 
@@ -64,7 +64,7 @@ export default {
 	}
 	
 	// stats system
-	if(settings.statSystemStatus){
+	if(settings?.statSystemStatus){
 		if (!oldState.channelId && newState.channelId) {
 		  voiceJoinTimestamps.set(userId, { time: Date.now(), channelId: newState.channelId });
 		}

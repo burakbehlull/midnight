@@ -4,6 +4,8 @@ export default {
   name: 'ready',
   once: true,
   async execute(client) {
+	  
+	// invites of user
     for (const [guildId, guild] of client.guilds.cache) {
       try {
         const invites = await guild.invites.fetch();
@@ -22,5 +24,7 @@ export default {
         console.error(`[${guild.name}] davetler alınamadı:`, err);
       }
     }
+	
+	
   }
 };

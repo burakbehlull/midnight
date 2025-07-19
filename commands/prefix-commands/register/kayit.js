@@ -1,6 +1,5 @@
 import { EmbedBuilder, ComponentType } from 'discord.js';
-
-import { Settings } from "#models";
+import { Settings, Staff } from "#models";
 import { PermissionsManager } from '#managers';
 import { messageSender, Button } from '#helpers';
 
@@ -28,6 +27,12 @@ export default {
       return sender.reply(sender.errorEmbed("❌ Roller ayarlanmamış. `/set` komutunu kullan."));
 
     await member.setNickname(`${args[1]} | ${args[2]}`);
+	
+	await Staff.findOneAndUpdate(
+	  { userId: message.author.id, guildId: message.guild.id },
+	  { $inc: { registerCount: 1 } },
+	  { upsert: true, new: true }
+	);
 
     const btn = new Button();
     btn.add("erkek_btn", "Erkek", btn.style.Primary);

@@ -12,6 +12,9 @@ import ModLogConfig from "./ModLogConfig.js"
 
 import Room from "./Room.js"
 
+import Staff from "./Staff.js"
+import Punishment from "./Punishment.js"
+
 
 export {
 	Afk,
@@ -24,5 +27,8 @@ export {
 	GuildPermission,
 	
 	ModLogConfig,
-	Room
+	Room,
+	
+	Punishment,
+	Staff
 }

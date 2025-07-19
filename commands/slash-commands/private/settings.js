@@ -21,6 +21,7 @@ export default {
           { name: 'Erkek Kayıt Rolü', value: 'erkek' },
           { name: 'Kız Kayıt Rolü', value: 'kiz' },
           { name: 'Kayıtsız Rolü', value: 'kayitsiz' },
+          { name: 'Staff Rolü', value: 'staffrole' },
           { name: 'Davet Log Kanalı', value: 'invitelogchannel' },
           { name: 'Davet Sistemi Aç/Kapat', value: 'invitelogstatus' },
           { name: 'Level Sistemi Aç/Kapat', value: 'levelsystemstatus' },
@@ -83,6 +84,8 @@ export default {
 				Tag: **${settings.tag || "Yok"}**
 				Vip Role: **${settings.vipRoleId ? `<@!${settings.vipRoleId}>` : "Yok"}**
 				Streamer Rol: **${settings.streamerRoleId ? `<@${settings.streamerRoleId}>` : "Yok"}**
+				
+				Yetkili Rolü: **${settings.staffRole ? `<@!${settings.staffRole}>` : "Yok"}**
 				Erkek Rolü: **${settings.erkekRoleId ? `<@!${settings.erkekRoleId}>` : "Yok"}**
 				Kız Rolü: **${settings.kizRoleId ? `<@!${settings.kizRoleId}>` : "Yok"}**
 				Kayıtsız Rolü: **${settings.kayitsizRoleId ? `<@!${settings.kayitsizRoleId}>` : "Yok"}**
@@ -151,6 +154,13 @@ export default {
       settings.kayitsizRoleId = role.id;
       await settings.save();
       return interaction.reply({ content: `Kayıtsız rolü başarıyla ${role} olarak ayarlandı.`, ephemeral: true });
+    }
+	
+	if (option === 'staffrole') {
+      if (!role) return interaction.reply({ content: '❌ Lütfen bir rol belirtin.', ephemeral: true });
+      settings.staffRole = role.id;
+      await settings.save();
+      return interaction.reply({ content: `Yetkili rolü başarıyla ${role} olarak ayarlandı.`, ephemeral: true });
     }
 
 	if (option === 'invitelogchannel') {

@@ -10,6 +10,9 @@ const settingsSchema = new mongoose.Schema({
   erkekRoleId: { type: String, default: null },
   kizRoleId: { type: String, default: null },
   kayitsizRoleId: { type: String, default: null },
+  
+  staffRole: { type: String, default: null },
+  
   inviteLogChannelId: { type: String, default: null },
   
   inviteLogStatus: { type: Boolean, default: false },

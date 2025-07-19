@@ -76,6 +76,8 @@ Create ` config.json ` file and set permission settings:
 | **itiraf-setup** | people are open or anonymous confessors | channel | stable |
 | **help** | helps user | .. | un-stable |
 | **room-setup** | private room creater | .. | stable |
+| **tasks** | staff tasks | me, user | stable |
+| **yetkibaslat** | start staff  | me, user | stable |
 
 ### events:
 | feature | comment | set command |

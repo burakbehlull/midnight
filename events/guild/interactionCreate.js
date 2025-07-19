@@ -28,7 +28,7 @@ export default {
       client,
       context: interaction,
       send: (embed) =>
-        interaction.reply({
+        interaction.channel.send({
           embeds: [embed],
           ephemeral: true,
         }),

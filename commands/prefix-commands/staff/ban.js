@@ -4,7 +4,7 @@ import { messageSender } from '#helpers';
 export default {
   name: 'ban',
   description: 'Kullanıcıyı banlar. m!ban @kullanıcı sebep veya m!ban kullanıcıID sebep',
-  aliases: ["hüplet", "yargı"],
+  aliases: ["hüplet", "yargı", "primdog"],
   usage: 'ban <@user / userID> <sebep>',
   cooldown: 10,
   category: 'moderation',
