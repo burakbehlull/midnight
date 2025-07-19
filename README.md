@@ -78,6 +78,8 @@ Create ` config.json ` file and set permission settings:
 | **room-setup** | private room creater | .. | stable |
 | **tasks** | staff tasks | me, user | stable |
 | **yetkibaslat** | start staff  | me, user | stable |
+| **yetkililerim** | staffs of moderation user  | .. | stable |
+| **topyetkili** | top staff  | .. | stable |
 
 ### events:
 | feature | comment | set command |

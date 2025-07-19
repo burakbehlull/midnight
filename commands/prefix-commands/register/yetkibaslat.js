@@ -11,19 +11,28 @@ export default {
 
   async execute(client, message, args) {
     const sender = new messageSender(message);
-    const target = message.mentions.members.first() || message.guild.members.cache.get(args[0]);
-    if (!target) return sender.reply(sender.errorEmbed("❌ Geçerli bir kullanıcı belirt."));
+    const target = message.mentions.members.first() || message.guild.members.cache.get(args[0]) || message.member;
+    const isSelf = message.author.id === target.id;
 
     const settings = await Settings.findOne({ guildId: message.guild.id });
     if (!settings?.staffRole)
       return sender.reply(sender.errorEmbed("❌ `StaffRole` ayarlanmamış. `/settings` komutunu kullan."));
 
+    // Eğer hedef zaten staff rolüne sahipse
+    if (target.roles.cache.has(settings.staffRole)) {
+      return sender.reply(
+        sender.errorEmbed(`${target} zaten <@&${settings.staffRole}> rolüne sahip.`)
+      );
+    }
+
+    const now = new Date();
+
     await Staff.findOneAndUpdate(
       { userId: message.author.id, guildId: message.guild.id },
       {
-        $inc: { startedStaffCount: 0 },
+        $inc: { startedStaffCount: isSelf ? 0 : 1 },
         $addToSet: { startedUsers: target.id },
-        $set: { [`startedAt.${target.id}`]: new Date() },
+        $set: { [`startedAt.${target.id}`]: now },
       },
       { upsert: true, new: true }
     );
@@ -35,6 +44,16 @@ export default {
       return sender.reply(sender.errorEmbed("❌ Rol verilirken bir hata oluştu. Botun rolü alttaysa rol veremez."));
     }
 
-    sender.reply(sender.classic(`✅ ${target} adlı kullanıcıya <@&${settings.staffRole}> rolü verildi ve yetkili olarak başlatıldı.`));
-  }
+    const formattedDate = now.toLocaleDateString("tr-TR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    sender.reply(
+      sender.classic(
+        `${target} adlı kullanıcıya <@&${settings.staffRole}> rolü verildi ve **${formattedDate}** tarihinde yetkili olarak başlatıldı.`
+      )
+    );
+  },
 };
