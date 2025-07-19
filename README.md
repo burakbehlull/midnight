@@ -80,6 +80,10 @@ Create ` config.json ` file and set permission settings:
 | **yetkibaslat** | start staff  | me, user | stable |
 | **yetkililerim** | staffs of moderation user  | .. | stable |
 | **topyetkili** | top staff  | .. | stable |
+| **punish** | user gives punish  | user, reason | stable |
+| **warn** | user gives warn  | user, reason | stable |
+| **jail** | user gives jail  | user, duration, reason | stable |
+| **record** | record of user | usser | stable |
 
 ### events:
 | feature | comment | set command |

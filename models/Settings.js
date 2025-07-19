@@ -12,6 +12,7 @@ const settingsSchema = new mongoose.Schema({
   kayitsizRoleId: { type: String, default: null },
   
   staffRole: { type: String, default: null },
+  jailRoleId: { type: String, default: null },
   
   inviteLogChannelId: { type: String, default: null },
   

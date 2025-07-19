@@ -3,10 +3,10 @@ import mongoose from 'mongoose';
 const punishmentSchema = new mongoose.Schema({
   userId: String,
   guildId: String,
-  type: String, // 'jail' | 'warn' | 'manual'
+  type: String, 
   reason: String,
   date: { type: Date, default: Date.now },
-  duration: String, // jail için
+  duration: String,
   staffId: String,
 });
 

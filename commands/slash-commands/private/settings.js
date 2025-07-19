@@ -22,6 +22,7 @@ export default {
           { name: 'Kız Kayıt Rolü', value: 'kiz' },
           { name: 'Kayıtsız Rolü', value: 'kayitsiz' },
           { name: 'Staff Rolü', value: 'staffrole' },
+          { name: 'Jail Rolü', value: 'jailrole' },
           { name: 'Davet Log Kanalı', value: 'invitelogchannel' },
           { name: 'Davet Sistemi Aç/Kapat', value: 'invitelogstatus' },
           { name: 'Level Sistemi Aç/Kapat', value: 'levelsystemstatus' },
@@ -161,6 +162,13 @@ export default {
       settings.staffRole = role.id;
       await settings.save();
       return interaction.reply({ content: `Yetkili rolü başarıyla ${role} olarak ayarlandı.`, ephemeral: true });
+    }
+	
+	if (option === 'jailrole') {
+      if (!role) return interaction.reply({ content: '❌ Lütfen bir rol belirtin.', ephemeral: true });
+      settings.jailRoleId = role.id;
+      await settings.save();
+      return interaction.reply({ content: `Jail rolü başarıyla ${role} olarak ayarlandı.`, ephemeral: true });
     }
 
 	if (option === 'invitelogchannel') {
