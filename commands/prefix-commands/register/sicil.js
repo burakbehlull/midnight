@@ -14,6 +14,8 @@ export default {
     const userId = message.mentions.users.first()?.id || args[0];
     const data = await Punishment.find({ userId, guildId: message.guild.id });
 
+	if(!data.length > 0) return sender.reply(sender.errorEmbed("Kaydın yok."))
+		
     const warns = data.filter(d => d.type === 'warn');
     const jails = data.filter(d => d.type === 'jail');
     const manuals = data.filter(d => d.type === 'manual');
