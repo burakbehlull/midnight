@@ -9,6 +9,4 @@ const staffSchema = new mongoose.Schema({
   startedAt: { type: Date, default: Date.now },
 });
 
-staffSchema.index({ userId: 1, guildId: 1 }, { unique: true });
-
 export default mongoose.model('Staff', staffSchema);

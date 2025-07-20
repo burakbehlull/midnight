@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@discordjs/voice": "^0.18.0",
+    "@google/generative-ai": "^0.24.1",
     "canvafy": "^7.2.1",
     "dayjs": "^1.11.13",
     "discord.js": "^14.17.3",

@@ -18,6 +18,7 @@ TOKEN =
 BOT_ID = 
 PREFIX = 
 MONGO_URI = 
+GEMINI_API_KEY = 
 ```
 
 Create ` config.json ` file and set permission settings:
@@ -83,7 +84,8 @@ Create ` config.json ` file and set permission settings:
 | **punish** | user gives punish  | user, reason | stable |
 | **warn** | user gives warn  | user, reason | stable |
 | **jail** | user gives jail  | user, duration, reason | stable |
-| **record** | record of user | usser | stable |
+| **record** | record of user | user | stable |
+| **ai** | chat with ai | message | stable |
 
 ### events:
 | feature | comment | set command |

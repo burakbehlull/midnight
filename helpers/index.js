@@ -1,6 +1,6 @@
 import messageSender from "./messageSender.js"
 import { fetchPartialNeed } from "./basePartials.js"
-import { isMessageMeaningfullyUpdated } from "./checks.js"
+import { isMessageMeaningfullyUpdated, splitMessage } from "./checks.js"
 import { Button, Modal } from "./components.js"
 import * as misc from "./misc.js"
 
@@ -17,6 +17,7 @@ export {
 	fetchPartialNeed,
 	
 	// checks
-	isMessageMeaningfullyUpdated
+	isMessageMeaningfullyUpdated,
+	splitMessage
 	
 }

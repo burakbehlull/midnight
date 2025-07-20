@@ -36,9 +36,7 @@ export default {
 			{ name: "Yetkiye Başlatma", value: `${data.startedStaffCount || 0}`, inline: true },
 			{ name: "Sorun Çözme Sayısı", value: `0`, inline: true },
 			{ name: "Yetkiye Başlama Tarihi", value: formattedStartDate },
-		],
-	    thumbnail: target.displayAvatarURL(),
-		
+		]		
 	})
 	
     message.channel.send({ embeds: [embed] });
