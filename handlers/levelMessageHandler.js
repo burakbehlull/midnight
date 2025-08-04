@@ -11,10 +11,7 @@ export default async function levelMessageHandler(userId, guildId, message) {
   if (!guild) return;
 
   const settings = await Settings.findOne({ guildId: guild.id });
-  if (!settings || !settings.levelSystemStatus) return;
-
-  let getChannel = guild.channels.cache.get(settings.levelSystemStatus);
-  if (!getChannel) return;
+  if (!settings || !settings.levelSystemStatus) return;  
 
   const user = await Level.findOneAndUpdate(
     { userId, guildId },

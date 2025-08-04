@@ -32,6 +32,7 @@ export default {
 	
 	const userId = newState.id;
 	const guildId = newState.guild.id;
+	
 	// level system
 	if(settings?.levelSystemStatus){
 		if (!oldState.streaming && newState.streaming) await levelVoiceHandler.handleStream(userId, guildId);
@@ -40,7 +41,7 @@ export default {
 		if (!oldState.selfVideo && newState.selfVideo) await levelVoiceHandler.handleCamera(userId, guildId);
 		
 
-		if (!oldState.channel && newState.channel) {
+		if (oldState.channelId !== newState.channelId && newState.channelId !== null) {
 		  activeUsers.set(userId, Date.now());
 
 		  intervalUsers.set(userId, {
@@ -48,15 +49,17 @@ export default {
 			guild: newState.guild
 		  });
 		}
-
+		
 		if (oldState.channel && !newState.channel) {
+			
 		  if (activeUsers.has(userId)) {
 			const joinTime = activeUsers.get(userId);
 			const durationMin = Math.floor((Date.now() - joinTime) / 60000);
 
 			activeUsers.delete(userId);
-
+			
 			await levelVoiceHandler.handleVoiceActivity(userId, guildId, durationMin, newState.guild);
+		  
 		  }
 
 		  intervalUsers.delete(userId);
