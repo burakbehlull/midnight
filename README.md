@@ -86,6 +86,18 @@ Create ` config.json ` file and set permission settings:
 | **jail** | user gives jail  | user, duration, reason | stable |
 | **record** | record of user | user | stable |
 | **ai** | chat with ai | message | stable |
+| **cash** | users cash | .. | stable |
+| **cookie** | users give to cookie daily | user | stable |
+| **buy** | buy item | item id | stable |
+| **sell** | sell item | item id, amount | stable |
+| **daily** | daily moeny | .. | stable |
+| **heart** | users give to heart daily | .. | stable |
+| **marry** | users marries | user, ring item id | stable |
+| **divorce** | user divorce | .. | stable |
+| **send** | users send money | user, money | stable |
+| **envanter** | users envanter | .. | stable |
+| **profile** | users profile | .. | stable |
+| **shop** | shop marketplace | .. | stable |
 
 ### events:
 | feature | comment | set command |

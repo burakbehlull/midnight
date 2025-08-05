@@ -15,6 +15,8 @@ import Room from "./Room.js"
 import Staff from "./Staff.js"
 import Punishment from "./Punishment.js"
 
+import Economy from "./Economy.js"
+
 
 export {
 	Afk,
@@ -30,5 +32,6 @@ export {
 	Room,
 	
 	Punishment,
-	Staff
+	Staff,
+	Economy
 }
