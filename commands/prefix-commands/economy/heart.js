@@ -36,7 +36,7 @@ export default {
       authorData.cooldowns.heart = now;
     }
 
-    authorData.hearts += 100;
+    authorData.hearts += 1;
     authorData.xp += 10;
     await authorData.save();
 

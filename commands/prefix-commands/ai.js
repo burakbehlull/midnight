@@ -8,7 +8,7 @@ export default {
   name: 'ai',
   description: 'Google Gemini ile sohbet et.',
   usage: '.ai <message>',
-  category: 'utility',
+  category: 'extra',
 
   async execute(client, message, args) {
 	const gemini = new GeminiAI()
