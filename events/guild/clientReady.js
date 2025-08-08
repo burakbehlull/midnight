@@ -2,7 +2,6 @@ import { InviteCacheSchema } from '#models';
 
 export default {
   name: 'ready',
-  once: true,
   async execute(client) {
 	  
 	// invites of user
