@@ -14,10 +14,11 @@ export default {
 		  { id: 4, name: 'Elmas Yüzük', price: 100000 }
 		];
 		
-		await Shop.insertMany(shopItems);
 		
 		for (const item of shopItems) {
 		  const existing = await Shop.findOne({ id: item.id });
+		  if(existing) return
+		  
 		  if (!existing) {
 			await Shop.create(item);
 		  }
