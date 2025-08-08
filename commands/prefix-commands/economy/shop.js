@@ -1,13 +1,6 @@
-import { Economy } from '#models';
+import { Shop } from '#models';
 import { messageSender } from '#helpers';
 import { EmbedBuilder } from 'discord.js';
-
-const shopItems = [
-  { id: 1, name: 'Kalp', price: 200 },
-  { id: 2, name: 'Gümüş Yüzük', price: 1000 },
-  { id: 3, name: 'Altın Yüzük', price: 10000 },
-  { id: 4, name: 'Elmas Yüzük', price: 100000 }
-];
 
 export default {
   name: 'shop',
@@ -17,15 +10,21 @@ export default {
 
   async execute(client, message) {
     const sender = new messageSender(message);
-    const pages = [];
 
+    const shopItems = await Shop.find().sort({ id: 1 });
+
+    if (!shopItems.length) {
+      return sender.reply(sender.errorEmbed('❌ Mağazada ürün bulunamadı.'));
+    }
+
+    const pages = [];
     for (let i = 0; i < shopItems.length; i += 8) {
       const embed = new EmbedBuilder()
-        .setTitle('🛒 Mağaza')
+        .setTitle('Mağaza')
         .setDescription(
           shopItems
             .slice(i, i + 8)
-            .map(item => `\`${item.id}\` | **${item.name}** - ${item.price}`)
+            .map(item => `\`${item.id}\` | **${item.name}** - ${item.price} 💰`)
             .join('\n')
         )
         .setFooter({ text: `Sayfa ${Math.floor(i / 8) + 1}` });

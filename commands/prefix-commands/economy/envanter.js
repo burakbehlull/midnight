@@ -24,11 +24,11 @@ export default {
 	  .map(([itemId, count]) => {
 		const item = shopItems.find(i => i.id === parseInt(itemId));
 		if (!item) return null;
-		return `**${item.id}** - ${item.name} - **${count} adet** - Değer: 💰 ${item.price}`;
+		return `\` ${item.id} \` ***|** ${item.name} **|** **${count} adet** **|** Değer: 💰 ${item.price}`;
 	  })
 	  .filter(Boolean);
 
-    if (!entries.length) return sender.reply(sender.classic('📦 Envanterin boş.'));
+    if (!entries.length) return sender.reply(sender.classic('📦 **Envanterin boş.**'));
 
     const pages = [];
     for (let i = 0; i < entries.length; i += 3) {
