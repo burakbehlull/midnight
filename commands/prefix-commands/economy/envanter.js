@@ -1,7 +1,6 @@
-import { Economy } from '#models';
+import { Economy, Shop } from '#models';
 import { messageSender } from '#helpers';
 import { EmbedBuilder } from 'discord.js';
-
 
 export default {
   name: 'envanter',
@@ -12,20 +11,22 @@ export default {
   async execute(client, message) {
     const sender = new messageSender(message);
     const userId = message.author.id;
-	
-	const shopItems = [
-	  { id: 1, name: 'Kalp', price: 200 },
-	  { id: 2, name: 'Gümüş Yüzük', price: 1000 },
-	  { id: 3, name: 'Altın Yüzük', price: 10000 },
-	  { id: 4, name: 'Elmas Yüzük', price: 100000 }
-	];
 
     const user = await Economy.findOne({ userId }) || new Economy({ userId });
-    const entries = [...user.inventory.entries()].map(([itemId, count]) => {
-      const item = shopItems.find(i => i.id.toString() === itemId);
-      if (!item) return null;
-      return `**${item.id}** - ${item.name} - **${count} adet** - Değer: 💰 ${item.price}`;
-    }).filter(Boolean);
+    const inventoryEntries = [...user.inventory.entries()];
+
+    if (!inventoryEntries.length) return sender.reply(sender.classic('📦 Envanterin boş.'));
+
+    const shopItems = await Shop.find();
+
+    const entries = inventoryEntries
+	  .filter(([_, count]) => count > 0)
+	  .map(([itemId, count]) => {
+		const item = shopItems.find(i => i.id === parseInt(itemId));
+		if (!item) return null;
+		return `**${item.id}** - ${item.name} - **${count} adet** - Değer: 💰 ${item.price}`;
+	  })
+	  .filter(Boolean);
 
     if (!entries.length) return sender.reply(sender.classic('📦 Envanterin boş.'));
 
