@@ -16,6 +16,7 @@ import Staff from "./Staff.js"
 import Punishment from "./Punishment.js"
 
 import Economy from "./Economy.js"
+import Shop from "./Shop.js"
 
 
 export {
@@ -33,5 +34,6 @@ export {
 	
 	Punishment,
 	Staff,
-	Economy
+	Economy,
+	Shop
 }
