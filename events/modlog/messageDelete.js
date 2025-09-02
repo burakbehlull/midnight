@@ -6,7 +6,7 @@ export default {
   async execute(client, message) {
     message = await fetchPartialNeed(message);
 
-    if (!message.author || message.author.bot) return;
+    if (!message?.author || message?.author?.bot) return;
 
     const logger = new modLogger(client);
     const guild = message.guild;
