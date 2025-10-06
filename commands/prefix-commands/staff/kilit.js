@@ -20,7 +20,9 @@ export default {
 		const choose = args[0]
 		const permissions = channel.permissionOverwrites.cache.get(message.guild.roles.everyone.id);
 		
-		if(choose=="aç"){
+		const isLock = permissions.deny.has(PM.flags.SendMessages);
+		
+		if(isLock){
 			if (!permissions.deny.has(PM.flags.SendMessages)) return sender.reply(sender.errorEmbed('❌ Kanal kilitlenmemiş!'));
 			
 			await channel.permissionOverwrites.edit(message.guild.roles.everyone, {
@@ -29,8 +31,6 @@ export default {
 			let IEmbed = sender.classic("Kanal kilidi açıldı!")
 			return message.channel.send({embeds: [IEmbed]});
 		}
-		
-		if (permissions.deny.has(PM.flags.SendMessages)) return sender.reply(sender.errorEmbed('❌ Bu kanal zaten kilitli.'));
 		
         await channel.permissionOverwrites.edit(message.guild.roles.everyone, {
             SendMessages: false
