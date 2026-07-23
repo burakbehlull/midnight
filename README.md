@@ -45,6 +45,7 @@ Create ` config.json ` file and set permission settings:
 | **nuke** | Refreshes the channel | channel | stable |
 | **streamer** | Gives streamer role | user | stable |
 | **vip** | Gives vip role | user | stable |
+| **photo** | Gives photo role | user | stable |
 | **sil** | Deletes messages | amount | stable |
 | **çek** | Pulls the tagged user | user | stable |
 | **git** | Goes to the user you were tagged in | user | stable |
