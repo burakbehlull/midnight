@@ -5,6 +5,7 @@ const settingsSchema = new mongoose.Schema({
   tag: { type: String, default: null },
   
   vipRoleId: { type: String, default: null },
+  photoRoleId: { type: String, default: null },
   streamerRoleId: { type: String, default: null },
   autoRoleId: { type: String, default: null },
   erkekRoleId: { type: String, default: null },

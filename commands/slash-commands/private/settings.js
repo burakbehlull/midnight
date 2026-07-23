@@ -15,6 +15,7 @@ export default {
 		  { name: 'Hepsini Göster', value: 'allshow' },
           { name: 'Tag', value: 'tag' },
           { name: 'Vip', value: 'vip' },
+          { name: 'Photo', value: 'photo' },
           { name: 'Streamer', value: 'streamer' },
           { name: 'Oto Rol', value: 'otorol' },
           { name: 'Oto Rol Aç/Kapat', value: 'otorolstatus' },
@@ -84,6 +85,7 @@ export default {
 			description: `
 				Tag: **${settings.tag || "Yok"}**
 				Vip Role: **${settings.vipRoleId ? `<@!${settings.vipRoleId}>` : "Yok"}**
+				Photo Role: **${settings.photoRoleId ? `<@!${settings.photoRoleId}>` : "Yok"}**
 				Streamer Rol: **${settings.streamerRoleId ? `<@${settings.streamerRoleId}>` : "Yok"}**
 				
 				Yetkili Rolü: **${settings.staffRole ? `<@!${settings.staffRole}>` : "Yok"}**
@@ -128,6 +130,13 @@ export default {
       settings.vipRoleId = role.id;
       await settings.save();
       return interaction.reply({ content: `VIP rolü ${role} olarak ayarlandı.`, ephemeral: true });
+    }
+
+    if (option === 'photo') {
+      if (!role) return interaction.reply({ content: '❌ Lütfen bir rol belirt.', ephemeral: true });
+      settings.photoRoleId = role.id;
+      await settings.save();
+      return interaction.reply({ content: `Photo rolü ${role} olarak ayarlandı.`, ephemeral: true });
     }
 
     if (option === 'streamer') {
