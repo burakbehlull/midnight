@@ -24,7 +24,7 @@ export default {
             .build();
 
         message.reply({
-            content: `<@!${message.author.id}> & <@!${user.user.id}>`,
+            content: `**${message.author.globalName || message.author.tag}** & **${user.user.globalName || user.user.tag}**`,
             files: [{
                 attachment: ship,
                 name: `ship-${message.member.id}.png`
