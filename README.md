@@ -25,7 +25,8 @@ Create ` config.json ` file and set permission settings:
 ```json
 {
     "BOT_OWNER_IDS": [], // safe bot owner ids
-    "DEVELOPMENT_MODE": false
+    "DEVELOPMENT_MODE": false,
+    "AUTO_SLASH_COMMAND_DEPLOY": false
 }
 ```
 

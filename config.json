@@ -1,4 +1,5 @@
 {
 	"BOT_OWNER_IDS": [],
-	"DEVELOPMENT_MODE": false
+	"DEVELOPMENT_MODE": false,
+	"AUTO_SLASH_COMMAND_DEPLOY": false
 }

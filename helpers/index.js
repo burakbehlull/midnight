@@ -6,11 +6,15 @@ import * as misc from "./misc.js"
 
 import modLogger from "./modLogger.js"
 
+import { getFilesRecursively } from "./operations.js"
+
+import * as Loaders from "./loaders.js"
+
 export {
     messageSender,
 	misc,
 	modLogger,
-	
+	Loaders,
 	Button, Modal,
 	
 	// basePartials
@@ -18,6 +22,8 @@ export {
 	
 	// checks
 	isMessageMeaningfullyUpdated,
-	splitMessage
+	splitMessage,
+	// operations
+	getFilesRecursively,
 	
 }

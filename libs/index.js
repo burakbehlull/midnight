@@ -1,8 +1,8 @@
-import Base from './Base.js';
+import Core from './Core.js';
 import GeminiAI from './Gemini.js';
 
 export {
-	Base,
+	Core,
 	
 	// others
 	GeminiAI

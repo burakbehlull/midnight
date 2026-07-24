@@ -9,15 +9,14 @@
   "imports": {
     "#helpers": "./helpers/index.js",
     "#libs": "./libs/index.js",
+    "#config": "./config/index.js",
     "#managers": "./managers/index.js",
     "#handlers": "./handlers/index.js",
     "#models": "./models/index.js"
   },
   "scripts": {
-    "start": "node bot.js",
-    "bot": "node bot.js",
-    "dev": "nodemon bot.js",
-    "deploy": "node ./config/deploy-commands.js"
+    "start": "node main.js",
+    "deploy": "node config/deploy.js"
   },
   "dependencies": {
     "@discordjs/voice": "^0.18.0",
