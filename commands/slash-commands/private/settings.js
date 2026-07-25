@@ -1,7 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { Settings } from '#models';
-import { PermissionsManager } from '#managers';
-import { messageSender } from '#helpers';
+import Manager from '#managers';
 
 export default {
   data: new SlashCommandBuilder()
@@ -61,50 +60,52 @@ export default {
    usage: '/settings <seçenekler> <aç/kapat> <#channel> <@user> <@role>',
    category: 'server',
 
-  async execute(interaction) {
-    const PM = new PermissionsManager(interaction);
-    const sender = new messageSender(interaction);
-    const ctrl = await PM.control(PM.flags.Administrator);
+  async execute(client,interaction) {
+    const manager = new Manager(client, { action: interaction });
+    const ctrl = await manager.authority.control(manager.authority.flags.Administrator);
     if (!ctrl) return interaction.reply({ content: '❌ Bu komutu kullanmak için yetkin yok.', ephemeral: true });
 
-	const option = interaction.options.getString('seçenek');
+	  const option = interaction.options.getString('seçenek');
     const stringValue = interaction.options.getString('değer');
     const role = interaction.options.getRole('rol');
     const user = interaction.options.getUser('kullanıcı');
-	const channel = interaction.options.getChannel('kanal');
+	  const channel = interaction.options.getChannel('kanal');
 
 
     const guildId = interaction.guild.id;
     let settings = await Settings.findOne({ guildId });
     if (!settings) settings = new Settings({ guildId });
 
-	if (option === 'allshow') {
-		const embed = sender.embed({
-			author: { name: interaction.guild.name, iconURL: interaction.guild.iconURL() },
-			title: "Sunucu Ayarları",
-			description: `
-				Tag: **${settings.tag || "Yok"}**
-				Vip Role: **${settings.vipRoleId ? `<@!${settings.vipRoleId}>` : "Yok"}**
-				Photo Role: **${settings.photoRoleId ? `<@!${settings.photoRoleId}>` : "Yok"}**
-				Streamer Rol: **${settings.streamerRoleId ? `<@${settings.streamerRoleId}>` : "Yok"}**
-				
-				Yetkili Rolü: **${settings.staffRole ? `<@!${settings.staffRole}>` : "Yok"}**
-				Jail Rolü: **${settings.jailRoleId ? `<@!${settings.jailRoleId}>` : "Yok"}**
-				Erkek Rolü: **${settings.erkekRoleId ? `<@!${settings.erkekRoleId}>` : "Yok"}**
-				Kız Rolü: **${settings.kizRoleId ? `<@!${settings.kizRoleId}>` : "Yok"}**
-				Kayıtsız Rolü: **${settings.kayitsizRoleId ? `<@!${settings.kayitsizRoleId}>` : "Yok"}**
-				
-				Otorol Rolü: **${settings.autoRoleId ? `<@!${settings.autoRoleId}>` : "Yok"}**
-				Otorol Sistemi: **${settings.otorolStatus ? "Açık" : "Kapalı"}**
-				
-				Davet Kanalı: **${settings.inviteLogChannelId ? `<#${settings.inviteLogChannelId}>` : "Yok"}**
-				Davet Sistemi: **${settings.inviteLogStatus ? "Açık" : "Kapalı"}**
-				
-				Seviye Sistemi: **${settings.levelSystemStatus ? "Açık" : "Kapalı"}**
-				Stat Sistemi: **${settings.statSystemStatus ? "Açık" : "Kapalı"}**
-			`
-		})
-		return sender.reply(embed, true);
+	  if (option === 'allshow') {
+      
+      const theme = await manager.theme.embedThemeBuilder(manager.theme.themes.rich, {
+          action: true,
+          title: "Sunucu Ayarları",
+          author: manager.theme.getNameAndAvatars("guild", interaction),
+          description: `
+          Tag: **${settings.tag || "Yok"}**
+          Vip Role: **${settings.vipRoleId ? `<@!${settings.vipRoleId}>` : "Yok"}**
+          Photo Role: **${settings.photoRoleId ? `<@!${settings.photoRoleId}>` : "Yok"}**
+          Streamer Rol: **${settings.streamerRoleId ? `<@${settings.streamerRoleId}>` : "Yok"}**
+          
+          Yetkili Rolü: **${settings.staffRole ? `<@!${settings.staffRole}>` : "Yok"}**
+          Jail Rolü: **${settings.jailRoleId ? `<@!${settings.jailRoleId}>` : "Yok"}**
+          Erkek Rolü: **${settings.erkekRoleId ? `<@!${settings.erkekRoleId}>` : "Yok"}**
+          Kız Rolü: **${settings.kizRoleId ? `<@!${settings.kizRoleId}>` : "Yok"}**
+          Kayıtsız Rolü: **${settings.kayitsizRoleId ? `<@!${settings.kayitsizRoleId}>` : "Yok"}**
+          
+          Otorol Rolü: **${settings.autoRoleId ? `<@!${settings.autoRoleId}>` : "Yok"}**
+          Otorol Sistemi: **${settings.otorolStatus ? "Açık" : "Kapalı"}**
+          
+          Davet Kanalı: **${settings.inviteLogChannelId ? `<#${settings.inviteLogChannelId}>` : "Yok"}**
+          Davet Sistemi: **${settings.inviteLogStatus ? "Açık" : "Kapalı"}**
+          
+          Seviye Sistemi: **${settings.levelSystemStatus ? "Açık" : "Kapalı"}**
+          Stat Sistemi: **${settings.statSystemStatus ? "Açık" : "Kapalı"}**
+        `,
+        footer: manager.theme.getNameAndAvatars("user", interaction), 
+      })
+		  return theme.reply({ephemeral: true});
 	} 
 	
 	if (option === 'allsystem') {

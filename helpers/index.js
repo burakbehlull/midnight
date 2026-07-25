@@ -9,12 +9,15 @@ import modLogger from "./modLogger.js"
 import { getFilesRecursively } from "./operations.js"
 
 import * as Loaders from "./loaders.js"
+import Utils from "./utils.js"
+
 
 export {
     messageSender,
 	misc,
 	modLogger,
 	Loaders,
+	Utils,
 	Button, Modal,
 	
 	// basePartials

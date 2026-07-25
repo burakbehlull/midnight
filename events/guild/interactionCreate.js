@@ -37,7 +37,7 @@ export default {
     if (!passed) return;
 
     try {
-      await command(interaction);
+      await command(client, interaction);
     } catch (error) {
       console.error(`Error executing ${interaction.commandName}`);
       console.error(error);
