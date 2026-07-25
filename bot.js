@@ -7,13 +7,13 @@ import { misc } from "#helpers";
 import { Database } from "#config";
 
 export default class Bot {
-  constructor() {
+  constructor(token, botId) {
     this.client = new Client({
         intents: misc.itentsAll(),
         partials: [Partials.Message, Partials.Channel, Partials.User]
     });
-    this.token = process.env.TOKEN;
-    this.botId = process.env.BOT_ID;
+    this.token = token || process.env.TOKEN;
+    this.botId = botId || process.env.BOT_ID;
     this.db = new Database();
   }
   async run() {
