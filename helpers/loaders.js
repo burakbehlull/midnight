@@ -107,7 +107,12 @@ async function commandExecuter(client, slashCommands, prefixCommands){
 	
 	if(prefixCommands.length > 0){
 		for (const pc of prefixCommands) {
-			client.prefixCommands.set(pc.name, pc.execute);
+			client.prefixCommands.set(pc.name, pc);
+			if (Array.isArray(pc.aliases)) {
+				for (const alias of pc.aliases) {
+					client.prefixCommands.set(alias, pc);
+				}
+			}
 		}	
 	}
 	
