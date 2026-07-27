@@ -82,15 +82,15 @@ export default {
       return interaction.reply({ content: msg, ephemeral: true });
     };
 
-    const logFields = {
-      'command': 'Komut',
-      'joinLeave': 'Join/Leave',
-      'message': 'Mesaj',
-      'voice': 'Ses',
-      'kickBan': 'Kick/Ban',
-      'role': 'Rol',
-      'channel': 'Kanal',
-      'moderation': 'Mod'
+   const logFields = {
+      'command': { key: 'command', label: 'Komut' },
+      'joinleave': { key: 'joinLeave', label: 'Join/Leave' },
+      'message': { key: 'message', label: 'Mesaj' },
+      'voice': { key: 'voice', label: 'Ses' },
+      'kickban': { key: 'kickBan', label: 'Kick/Ban' },
+      'role': { key: 'role', label: 'Rol' },
+      'channel': { key: 'channel', label: 'Kanal' },
+      'moderation': { key: 'moderation', label: 'Mod' }
     };
 	
 	if (option === 'showset') {
@@ -136,15 +136,17 @@ export default {
       return saveAndReply(`Genel log sistemi **${state ? 'açıldı' : 'kapatıldı'}**.`);
     }
 
-    for (const key in logFields) {
-      if (option === `set-${key}`) {
+    for (const [optKey, data] of Object.entries(logFields)) {
+      if (option === `set-${optKey}`) {
         if (!kanal) return interaction.reply({ content: '❌ Lütfen bir kanal belirtin.', ephemeral: true });
-        config.logs[key] = kanal.id;
-        return saveAndReply(`${logFields[key]} log kanalı ${kanal} olarak ayarlandı.`);
+        
+        config.logs[data.key] = kanal.id; 
+        return saveAndReply(`${data.label} log kanalı ${kanal} olarak ayarlandı.`);
       }
-      if (option === `reset-${key}`) {
-        config.logs[key] = null;
-        return saveAndReply(`${logFields[key]} log kanalı sıfırlandı.`);
+
+      if (option === `reset-${optKey}`) {
+        config.logs[data.key] = null;
+        return saveAndReply(`${data.label} log kanalı sıfırlandı.`);
       }
     }
 
