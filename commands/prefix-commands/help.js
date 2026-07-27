@@ -4,12 +4,84 @@ import {
   EmbedBuilder,
   ButtonBuilder,
   ButtonStyle,
-  ComponentType,
 } from 'discord.js';
 
 import path from 'path';
 import { readdirSync } from 'fs';
 import { pathToFileURL, fileURLToPath } from 'url';
+
+let cachedCommands = null;
+let cachedCommandIds = null;
+
+async function loadAllCommands(client) {
+  if (cachedCommands) return { commands: cachedCommands, commandIds: cachedCommandIds };
+
+  const commands = [];
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+
+  const prefixDir = path.join(__dirname, '..', 'prefix-commands');
+  const slashDir = path.join(__dirname, '..', 'slash-commands');
+
+  function getAllJsFiles(dir) {
+    let results = [];
+    try {
+      const files = readdirSync(dir, { withFileTypes: true });
+      for (const file of files) {
+        const filePath = path.join(dir, file.name);
+        if (file.isDirectory()) {
+          results = results.concat(getAllJsFiles(filePath));
+        } else if (file.name.endsWith('.js')) {
+          results.push(filePath);
+        }
+      }
+    } catch (e) {}
+    return results;
+  }
+
+  for (const filePath of getAllJsFiles(prefixDir)) {
+    try {
+      const fileUrl = pathToFileURL(filePath).href;
+      const cmd = (await import(fileUrl)).default;
+      if (cmd?.name && cmd?.category) {
+        commands.push({
+          type: 'prefix',
+          name: cmd.name,
+          description: cmd.description || 'Açıklama yok.',
+          usage: cmd.usage || 'Kullanım belirtilmemiş.',
+          category: cmd.category,
+        });
+      }
+    } catch (err) {}
+  }
+
+  for (const filePath of getAllJsFiles(slashDir)) {
+    try {
+      const fileUrl = pathToFileURL(filePath).href;
+      const cmd = (await import(fileUrl)).default;
+      if (cmd?.data?.name && cmd?.category) {
+        commands.push({
+          type: 'slash',
+          name: cmd.data.name,
+          description: cmd.description || 'Açıklama yok.',
+          usage: cmd.usage || 'Kullanım belirtilmemiş.',
+          category: cmd.category,
+        });
+      }
+    } catch (err) {}
+  }
+
+  let commandIds = new Map();
+  try {
+    const fetchedCmds = await client.application.commands.fetch();
+    fetchedCmds.forEach(c => commandIds.set(c.name, c.id));
+  } catch (e) {}
+
+  cachedCommands = commands;
+  cachedCommandIds = commandIds;
+
+  return { commands, commandIds };
+}
 
 export default {
   name: 'help',
@@ -18,70 +90,8 @@ export default {
   category: 'extra',
 
   async execute(client, message, args) {
-	
     try {
-		
-	  const getCommands = await client.application.commands.fetch();
-	  const getCommand = (c)=> getCommands.find(cmd => cmd.name === c)?.id || null;
-
-      const commands = [];
-
-      const __filename = fileURLToPath(import.meta.url);
-      const __dirname = path.dirname(__filename);
-
-      const prefixDir = path.join(__dirname, '..', 'prefix-commands');
-      const slashDir = path.join(__dirname, '..', 'slash-commands');
-
-      function getAllJsFiles(dir) {
-        let results = [];
-        const files = readdirSync(dir, { withFileTypes: true });
-        for (const file of files) {
-          const filePath = path.join(dir, file.name);
-          if (file.isDirectory()) {
-            results = results.concat(getAllJsFiles(filePath));
-          } else if (file.name.endsWith('.js')) {
-            results.push(filePath);
-          }
-        }
-        return results;
-      }
-
-      // Prefix komutlarını oku
-      for (const filePath of getAllJsFiles(prefixDir)) {
-        try {
-          const fileUrl = pathToFileURL(filePath).href;
-          const cmd = (await import(fileUrl)).default;
-          if (cmd?.name && cmd?.category) {
-            commands.push({
-              type: 'prefix',
-              name: cmd.name,
-              description: cmd.description || 'Açıklama yok.',
-              usage: cmd.usage || 'Kullanım belirtilmemiş.',
-              category: cmd.category,
-            });
-          }
-        } catch (err) {
-          console.error(`❌ Prefix komutu yüklenemedi: ${filePath}`, err);
-        }
-      }
-
-      for (const filePath of getAllJsFiles(slashDir)) {
-        try {
-          const fileUrl = pathToFileURL(filePath).href;
-          const cmd = (await import(fileUrl)).default;
-          if (cmd?.data?.name && cmd?.category) {
-            commands.push({
-              type: 'slash',
-              name: cmd.data.name,
-              description: cmd.description || 'Açıklama yok.',
-              usage: cmd.usage || 'Kullanım belirtilmemiş.',
-              category: cmd.category,
-            });
-          }
-        } catch (err) {
-          console.error(`❌ Slash komutu yüklenemedi: ${filePath}`, err);
-        }
-      }
+      const { commands, commandIds } = await loadAllCommands(client);
 
       if (!commands.length) return message.reply('Hiç komut bulunamadı.');
 
@@ -111,25 +121,10 @@ export default {
 
       let currentPage = 0;
       let filtered = [];
-      let totalPages = 0;
+      let totalPages = 1;
       const pageSize = 5;
 
-      const sendPage = async (page, interaction) => {
-        const paginated = filtered.slice(page * pageSize, (page + 1) * pageSize);
-
-        const embedPage = new EmbedBuilder()
-          .setTitle(`${filtered.length > 0 ? filtered[0].category.charAt(0).toUpperCase() + filtered[0].category.slice(1) : ''} Komutları`)
-          .setColor('Blurple')
-          .setDescription(
-            paginated
-              .map(
-                cmd =>
-                  `**${cmd.name}** \n> 📄 ${cmd.description}\n> 🔧 \`${cmd.usage}\` ${cmd.type === "slash" ? `</${cmd.name}:${getCommand(cmd.name)}> `: '' }`
-              )
-              .join('\n\n') || 'Bu kategoride komut bulunamadı.'
-          )
-          .setFooter({ text: `Sayfa ${page + 1} / ${totalPages}` });
-
+      const buildComponents = (page, total) => {
         const navRow = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
             .setCustomId('prev')
@@ -140,49 +135,69 @@ export default {
             .setCustomId('next')
             .setLabel('İleri ➡️')
             .setStyle(ButtonStyle.Secondary)
-            .setDisabled(page >= totalPages - 1)
+            .setDisabled(page >= total - 1)
         );
 
-        await interaction.update({
-          embeds: [embedPage],
-          components: [navRow, selectRow],
-        });
+        return [navRow, selectRow];
       };
 
       const collector = msg.createMessageComponentCollector({
-        componentType: ComponentType.StringSelect,
         time: 120_000,
       });
 
       collector.on('collect', async interaction => {
-        if (interaction.user.id !== message.author.id) {
-          return interaction.reply({ content: 'Bu menü sana ait değil.', ephemeral: true });
-        }
-
-        currentPage = 0;
-        const selectedCategory = interaction.values[0];
-        filtered = commands.filter(cmd => cmd.category === selectedCategory);
-        totalPages = Math.ceil(filtered.length / pageSize);
-
-        await sendPage(currentPage, interaction);
-
-        const buttonCollector = msg.createMessageComponentCollector({
-          componentType: ComponentType.Button,
-          time: 820_000,
-        });
-
-        buttonCollector.on('collect', async btnInteraction => {
-          if (btnInteraction.user.id !== message.author.id) {
-            return btnInteraction.reply({ content: 'Bu buton sana ait değil.', ephemeral: true });
+        try {
+          if (interaction.user.id !== message.author.id) {
+            return interaction.reply({ content: '❌ Bu menüyü sadece komutu kullanan kişi değiştirebilir.', ephemeral: true }).catch(() => {});
           }
 
-          if (btnInteraction.customId === 'prev' && currentPage > 0) currentPage--;
-          else if (btnInteraction.customId === 'next' && currentPage < totalPages - 1) currentPage++;
+          // 1. ZAMANAŞIMI ENGELLEYİCİ: Discord'a anında cevap veriyoruz
+          await interaction.deferUpdate().catch(() => {});
 
-          await sendPage(currentPage, btnInteraction);
-        });
+          if (interaction.isStringSelectMenu() && interaction.customId === 'category_select') {
+            currentPage = 0;
+            const selectedCategory = interaction.values[0];
+            filtered = commands.filter(cmd => cmd.category === selectedCategory);
+            totalPages = Math.ceil(filtered.length / pageSize) || 1;
+          }
 
-        buttonCollector.on('end', async () => {
+          if (interaction.isButton()) {
+            if (interaction.customId === 'prev' && currentPage > 0) {
+              currentPage--;
+            } else if (interaction.customId === 'next' && currentPage < totalPages - 1) {
+              currentPage++;
+            }
+          }
+
+          const paginated = filtered.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+
+          const embedPage = new EmbedBuilder()
+            .setTitle(`${filtered.length > 0 ? filtered[0].category.charAt(0).toUpperCase() + filtered[0].category.slice(1) : ''} Komutları`)
+            .setColor('Blurple')
+            .setDescription(
+              paginated
+                .map(cmd => {
+                  const cmdId = cmd.type === "slash" ? commandIds.get(cmd.name) : null;
+                  const slashMention = cmdId ? `</${cmd.name}:${cmdId}>` : '';
+                  return `**${cmd.name}** \n> 📄 ${cmd.description}\n> 🔧 \`${cmd.usage}\` ${slashMention}`;
+                })
+                .join('\n\n') || 'Bu kategoride komut bulunamadı.'
+            )
+            .setFooter({ text: `Sayfa ${currentPage + 1} / ${totalPages}` });
+
+          // 2. deferUpdate kullandığımız için editReply kullanıyoruz
+          await interaction.editReply({
+            embeds: [embedPage],
+            components: buildComponents(currentPage, totalPages),
+          }).catch(() => {});
+
+        } catch (err) {
+          console.error('[help interaction error]:', err);
+        }
+      });
+
+      collector.on('end', async () => {
+        try {
           const disabledSelect = new StringSelectMenuBuilder(selectMenu).setDisabled(true);
           const disabledSelectRow = new ActionRowBuilder().addComponents(disabledSelect);
 
@@ -199,30 +214,15 @@ export default {
               .setDisabled(true)
           );
 
-          try {
-            await msg.edit({
-              components: [disabledNavRow, disabledSelectRow],
-            });
-          } catch (e) {
-           
-          }
-        });
-      });
-
-      collector.on('end', async () => {
-        const disabledSelect = new StringSelectMenuBuilder(selectMenu).setDisabled(true);
-        const disabledSelectRow = new ActionRowBuilder().addComponents(disabledSelect);
-
-        try {
           await msg.edit({
-            components: [disabledSelectRow],
-          });
-        } catch (e) {
-        }
+            components: filtered.length > 0 ? [disabledNavRow, disabledSelectRow] : [disabledSelectRow],
+          }).catch(() => {});
+        } catch (e) {}
       });
+
     } catch (err) {
-      console.error('[help] error: ', err);
-      message.reply('Yardım komutu sırasında bir hata oluştu.');
+      console.error('[help command error]:', err);
+      message.reply('Yardım komutu çalıştırılırken bir hata oluştu.').catch(() => {});
     }
   },
 };

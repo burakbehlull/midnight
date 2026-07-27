@@ -27,7 +27,8 @@ export default {
         channelId: channel.id,
         guildId: channel.guild.id,
         adapterCreator: channel.guild.voiceAdapterCreator,
-        selfDeaf: false
+        selfDeaf: true,
+        selfMute: false
       });
 	  const IEmbed = sender.classic(`🔊 **${channel.name}** kanalına başarıyla katıldım.`)
       message.channel.send({embeds: [IEmbed]});
