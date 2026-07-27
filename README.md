@@ -1,5 +1,7 @@
-# Discord Public Server Bot
+# Midnight
 Server Public bot built with Discord v14 version, integrated with slash and prefix commands
+
+` node version: 22.20.0 `
 
 ### Usage:
 
@@ -25,7 +27,8 @@ Create ` config.json ` file and set permission settings:
 ```json
 {
     "BOT_OWNER_IDS": [], // safe bot owner ids
-    "DEVELOPMENT_MODE": false
+    "DEVELOPMENT_MODE": false,
+    "AUTO_SLASH_COMMAND_DEPLOY": false
 }
 ```
 
@@ -106,6 +109,13 @@ Create ` config.json ` file and set permission settings:
 | ------ | ------ | ------ | 
 | otorole | Gives automatic roles to users | Can be set with the /settings Auto Role command |
 
+**libs** uses:
+| Helper | Comment | Use | 
+| -------- | -------- | -------- | 
+| themeBuilder | A newer and more colorful message enrichment class than Message Sender. | new themeBuilder() | 
+| Core | The bot's framework—including various command and event-handling snippets, as well as the deploy commands—is located here. | new Core() | 
+
+
 **Permission Manager** functions and uses:
 | Function | Values | Use | 
 | -------- | -------- | -------- | 
@@ -119,6 +129,99 @@ Create ` config.json ` file and set permission settings:
 **helpers** functions and uses:
 | Helper | Comment | Use | 
 | -------- | -------- | -------- | 
+| utils | You can handle fetching a user or channel with a single function within the `utils` class. | new Utils() | 
 | messageSender | Helps with responsiveness and rich embed creation | new messageSender() | 
+| loaders | This file contains the commands, events, and deployment code. Everything is modular. | new messageSender() | 
 | misc | Contains many auxiliary functions | misc.callFunction() | 
 | components | A class that makes the components offered by Discord Js more useful | new Button(), new Modal() | 
+
+
+### Easy access through shared use: Manager class
+```js
+import Manager from '#managers';
+
+const manager = new Manager(client, { action: interaction || message  })
+
+await manager.authority() // Access to permissionManager class
+await manager.authority.control() // Access to permissionManager class
+await manager.authority.flags() // Access to permissionManager class to FLAGS
+
+
+await manager.theme.embedThemeBuilder() // Access to themeBuilder
+await manager.sender.reply() // Access to messageSender
+
+
+await manager.utils // Access to utils class
+
+await manager.theme.themes // Access to themes
+await manager.theme.colors // Access to colors
+
+await manager.audit // Access to AuditLogEvents
+
+await manager.config // Access to config.json
+
+
+const manager = new Manager(
+    client, 
+    {   
+        action: interaction || message, 
+        authority: { action: // It can also take action internally, in a specific way. }, 
+        theme: {}, 
+        utils: {}, 
+        sender: {}  
+    }
+)
+```
+
+### Example theme builder class: themeBuilder
+```js
+import { themeBuilder } from '#libs'
+import { themes } from '#data'
+
+const tb = new themeBuilder(unkown) // interaction || message
+
+const theme = tb.embedThemeBuilder(themes.success, {
+  action: false,
+  author: tb.getNameAndAvatars("guild"),
+  description: "example",
+  footer: tb.getNameAndAvatars("user")
+})
+
+tb.send({embed: theme, id: "channel id"})
+
+tb.send({embed: theme, reply: true}) // reaction: reply
+tb.send({embed: theme}) // reaction: message in channel
+
+// action is true
+theme.reply() 
+theme.send()
+```
+
+### Example theme builder class: messageSender
+```js
+import { messageSender } from '#helpers'
+
+const sender = new messageSender(unkown); // interaction || message
+
+sender.embed({
+    title, 
+    description, 
+    image, 
+    thumbnail, 
+    fields, 
+    author, 
+    color, 
+    footer, 
+    timestamp
+})
+
+sender.classic(text)
+sender.errorEmbed(text)
+
+sender.send()
+sender.send(embed, channelId, components)
+
+sender.reply(content, userSees, components)
+sender.reply()
+
+```

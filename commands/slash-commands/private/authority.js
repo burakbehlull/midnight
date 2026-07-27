@@ -1,7 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { GuildPermission } from '#models';
-import { PermissionsManager } from '#managers';
-import { messageSender } from '#helpers';
+import Manager from '#managers';
 
 export default {
   data: new SlashCommandBuilder()
@@ -47,10 +46,11 @@ export default {
    usage: '/authority <seçenekler> <aç/kapat> <#channel> <@role>',
    category: 'server',
 
-  async execute(interaction) {
-    const PM = new PermissionsManager(interaction);
-    const sender = new messageSender(interaction);
-    const ctrl = await PM.control(PM.flags.Administrator);
+  async execute(client,interaction) {
+
+    const manager = new Manager(client, { action: interaction })
+
+    const ctrl = await manager.authority.control(manager.authority.flags.Administrator);
     if (!ctrl) return interaction.reply({ content: '❌ Bu komutu kullanmak için yetkin yok.', ephemeral: true });
 
     const option = interaction.options.getString('seçenek');
@@ -61,19 +61,13 @@ export default {
     const guildId = interaction.guild.id;
     let guildPermission = await GuildPermission.findOne({ guildId });
     if (!guildPermission) guildPermission = new GuildPermission({ guildId });
-	/*
-	const owner = await PM.isGuildOwner()
-	
-	if(!owner) return interaction.reply({
-        content: "❌ Bu komutu sadece sunucu sahibi kullanabilir!",
-        ephemeral: true
-    });
-	*/
 
     if (option === 'showset') {
-      const embed = sender.embed({
-        author: { name: interaction.guild.name, iconURL: interaction.guild.iconURL() },
+
+    const theme = await manager.theme.embedThemeBuilder(manager.theme.themes.rich, {
+        action: true,
         title: "Sunucu Ayarları",
+        author: manager.theme.getNameAndAvatars("guild", interaction),
         description: `
           Güvenli Kişiler Sistemi: **${guildPermission.isOwners ? "Açık" : "Kapalı"}**
           Güvenli Roller Sistemi: **${guildPermission.isRole ? "Açık" : "Kapalı"}**
@@ -81,9 +75,11 @@ export default {
           
           Güvenli Roller: **${guildPermission.roles.length > 0 ? guildPermission.roles.map(item => `<@&${item}>`).join(', ') : "Yok"}**
           Güvenli Kullanıcılar: **${guildPermission.owners.length > 0 ? guildPermission.owners.map(item => `<@${item}>`).join(', ') : "Yok"}**
-        `
-      });
-      return sender.reply(embed, true);
+        `,
+        footer: manager.theme.getNameAndAvatars("user", interaction), 
+    })
+    return await theme.reply({ ephemeral:true })
+
     }
 
     if (option === 'safeuseradd') {

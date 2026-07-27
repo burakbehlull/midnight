@@ -1,7 +1,5 @@
 import { SlashCommandBuilder } from 'discord.js';
-import { messageSender } from '#helpers';
-
-import config from '../../config.json' with { type: 'json' };
+import Manager from '#managers';
 
 export default {
   data: new SlashCommandBuilder()
@@ -9,10 +7,16 @@ export default {
     .setDescription('Ping command, replies with pong.'),
   async execute(interaction) {
     
-	  const sender = new messageSender(interaction)
-
-    if(!config.DEVELOPMENT_MODE) return await sender.reply(sender.errorEmbed('Geliştirme modunda değilim, bu komutu kullanamazsınız!'));
+	  const manager = new Manager(client, { action: interaction })
     
-    await sender.reply('Pong! 🏓');
+    const theme = await manager.theme.embedThemeBuilder(manager.theme.themes.classic, {
+      action: true,
+      description: 'Pong! 🏓',
+      footer: manager.theme.getNameAndAvatars("user", message), 
+    })
+
+    if(!manager.config.DEVELOPMENT_MODE) return await manager.sender.reply(manager.sender.errorEmbed('Geliştirme modunda değilim, bu komutu kullanamazsınız!'));
+    
+    await theme.reply()
   },
 };

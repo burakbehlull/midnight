@@ -1,9 +1,10 @@
-import Base from './Base.js';
+import Core from './Core.js';
 import GeminiAI from './Gemini.js';
+import ThemeBuilder from './themeBuilder.js';
 
 export {
-	Base,
-	
+	Core,
+	ThemeBuilder,
 	// others
 	GeminiAI
 }

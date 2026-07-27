@@ -1,7 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { ModLogConfig } from '#models';
-import { messageSender } from '#helpers';
-import { PermissionsManager } from '#managers';
+import Manager from '#managers';
 
 export default {
   data: new SlashCommandBuilder()
@@ -62,11 +61,10 @@ export default {
   usage: '/logs <seçenekler> <aç/kapat> <#kanal>',
   category: 'server',
 
-  async execute(interaction) {
-    const sender = new messageSender(interaction);
-    const PM = new PermissionsManager(interaction);
+  async execute(client, interaction) {
+    const manager = new Manager(client, { action: interaction });
 	
-    const ctrl = await PM.control(PM.flags.Administrator);
+    const ctrl = await manager.authority.control(manager.authority.flags.Administrator);
     if (!ctrl) return interaction.reply({ content: '❌ Bu komutu kullanmak için yetkin yok.', ephemeral: true });
 
     const guildId = interaction.guild.id;
@@ -75,7 +73,7 @@ export default {
     const durum = interaction.options.getString('durum');
 
     let config = await ModLogConfig.findOne({ guildId });
-	if (!config) config = new ModLogConfig({ guildId });
+	  if (!config) config = new ModLogConfig({ guildId });
 
     const saveAndReply = async (msg) => {
       await config.save();
@@ -93,30 +91,29 @@ export default {
       'moderation': { key: 'moderation', label: 'Mod' }
     };
 	
-	if (option === 'showset') {
-		
-	  const embed = sender.embed({
-		author: { name: interaction.guild.name, iconURL: interaction.guild.iconURL() },
-		title: "Mod-Log Ayarları",
-		description: `
-			Genel Log Sistemi: **${config?.modLogStatus ? "Açık" : "Kapalı"}**
+	  if (option === 'showset') {
+    const theme = await manager.theme.embedThemeBuilder('success', {
+      action: true,
+      title: "Mod-Log Ayarları",
+      author: manager.theme.getNameAndAvatars("guild", interaction),
+      description: `
+        Genel Log Sistemi: **${config?.modLogStatus ? "Açık" : "Kapalı"}**
 
-			Genel Log Kanalı: ${config?.generalLogChannel ? `<#${config?.generalLogChannel}>` : "Yok"}
+        Genel Log Kanalı: ${config?.generalLogChannel ? `<#${config?.generalLogChannel}>` : "Yok"}
 
-			Komut Log Kanalı: ${config?.logs.command ? `<#${config?.logs.command}>` : "Yok"}
-			Katıl/Çık Log Kanalı: ${config?.logs.joinLeave ? `<#${config?.logs.joinLeave}>` : "Yok"}
-			Mesaj Log Kanalı: ${config?.logs.message ? `<#${config?.logs.message}>` : "Yok"}
-			Ses Log Kanalı: ${config?.logs.voice ? `<#${config?.logs.voice}>` : "Yok"}
-			Kick/Ban Log Kanalı: ${config?.logs.kickBan ? `<#${config?.logs.kickBan}>` : "Yok"}
-			Rol Log Kanalı: ${config?.logs.role ? `<#${config?.logs.role}>` : "Yok"}
-			Kanal Log Kanalı: ${config?.logs.channel ? `<#${config?.logs.channel}>` : "Yok"}
-			Moderasyon Log Kanalı: ${config?.logs.moderation ? `<#${config?.logs.moderation}>` : "Yok"}
-		`
-	  }); 
-	  return sender.reply(embed, true);
-	}
-
-
+        Komut Log Kanalı: ${config?.logs.command ? `<#${config?.logs.command}>` : "Yok"}
+        Katıl/Çık Log Kanalı: ${config?.logs.joinLeave ? `<#${config?.logs.joinLeave}>` : "Yok"}
+        Mesaj Log Kanalı: ${config?.logs.message ? `<#${config?.logs.message}>` : "Yok"}
+        Ses Log Kanalı: ${config?.logs.voice ? `<#${config?.logs.voice}>` : "Yok"}
+        Kick/Ban Log Kanalı: ${config?.logs.kickBan ? `<#${config?.logs.kickBan}>` : "Yok"}
+        Rol Log Kanalı: ${config?.logs.role ? `<#${config?.logs.role}>` : "Yok"}
+        Kanal Log Kanalı: ${config?.logs.channel ? `<#${config?.logs.channel}>` : "Yok"}
+        Moderasyon Log Kanalı: ${config?.logs.moderation ? `<#${config?.logs.moderation}>` : "Yok"}
+      `,
+      footer: manager.theme.getNameAndAvatars("user", interaction), 
+    })
+	  return theme.reply({ephemeral: true});
+	  }
 
     if (option === 'set-general') {
       if (!kanal) return interaction.reply({ content: '❌ Lütfen bir kanal belirtin.', ephemeral: true });

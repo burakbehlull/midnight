@@ -36,7 +36,7 @@ export default {
     if (!passed) return;
 
     try {
-      await command(client, message, args);
+      await command.execute(client, message, args);
     } catch (error) {
       console.error(`❌ Error executing command: ${commandName}`, error);
       message.channel.send('❌ There was an error executing that command.');

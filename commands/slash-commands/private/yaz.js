@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from 'discord.js';
-import { PermissionsManager } from '#managers';
+import Manager from '#managers';
 
 
 export default {
@@ -13,11 +13,11 @@ export default {
                 .setRequired(true)
         ),
 
-    async execute(interaction) {
+    async execute(client,interaction) {
         const mesaj = interaction.options.getString('mesaj');
-		const PM = new PermissionsManager(interaction);
+		const manager = new Manager(client, { action: interaction });
 	  
-		const ctrl = await PM.control(PM.flags.Administrator)
+		const ctrl = await manager.authority.control()
 		if (!ctrl) return message.reply('❌ Bu komutu kullanmak için yetkin yok.');
 		
         try {
