@@ -6,58 +6,185 @@ export default {
   data: new SlashCommandBuilder()
     .setName('settings')
     .setDescription('Sunucu ayarlarını yap.')
-    .addStringOption(opt =>
-      opt.setName('seçenek')
-        .setDescription('Bot sunucu ayarları')
-        .setRequired(true)
-        .addChoices(
-		  { name: 'Hepsini Göster', value: 'allshow' },
-          { name: 'Tag', value: 'tag' },
-          { name: 'Vip', value: 'vip' },
-          { name: 'Photo', value: 'photo' },
-          { name: 'Streamer', value: 'streamer' },
-          { name: 'Oto Rol', value: 'otorol' },
-          { name: 'Oto Rol Aç/Kapat', value: 'otorolstatus' },
-          { name: 'Erkek Kayıt Rolü', value: 'erkek' },
-          { name: 'Kız Kayıt Rolü', value: 'kiz' },
-          { name: 'Kayıtsız Rolü', value: 'kayitsiz' },
-          { name: 'Staff Rolü', value: 'staffrole' },
-          { name: 'Jail Rolü', value: 'jailrole' },
-          { name: 'Davet Log Kanalı', value: 'invitelogchannel' },
-          { name: 'Davet Sistemi Aç/Kapat', value: 'invitelogstatus' },
-          { name: 'Level Sistemi Aç/Kapat', value: 'levelsystemstatus' },
-          { name: 'Stat Sistemi Aç/Kapat', value: 'statsystemstatus' },
-          { name: 'Tüm sistemleri Aç/Kapat', value: 'allsystem' },
+    .addSubcommand(sub =>
+      sub
+        .setName('allshow')
+        .setDescription('Tum sunucu ayarlarini goster')
+    )
+    .addSubcommand(sub =>
+      sub
+        .setName('prefix')
+        .setDescription('Sunucu prefixini ayarla')
+        .addStringOption(option =>
+          option
+            .setName("değer")
+            .setDescription("Prefix degeri (ornek: !)")
+            .setRequired(true)
         )
     )
-    
-	.addStringOption((option) =>
-      option
-        .setName("değer")
-        .setDescription("Yetkiler için aç/kapat.")
-        .setRequired(false)
-        .addChoices(
-			{name: "Aç", value: "aç"},
-			{name: "Kapat", value: "kapat"}
+    .addSubcommand(sub =>
+      sub
+        .setName('tag')
+        .setDescription('Tag ayarla')
+        .addStringOption(option =>
+          option
+            .setName("değer")
+            .setDescription("Tag degeri")
+            .setRequired(true)
         )
     )
-    .addRoleOption(opt =>
-      opt.setName('rol')
-        .setDescription('Vip, Streamer veya güvenli rolü')
-        .setRequired(false)
+    .addSubcommandGroup(group =>
+      group
+        .setName('roles')
+        .setDescription('Rol bazli ayarlar')
+        .addSubcommand(sub =>
+          sub
+            .setName('vip')
+            .setDescription('Vip Rol Ayarla')
+            .addRoleOption(opt => opt.setName('rol').setDescription('Vip, Streamer veya güvenli rolü').setRequired(true))
+        )
+        .addSubcommand(sub =>
+          sub
+            .setName('photo')
+            .setDescription('Photo Rol Ayarla')
+            .addRoleOption(opt => opt.setName('rol').setDescription('Vip, Streamer veya güvenli rolü').setRequired(true))
+        )
+        .addSubcommand(sub =>
+          sub
+            .setName('streamer')
+            .setDescription('Streamer Rol Ayarla')
+            .addRoleOption(opt => opt.setName('rol').setDescription('Vip, Streamer veya güvenli rolü').setRequired(true))
+        )
+        .addSubcommand(sub =>
+          sub
+            .setName('erkek')
+            .setDescription('Erkek Kayit Rol Ayarla')
+            .addRoleOption(opt => opt.setName('rol').setDescription('Vip, Streamer veya güvenli rolü').setRequired(true))
+        )
+        .addSubcommand(sub =>
+          sub
+            .setName('kiz')
+            .setDescription('Kiz Kayit Rol Ayarla')
+            .addRoleOption(opt => opt.setName('rol').setDescription('Vip, Streamer veya güvenli rolü').setRequired(true))
+        )
+        .addSubcommand(sub =>
+          sub
+            .setName('kayitsiz')
+            .setDescription('Kayitsiz Rol Ayarla')
+            .addRoleOption(opt => opt.setName('rol').setDescription('Vip, Streamer veya güvenli rolü').setRequired(true))
+        )
+        .addSubcommand(sub =>
+          sub
+            .setName('staffrole')
+            .setDescription('Staff Rol Ayarla')
+            .addRoleOption(opt => opt.setName('rol').setDescription('Vip, Streamer veya güvenli rolü').setRequired(true))
+        )
+        .addSubcommand(sub =>
+          sub
+            .setName('jailrole')
+            .setDescription('Jail Rol Ayarla')
+            .addRoleOption(opt => opt.setName('rol').setDescription('Vip, Streamer veya güvenli rolü').setRequired(true))
+        )
+        .addSubcommand(sub =>
+          sub
+            .setName('otorol')
+            .setDescription('Oto Rol Ayarla')
+            .addRoleOption(opt => opt.setName('rol').setDescription('Vip, Streamer veya güvenli rolü').setRequired(true))
+        )
     )
-    .addUserOption(opt =>
-      opt.setName('kullanıcı')
-        .setDescription('Güvenli kullanıcı')
-        .setRequired(false)
+    .addSubcommandGroup(group =>
+      group
+        .setName('channels')
+        .setDescription('Kanal bazli ayarlar')
+        .addSubcommand(sub =>
+          sub
+            .setName('invitelogchannel')
+            .setDescription('Davet Log Kanal Ayarla')
+            .addChannelOption(opt => opt.setName('kanal').setDescription('Log kanalını seçin').setRequired(true))
+        )
     )
-	.addChannelOption(opt =>
-		opt.setName('kanal')
-		.setDescription('Log kanalını seçin')
-		.setRequired(false)
-	),
+    .addSubcommandGroup(group =>
+      group
+        .setName('system')
+        .setDescription('Sistem ac/kapat islemleri')
+        .addSubcommand(sub =>
+          sub
+            .setName('allsystem')
+            .setDescription('Tum sistemleri Ac/Kapat')
+            .addStringOption(option =>
+              option
+                .setName("değer")
+                .setDescription("Yetkiler için aç/kapat.")
+                .setRequired(true)
+                .addChoices(
+                  { name: "Aç", value: "aç" },
+                  { name: "Kapat", value: "kapat" }
+                )
+            )
+        )
+        .addSubcommand(sub =>
+          sub
+            .setName('otorolstatus')
+            .setDescription('Oto Rol Sistemini Ac/Kapat')
+            .addStringOption(option =>
+              option
+                .setName("değer")
+                .setDescription("Yetkiler için aç/kapat.")
+                .setRequired(true)
+                .addChoices(
+                  { name: "Aç", value: "aç" },
+                  { name: "Kapat", value: "kapat" }
+                )
+            )
+        )
+        .addSubcommand(sub =>
+          sub
+            .setName('invitelogstatus')
+            .setDescription('Davet Sistemini Ac/Kapat')
+            .addStringOption(option =>
+              option
+                .setName("değer")
+                .setDescription("Yetkiler için aç/kapat.")
+                .setRequired(true)
+                .addChoices(
+                  { name: "Aç", value: "aç" },
+                  { name: "Kapat", value: "kapat" }
+                )
+            )
+        )
+        .addSubcommand(sub =>
+          sub
+            .setName('levelsystemstatus')
+            .setDescription('Level Sistemini Ac/Kapat')
+            .addStringOption(option =>
+              option
+                .setName("değer")
+                .setDescription("Yetkiler için aç/kapat.")
+                .setRequired(true)
+                .addChoices(
+                  { name: "Aç", value: "aç" },
+                  { name: "Kapat", value: "kapat" }
+                )
+            )
+        )
+        .addSubcommand(sub =>
+          sub
+            .setName('statsystemstatus')
+            .setDescription('Stat Sistemini Ac/Kapat')
+            .addStringOption(option =>
+              option
+                .setName("değer")
+                .setDescription("Yetkiler için aç/kapat.")
+                .setRequired(true)
+                .addChoices(
+                  { name: "Aç", value: "aç" },
+                  { name: "Kapat", value: "kapat" }
+                )
+            )
+        )
+    ),
    description: 'Sunucu sistemini ayarlar',
-   usage: '/settings <seçenekler> <aç/kapat> <#channel> <@user> <@role>',
+   usage: '/settings <subcommand> <değer|rol|kanal>',
    category: 'server',
 
   async execute(client,interaction) {
@@ -65,12 +192,41 @@ export default {
     const ctrl = await manager.authority.control(manager.authority.flags.Administrator);
     if (!ctrl) return interaction.reply({ content: '❌ Bu komutu kullanmak için yetkin yok.', ephemeral: true });
 
-	  const option = interaction.options.getString('seçenek');
-    const stringValue = interaction.options.getString('değer');
-    const role = interaction.options.getRole('rol');
-    const user = interaction.options.getUser('kullanıcı');
-	  const channel = interaction.options.getChannel('kanal');
+    const subcommandGroup = interaction.options.getSubcommandGroup(false);
+    const subcommand = interaction.options.getSubcommand();
 
+    let option = null;
+    let stringValue = null;
+    let role = null;
+    let user = null;
+    let channel = null;
+
+    if (subcommandGroup === null) {
+      if (subcommand === 'allshow') option = 'allshow';
+      if (subcommand === 'prefix') {
+        option = 'prefix';
+        stringValue = interaction.options.getString('değer');
+      }
+      if (subcommand === 'tag') {
+        option = 'tag';
+        stringValue = interaction.options.getString('değer');
+      }
+    }
+
+    if (subcommandGroup === 'roles') {
+      role = interaction.options.getRole('rol');
+      option = subcommand;
+    }
+
+    if (subcommandGroup === 'channels') {
+      channel = interaction.options.getChannel('kanal');
+      option = subcommand;
+    }
+
+    if (subcommandGroup === 'system') {
+      stringValue = interaction.options.getString('değer');
+      option = subcommand;
+    }
 
     const guildId = interaction.guild.id;
     let settings = await Settings.findOne({ guildId });
@@ -83,6 +239,7 @@ export default {
           title: "Sunucu Ayarları",
           author: manager.theme.getNameAndAvatars("guild", interaction),
           description: `
+          Prefix: **${settings.prefix || process.env.PREFIX || "Yok"}**
           Tag: **${settings.tag || "Yok"}**
           Vip Role: **${settings.vipRoleId ? `<@!${settings.vipRoleId}>` : "Yok"}**
           Photo Role: **${settings.photoRoleId ? `<@!${settings.photoRoleId}>` : "Yok"}**
@@ -117,6 +274,13 @@ export default {
 	  settings.inviteLogStatus = mode;
       await settings.save();
       return interaction.reply({ content: `Sistemler başarıyla **${mode ? "açık" : "kapalı"}** olarak ayarlandı.`, ephemeral: true });
+    }
+
+    if (option === 'prefix') {
+      if (!stringValue) return interaction.reply({ content: '❌ Lütfen bir prefix girin.', ephemeral: true });
+      settings.prefix = stringValue;
+      await settings.save();
+      return interaction.reply({ content: `Prefix başarıyla **${stringValue}** olarak ayarlandı.`, ephemeral: true });
     }
 
     if (option === 'tag') {

@@ -6,44 +6,112 @@ export default {
   data: new SlashCommandBuilder()
     .setName('authority')
     .setDescription('Yetki ayarlarını yap.')
-    .addStringOption(opt =>
-      opt.setName('seçenek')
-        .setDescription('Bot sunucu yetki ayarları')
-        .setRequired(true)
-        .addChoices(
-          { name: "Ayarlananlar", value: "showset" },
-          { name: 'Güvenli Kullanıcı Ekle', value: 'safeuseradd' },
-          { name: 'Güvenli Kullanıcı Çıkar', value: 'safeuserremove' },
-          { name: 'Güvenli Rol Ekle', value: 'saferoleadd' },
-          { name: 'Güvenli Rol Çıkar', value: 'saferoleremove' },
-          { name: 'Güvenli Kullanıcı Sistemi Aç/Kapat', value: 'safeuserstatus' },
-          { name: 'Belirlenmiş Yetkileri Sistemini Aç/Kapat', value: 'safechoosenstatus' },
-          { name: 'Güvenli Rol Sistemi Aç/Kapat', value: 'saferolestatus' },
-          { name: 'Güvenli Yetkileri Aç/Kapat', value: 'safesystemstatus' },
+    .addSubcommand(sub =>
+      sub
+        .setName('showset')
+        .setDescription('Ayarlanan yetki ve guvenli listeleri goster')
+    )
+    .addSubcommandGroup(group =>
+      group
+        .setName('user')
+        .setDescription('Guvenli kullanici islemleri')
+        .addSubcommand(sub =>
+          sub
+            .setName('add')
+            .setDescription('Guvenli Kullanici Ekle')
+            .addUserOption(opt => opt.setName('kullanıcı').setDescription('Güvenli kullanıcı').setRequired(true))
+        )
+        .addSubcommand(sub =>
+          sub
+            .setName('remove')
+            .setDescription('Guvenli Kullanici Cikar')
+            .addUserOption(opt => opt.setName('kullanıcı').setDescription('Güvenli kullanıcı').setRequired(true))
         )
     )
-    .addStringOption(option =>
-      option
-        .setName("değer")
-        .setDescription("Yetkiler için aç/kapat.")
-        .setRequired(false)
-        .addChoices(
-          { name: "Aç", value: "aç" },
-          { name: "Kapat", value: "kapat" }
+    .addSubcommandGroup(group =>
+      group
+        .setName('role')
+        .setDescription('Guvenli rol islemleri')
+        .addSubcommand(sub =>
+          sub
+            .setName('add')
+            .setDescription('Guvenli Rol Ekle')
+            .addRoleOption(opt => opt.setName('rol').setDescription('Vip, Streamer veya güvenli rolü').setRequired(true))
+        )
+        .addSubcommand(sub =>
+          sub
+            .setName('remove')
+            .setDescription('Guvenli Rol Cikar')
+            .addRoleOption(opt => opt.setName('rol').setDescription('Vip, Streamer veya güvenli rolü').setRequired(true))
         )
     )
-    .addRoleOption(opt =>
-      opt.setName('rol')
-        .setDescription('Vip, Streamer veya güvenli rolü')
-        .setRequired(false)
-    )
-    .addUserOption(opt =>
-      opt.setName('kullanıcı')
-        .setDescription('Güvenli kullanıcı')
-        .setRequired(false)
+    .addSubcommandGroup(group =>
+      group
+        .setName('system')
+        .setDescription('Guvenli sistem ac/kapat islemleri')
+        .addSubcommand(sub =>
+          sub
+            .setName('safeuserstatus')
+            .setDescription('Guvenli Kullanici Sistemini Ac/Kapat')
+            .addStringOption(option =>
+              option
+                .setName("değer")
+                .setDescription("Yetkiler için aç/kapat.")
+                .setRequired(true)
+                .addChoices(
+                  { name: "Aç", value: "aç" },
+                  { name: "Kapat", value: "kapat" }
+                )
+            )
+        )
+        .addSubcommand(sub =>
+          sub
+            .setName('saferolestatus')
+            .setDescription('Guvenli Rol Sistemini Ac/Kapat')
+            .addStringOption(option =>
+              option
+                .setName("değer")
+                .setDescription("Yetkiler için aç/kapat.")
+                .setRequired(true)
+                .addChoices(
+                  { name: "Aç", value: "aç" },
+                  { name: "Kapat", value: "kapat" }
+                )
+            )
+        )
+        .addSubcommand(sub =>
+          sub
+            .setName('safechoosenstatus')
+            .setDescription('Belirlenmis Yetkileri Sistemini Ac/Kapat')
+            .addStringOption(option =>
+              option
+                .setName("değer")
+                .setDescription("Yetkiler için aç/kapat.")
+                .setRequired(true)
+                .addChoices(
+                  { name: "Aç", value: "aç" },
+                  { name: "Kapat", value: "kapat" }
+                )
+            )
+        )
+        .addSubcommand(sub =>
+          sub
+            .setName('safesystemstatus')
+            .setDescription('Tum Guvenli Yetkileri Ac/Kapat')
+            .addStringOption(option =>
+              option
+                .setName("değer")
+                .setDescription("Yetkiler için aç/kapat.")
+                .setRequired(true)
+                .addChoices(
+                  { name: "Aç", value: "aç" },
+                  { name: "Kapat", value: "kapat" }
+                )
+            )
+        )
     ),
    description: 'Sunucu yetki sistemini ayarlar',
-   usage: '/authority <seçenekler> <aç/kapat> <#channel> <@role>',
+   usage: '/authority <subcommand> <değer|rol|kullanıcı>',
    category: 'server',
 
   async execute(client,interaction) {
@@ -53,10 +121,34 @@ export default {
     const ctrl = await manager.authority.control(manager.authority.flags.Administrator);
     if (!ctrl) return interaction.reply({ content: '❌ Bu komutu kullanmak için yetkin yok.', ephemeral: true });
 
-    const option = interaction.options.getString('seçenek');
-    const stringValue = interaction.options.getString('değer');
-    const role = interaction.options.getRole('rol');
-    const user = interaction.options.getUser('kullanıcı');
+    const subcommandGroup = interaction.options.getSubcommandGroup(false);
+    const subcommand = interaction.options.getSubcommand();
+
+    let option = null;
+    let stringValue = null;
+    let role = null;
+    let user = null;
+
+    if (subcommandGroup === null && subcommand === 'showset') {
+      option = 'showset';
+    }
+
+    if (subcommandGroup === 'user') {
+      user = interaction.options.getUser('kullanıcı');
+      if (subcommand === 'add') option = 'safeuseradd';
+      if (subcommand === 'remove') option = 'safeuserremove';
+    }
+
+    if (subcommandGroup === 'role') {
+      role = interaction.options.getRole('rol');
+      if (subcommand === 'add') option = 'saferoleadd';
+      if (subcommand === 'remove') option = 'saferoleremove';
+    }
+
+    if (subcommandGroup === 'system') {
+      stringValue = interaction.options.getString('değer');
+      option = subcommand;
+    }
 
     const guildId = interaction.guild.id;
     let guildPermission = await GuildPermission.findOne({ guildId });
@@ -84,7 +176,7 @@ export default {
 
     if (option === 'safeuseradd') {
       if (!user) return interaction.reply({ content: '❌ Lütfen bir kullanıcı belirtin.', ephemeral: true });
-      if (!guildPermission.owners.includes(user.id)) guildPermission.owners.push(user.id); // DÜZELTİLDİ: ')' silindi
+      if (!guildPermission.owners.includes(user.id)) guildPermission.owners.push(user.id);
       await guildPermission.save();
       return interaction.reply({ content: `${user} güvenli kullanıcı olarak eklendi.`, ephemeral: true });
     }
@@ -98,7 +190,7 @@ export default {
 
     if (option === 'saferoleadd') {
       if (!role) return interaction.reply({ content: '❌ Lütfen bir rol belirtin.', ephemeral: true });
-      if (!guildPermission.roles.includes(role.id)) guildPermission.roles.push(role.id); // DÜZELTİLDİ: ')' silindi
+      if (!guildPermission.roles.includes(role.id)) guildPermission.roles.push(role.id);
       await guildPermission.save();
       return interaction.reply({ content: `${role} güvenli rol olarak eklendi.`, ephemeral: true });
     }

@@ -1,20 +1,32 @@
 import { Events } from 'discord.js';
 import { afkHandler, levelMessageHandler, statsUtilsHandler, handleCooldown } from "#handlers"
+import { Settings } from "#models";
 import "dotenv/config"
 
 export default {
   name: Events.MessageCreate, 
   async execute(client, message) {
-    const prefix = process.env.PREFIX
+    let prefix = process.env.PREFIX;
+
+    if (message.guild) {
+      try {
+        const settings = await Settings.findOne({ guildId: message.guild.id }).select('prefix').lean();
+        if (settings && settings.prefix) {
+          prefix = settings.prefix;
+        }
+      } catch (err) {
+          console.error('[messageCreate] Prefix okunurken hata:', err);
+        }
+      }
 	
 	if(message.author.bot) return
 	
-	await levelMessageHandler(message.author.id, message.guild.id, message);
-	await statsUtilsHandler.updateMessageStats(message.author.id, message.guild.id, message.channel.id);
+	await levelMessageHandler(message.author.id, message.guild?.id, message);
+	await statsUtilsHandler.updateMessageStats(message.author.id, message.guild?.id, message.channel.id);
 	await afkHandler(message);
 	
 
-    if (!message.content.startsWith(prefix)) return;
+    if (!prefix || !message.content.startsWith(prefix)) return;
 
     const args = message.content.slice(prefix.length).trim().split(/ +/);
     const commandName = args.shift().toLowerCase();

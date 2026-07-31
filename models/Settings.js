@@ -2,6 +2,9 @@ import mongoose from 'mongoose';
 
 const settingsSchema = new mongoose.Schema({
   guildId: { type: String, required: true, unique: true },
+  
+  prefix: { type: String },
+
   tag: { type: String, default: null },
   
   vipRoleId: { type: String, default: null },
