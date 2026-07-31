@@ -40,6 +40,6 @@ export default {
 	const name = message.author.globalName || message.author.username
 
 
-    message.channel.send(`💸 | **${name}**, bugünkü ödülün: **__${reward}__** para!`);
+    message.channel.send(`**${name}**, bugünkü ödülün: **__${reward}__** para!`);
   }
 };

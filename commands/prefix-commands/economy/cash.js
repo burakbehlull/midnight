@@ -14,6 +14,6 @@ export default {
 	const name = message.author.globalName || message.author.username
 
     const user = await Economy.findOne({ userId }) || new Economy({ userId });
-    message.channel.send(`💵 | _${name}_, **__${user.money}__** paraya sahipsin!`);
+    message.channel.send(`_${name}_, **__${user.money}__** paraya sahipsin!`);
   }
 };

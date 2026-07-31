@@ -1,9 +1,10 @@
 import { Economy } from '#models';
-import { messageSender } from '#helpers';
+import { messageSender, Button } from '#helpers';
 
 export default {
   name: 'marry',
   description: 'Bir kullanıcı ile evlen ya da evlilik durumunu gör.',
+  aliases: ['evlen', 'evli'],
   usage: '.marry [@kullanıcı] [yüzükId]',
   category: 'economy',
 
@@ -22,7 +23,7 @@ export default {
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
       return sender.reply(
-        sender.classic(`💍 **${partnerName}** ile **${diffDays}** gündür evlisiniz! ❤️`)
+        `💍 **${partnerName}** ile **${diffDays}** gündür evlisiniz! ❤️`
       );
     }
 
@@ -50,19 +51,87 @@ export default {
     if (inventoryCount < 1) 
       return sender.reply(sender.errorEmbed('❌ Envanterinde bu yüzükten bulunmuyor.'));
 
-    authorData.inventory.set(ringId, inventoryCount - 1);
-    
-    const now = new Date();
-    
-    authorData.marriedTo = target.id;
-    authorData.marriageSince = now;
+    const btns = new Button();
+    btns.add('marry_accept', '✅ Kabul Et', btns.style.Success);
+    btns.add('marry_reject', '❌ Reddet',  btns.style.Danger);
+    const row = btns.build();
 
-    targetData.marriedTo = authorId;
-    targetData.marriageSince = now;
+    const proposalEmbed = sender.classic(
+      `💍 **${message.author.username}**, **${target.username}** ile evlenmek istiyor!\n\n` +
+      `Sadece <@${target.id}> butonları kullanabilir. 60 saniye içinde cevap ver!`
+    );
 
-    await authorData.save();
-    await targetData.save();
+    const proposalMsg = await message.channel.send({
+      embeds: [proposalEmbed],
+      components: [row],
+      allowedMentions: { users: [target.id] }
+    });
 
-    return sender.reply(sender.classic(`**Tebrikler!** Artık **${target.username}** ile evlisiniz! 💍`));
+    const collector = proposalMsg.createMessageComponentCollector({
+      time: 60_000,
+    });
+
+    let answered = false;
+
+    collector.on('collect', async (interaction) => {
+      if (interaction.user.id !== target.id) {
+        return interaction.reply({ content: '❌ Bu butonları sadece teklif alan kişi kullanabilir.', ephemeral: true });
+      }
+
+      answered = true;
+      collector.stop('answered');
+
+      try {
+        await interaction.deferUpdate();
+      } catch (_) {}
+
+      if (interaction.customId === 'marry_accept') {
+        const refreshedAuthorData = await Economy.findOne({ userId: authorId }) || new Economy({ userId: authorId });
+        const refreshedTargetData = await Economy.findOne({ userId: target.id }) || new Economy({ userId: target.id });
+
+        const stock = refreshedAuthorData.inventory.get(ringId) || 0;
+        if (stock < 1) {
+          const fail = sender.errorEmbed('❌ Kabul edildi ama yüzük envanterinden çıkmış, işlem iptal edildi.');
+          return proposalMsg.edit({ embeds: [fail], components: [] }).catch(() => {});
+        }
+
+        if (refreshedAuthorData.marriedTo || refreshedTargetData.marriedTo) {
+          const fail = sender.errorEmbed('❌ Kabul edildi ancak biriniz artık evlisiniz, işlem iptal edildi.');
+          return proposalMsg.edit({ embeds: [fail], components: [] }).catch(() => {});
+        }
+
+        refreshedAuthorData.inventory.set(ringId, stock - 1);
+
+        const now = new Date();
+        refreshedAuthorData.marriedTo = target.id;
+        refreshedAuthorData.marriageSince = now;
+
+        refreshedTargetData.marriedTo = authorId;
+        refreshedTargetData.marriageSince = now;
+
+        await refreshedAuthorData.save();
+        await refreshedTargetData.save();
+
+        const successEmbed = sender.classic(
+          `🎉 Tebrikler! **${message.author.username}** ile **${target.username}** artık evli! 💍❤️`
+        );
+
+        return proposalMsg.edit({ embeds: [successEmbed], components: [] }).catch(() => {});
+      }
+
+      if (interaction.customId === 'marry_reject') {
+        const rejectedEmbed = sender.classic(
+          `💔 **${target.username}**, evlenme teklifini reddetti. Yüzük envantere iade edildi.`
+        );
+        return proposalMsg.edit({ embeds: [rejectedEmbed], components: [] }).catch(() => {});
+      }
+    });
+
+    collector.on('end', async (_, reason) => {
+      if (reason === 'answered') return;
+      if (answered) return;
+      const timeoutEmbed = sender.errorEmbed(`⏰ Evlenme teklifi zaman aşımına uğradı. **${target.username}** cevap vermedi.`);
+      proposalMsg.edit({ embeds: [timeoutEmbed], components: [] }).catch(() => {});
+    });
   }
 };

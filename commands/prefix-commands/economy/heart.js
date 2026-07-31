@@ -40,6 +40,6 @@ export default {
     authorData.xp += 10;
     await authorData.save();
 
-    message.channel.send(`❤️ **${target.globalName || target.username}** adlı kullanıcıya kalp attın!`);
+    message.channel.send(`**${target.globalName || target.username}** adlı kullanıcıya ❤️ attın!`);
   }
 };
