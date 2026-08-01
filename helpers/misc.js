@@ -24,7 +24,7 @@ function calculateLevel(xp) {
   return Math.floor(0.1 * Math.sqrt(xp));
 }
 
-function drawRoundedRect(ctx, x, y, width, height, radius, fillStyle, strokeStyle = null) {
+function drawRoundedRect(ctx, x, y, width, height, radius, fillStyle, strokeStyle = null, lineWidth = 1) {
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
     ctx.lineTo(x + width - radius, y);
@@ -43,7 +43,9 @@ function drawRoundedRect(ctx, x, y, width, height, radius, fillStyle, strokeStyl
     }
     if (strokeStyle) {
         ctx.strokeStyle = strokeStyle;
+        ctx.lineWidth = lineWidth;
         ctx.stroke();
+        ctx.lineWidth = 1;
     }
 }
 
