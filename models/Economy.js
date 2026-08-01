@@ -5,6 +5,7 @@ const economySchema = new mongoose.Schema({
   money: { type: Number, default: 0 },
   cookies: { type: Number, default: 0 },
   hearts: { type: Number, default: 0 },
+  subtitle: { type: String, default: null },
   rank: { type: Number, default: 0 },
   level: { type: Number, default: 1 },
   xp: { type: Number, default: 0 },

@@ -151,7 +151,6 @@ export default {
             return interaction.reply({ content: '❌ Bu menüyü sadece komutu kullanan kişi değiştirebilir.', ephemeral: true }).catch(() => {});
           }
 
-          // 1. ZAMANAŞIMI ENGELLEYİCİ: Discord'a anında cevap veriyoruz
           await interaction.deferUpdate().catch(() => {});
 
           if (interaction.isStringSelectMenu() && interaction.customId === 'category_select') {
@@ -185,7 +184,6 @@ export default {
             )
             .setFooter({ text: `Sayfa ${currentPage + 1} / ${totalPages}` });
 
-          // 2. deferUpdate kullandığımız için editReply kullanıyoruz
           await interaction.editReply({
             embeds: [embedPage],
             components: buildComponents(currentPage, totalPages),

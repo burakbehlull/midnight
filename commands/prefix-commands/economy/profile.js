@@ -27,12 +27,40 @@ function applyText(canvas, text, defaultFontSize, fontFamily, maxWidth) {
 
 export default {
   name: 'profile',
-  description: 'Kullanıcının profilini resim olarak gösterir.',
-  usage: '.profile [@kullanıcı]',
+  description: 'Kullanıcının profilini resim olarak gösterir veya alt yazı ayarlar.',
+  usage: '.profile [@kullanıcı] veya .profile subtitle <metin>',
   aliases: ['profil', 'p'],
   category: 'economy',
 
   async execute(client, message, args) {
+    if (args[0]?.toLowerCase() === 'subtitle') {
+      const subtitleText = args.slice(1).join(' ');
+      
+      if (!subtitleText) {
+        return message.reply('❌ Lütfen bir alt yazı girin veya `clear` yazarak kaldırın.\n**Kullanım:** `.profile subtitle <metin>` veya `.profile subtitle clear`');
+      }
+
+      const userData = await Economy.findOne({ userId: message.author.id });
+      if (!userData) {
+        return message.reply('❌ Profil bulunamadı! Önce profil komutunu kullanın.');
+      }
+
+      if (subtitleText.toLowerCase() === 'clear' || subtitleText.toLowerCase() === 'sil') {
+        userData.subtitle = null;
+        await userData.save();
+        return message.reply('Alt yazı kaldırıldı!');
+      }
+
+      if (subtitleText.length > 20) {
+        return message.reply('❌ Alt yazı en fazla 20 karakter olabilir!');
+      }
+
+      userData.subtitle = subtitleText;
+      await userData.save();
+
+      return message.reply(`Alt yazınız ayarlandı! **${subtitleText}**`);
+    }
+
     const target = message.mentions.users.first() || client.users.cache.get(args[0]) || message.author;
     const member = message.mentions.members?.first() || message.guild.members.cache.get(target.id) || message.member;
 
@@ -97,8 +125,7 @@ export default {
     ctx.restore();
 
     const nameX = avatarX + avatarSize + 38;
-    const nameY = avatarY + 8;
-
+    const nameY = avatarY - 10;  // 10px yukarı kaldırıldı
 
     const userBadgeText = `@${target.username}`;
     ctx.font = "bold 14px sans-serif";
@@ -120,7 +147,7 @@ export default {
       ctx.fillText(userData.subtitle, nameX, nameY + 112);
     }
 
-    const statsBoxY = nameY + 128;
+    const statsBoxY = nameY + 148;  // 20px aşağı (128 + 20)
     const statsBoxX = nameX;
     const statsBoxW = width - statsBoxX - 50;
     const statsBoxH = 180;
@@ -259,11 +286,11 @@ export default {
     
     ctx.font = "16px sans-serif";
     ctx.fillStyle = "#ec4899";
-    ctx.fillText("💕", familyX + 35, familyY + 33);
+    ctx.fillText("", familyX + 35, familyY + 33);
     
     ctx.font = "bold 13px sans-serif";
     ctx.fillStyle = "#ec4899";
-    ctx.fillText("İLİŞKİ DURUMU", familyX + 58, familyY + 34);
+    ctx.fillText("RELATIONSHIP", familyX + 58, familyY + 34);
 
     if (userData.marriedTo) {
       const partner = client.users.cache.get(userData.marriedTo);
