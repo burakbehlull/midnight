@@ -94,6 +94,8 @@ Create ` config.json ` file and set permission settings:
 | **cash** | users cash | .. | stable |
 | **cookie** | users give to cookie daily | user | stable |
 | **buy** | buy item | item id | stable |
+| **fosterling** | adoption order | user | stable |
+| **family** | show family | .. | stable |
 | **sell** | sell item | item id, amount | stable |
 | **daily** | daily moeny | .. | stable |
 | **heart** | users give to heart daily | .. | stable |

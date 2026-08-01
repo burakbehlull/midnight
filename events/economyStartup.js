@@ -15,6 +15,7 @@ export default {
 			{ id: 5, name: 'Yılın Discord Kullanıcısı Kartı', price: 10000 },
 			{ id: 6, name: 'Alamet Kartı', price: 2000 },
 			{ id: 7, name: 'Midnight VIP', price: 500000 },
+			{ id: 8, name: 'Evlat Edinme Belgesi', price: 10000 },
 		];
 		
 		

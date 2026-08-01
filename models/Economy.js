@@ -10,6 +10,7 @@ const economySchema = new mongoose.Schema({
   xp: { type: Number, default: 0 },
   marriedTo: { type: String, default: null },
   marriageSince: { type: Date, default: null },
+  fosterlings: { type: [String], default: [] },
   inventory: {
     type: Map,
     of: Number, // itemId -> count
