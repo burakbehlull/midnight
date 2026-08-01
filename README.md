@@ -95,6 +95,8 @@ Create ` config.json ` file and set permission settings:
 | **cookie** | users give to cookie daily | user | stable |
 | **buy** | buy item | item id | stable |
 | **fosterling** | adoption order | user | stable |
+| **fosterleave** | user leave | .. | stable |
+| **fosterdismiss** | kick user | user | stable |
 | **family** | show family | .. | stable |
 | **sell** | sell item | item id, amount | stable |
 | **daily** | daily moeny | .. | stable |
