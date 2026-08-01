@@ -37,6 +37,6 @@ export default {
 
     await userData.save();
 
-    message.channel.send(`**${item.name}** başarıyla satın alındı.`);
+    message.channel.send(`**${item.name}** satın alındı.`);
   }
 };

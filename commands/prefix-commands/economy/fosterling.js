@@ -124,7 +124,7 @@ export default {
 
         const successEmbed = sender.classic(
           `🎉 Tebrikler! **${target.username}**, artık <@${parentId}> ve <@${partnerId}> çiftinin evladıdır! 👨‍👩‍👧\n` +
-          `Evlat Edinme Belgesi başarıyla kullanıldı.`
+          `Evlat Edinme Belgesi kullanıldı.`
         );
 
         return proposalMsg.edit({ embeds: [successEmbed], components: [] }).catch(() => {});
