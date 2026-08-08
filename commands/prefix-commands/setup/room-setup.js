@@ -1,6 +1,7 @@
 import { PermissionsManager } from '#managers';
 import { messageSender, Button } from '#helpers';
 import { ChannelType, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import Manager from '#managers';
 
 export default {
   name: 'room-setup',
@@ -9,8 +10,13 @@ export default {
   cooldown: 10,
 
   async execute(client, message, args) {
-    const PM = new PermissionsManager(message);
-    const sender = new messageSender(message);
+    const manager = new Manager(client, {
+      action: message
+    });
+
+    const ctrl = await manager.authority.control(manager.flags.Administrator);
+    if (!ctrl) return manager.sender.reply(manager.sender.errorEmbed('❌ Bu komutu kullanmak için yeterli yetkin yok.'));
+      
 
     const category = await message.guild.channels.create({
       name: 'Özel Odalar',

@@ -1,5 +1,5 @@
 import { messageSender, Button } from '#helpers';
-import { PermissionsManager } from '#managers';
+import Manager from '#managers';
 
 export default {
   name: 'ticket-setup',
@@ -7,16 +7,18 @@ export default {
   cooldown: 10,
   category: 'server',
   async execute(client, message, args) {
-    const sender = new messageSender(message);
-	const PM = new PermissionsManager(message);
 
-    const ctrl = await PM.control(PM.flags.Administrator);
-    if (!ctrl) return sender.reply(sender.errorEmbed('❌ Bu komutu kullanmak için yeterli yetkin yok.'));
+    const manager = new Manager(client, {
+      action: message
+    });
+
+    const ctrl = await manager.authority.control(manager.flags.Administrator);
+    if (!ctrl) return manager.sender.reply(manager.sender.errorEmbed('❌ Bu komutu kullanmak için yeterli yetkin yok.'));
       
     const btn = new Button();
     btn.add('ticket:create', '🎫 Ticket Aç', btn.style.Primary);
 
-    const embed = sender.embed({
+    const embed = manager.sender.embed({
       title: 'Destek Sistemi',
       description: 'Aşağıdaki butona tıklayarak destek talebi oluşturabilirsiniz.',
     });

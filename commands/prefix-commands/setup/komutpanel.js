@@ -11,6 +11,8 @@ import {
   ChannelType,
   MessageFlags
 } from 'discord.js';
+import Manager from '#managers';
+
 
 export default {
   name: 'komutpanel',
@@ -20,9 +22,14 @@ export default {
   category: 'setup',
 
   async execute(client, message, args) {
-    if (!message.member.permissions.has('Administrator')) {
-      return message.reply('❌ Bu komutu kullanmak için **Yönetici** yetkisine sahip olmalısınız!');
-    }
+    
+    const manager = new Manager(client, {
+      action: message
+    });
+
+    const ctrl = await manager.authority.control();
+    if (!ctrl) return manager.sender.reply(manager.sender.errorEmbed('❌ Bu komutu kullanmak için yeterli yetkin yok.'));
+      
 
     const commandsByCategory = new Map();
     

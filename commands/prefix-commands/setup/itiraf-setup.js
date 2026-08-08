@@ -12,7 +12,7 @@ export default {
   category: "fun",
   async execute(client, message, args) {
 	  
-	const PM = new PermissionsManager(message);
+	  const PM = new PermissionsManager(message);
     const sender = new messageSender(message);
 	
     try {

