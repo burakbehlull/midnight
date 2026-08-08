@@ -11,6 +11,8 @@ import { getFilesRecursively } from "./operations.js"
 import * as Loaders from "./loaders.js"
 import Utils from "./utils.js"
 
+import { checkCommandRestrictions, handleAutoDelete } from "./commandRestrictions.js"
+
 
 export {
     messageSender,
@@ -20,13 +22,12 @@ export {
 	Utils,
 	Button, Modal,
 	
-	// basePartials
 	fetchPartialNeed,
 	
-	// checks
 	isMessageMeaningfullyUpdated,
 	splitMessage,
-	// operations
 	getFilesRecursively,
 	
+	checkCommandRestrictions,
+	handleAutoDelete
 }

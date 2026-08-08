@@ -1,6 +1,7 @@
 import { Events } from 'discord.js';
 import { afkHandler, levelMessageHandler, statsUtilsHandler, handleCooldown } from "#handlers"
 import { Settings } from "#models";
+import { checkCommandRestrictions, handleAutoDelete } from "#helpers";
 import "dotenv/config"
 
 export default {
@@ -35,6 +36,11 @@ export default {
 
     if (!command) return;
 	
+	const restrictionCheck = await checkCommandRestrictions(message, command.name);
+	if (!restrictionCheck.allowed) {
+	  return message.reply(restrictionCheck.reason);
+	}
+	
 	// cooldown
 	const passed = await handleCooldown({
       userId: message.author.id,
@@ -49,6 +55,8 @@ export default {
 
     try {
       await command.execute(client, message, args);
+	  
+	  await handleAutoDelete(message, command.name);
     } catch (error) {
       console.error(`❌ Error executing command: ${commandName}`, error);
       message.channel.send('❌ There was an error executing that command.');

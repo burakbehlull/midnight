@@ -107,6 +107,7 @@ Create ` config.json ` file and set permission settings:
 | **envanter** | users envanter | .. | stable |
 | **profile** | users profile | .. | stable |
 | **shop** | shop marketplace | .. | stable |
+| **komutpanel** | authority ones command systems | .. | stable |
 
 ### events:
 | feature | comment | set command |

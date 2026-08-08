@@ -17,6 +17,8 @@ import Punishment from "./Punishment.js"
 
 import Economy from "./Economy.js"
 import Shop from "./Shop.js"
+import CommandConfig from "./CommandConfig.js"
+import CommandSettings from "./CommandSettings.js"
 
 
 export {
@@ -28,6 +30,8 @@ export {
 	InviteModel,
 	InviteCacheSchema,
 	GuildPermission,
+	CommandConfig,
+	CommandSettings,
 	
 	ModLogConfig,
 	Room,
