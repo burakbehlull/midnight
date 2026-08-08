@@ -148,13 +148,21 @@ function checkRoleRestriction(member, settings) {
 
   const memberRoles = member.roles.cache.map(r => r.id);
 
-
-  // console.log('[RoleCheck] Kullanıcı rolleri:', memberRoles);
-  // console.log('[RoleCheck] Rol modu:', settings.roleMode);
-  // console.log('[RoleCheck] İzinli roller:', settings.allowedRoles);
-  // console.log('[RoleCheck] Engelli roller:', settings.blockedRoles);
+//  console.log('[RoleCheck] Kullanıcı rolleri:', memberRoles);
+  //console.log('[RoleCheck] Rol modu:', settings.roleMode);
+  //console.log('[RoleCheck] İzinli roller:', settings.allowedRoles);
+  //console.log('[RoleCheck] Engelli roller:', settings.blockedRoles);
 
   if (settings.roleMode === 'whitelist') {
+    // Eğer whitelist aktif ama hiç rol seçilmemişse, izin verme
+    if (!settings.allowedRoles || settings.allowedRoles.length === 0) {
+      console.log('[RoleCheck] ⚠️ Whitelist aktif ama hiç rol seçilmemiş!');
+      return {
+        allowed: false,
+        reason: '❌ Bu komut için henüz izinli rol belirlenmemiş!'
+      };
+    }
+
     const hasAllowedRole = settings.allowedRoles.some(roleId =>
       memberRoles.includes(roleId)
     );
@@ -171,6 +179,12 @@ function checkRoleRestriction(member, settings) {
   }
 
   if (settings.roleMode === 'blacklist') {
+    // Eğer blacklist aktif ama hiç rol seçilmemişse, herkese izin ver
+    if (!settings.blockedRoles || settings.blockedRoles.length === 0) {
+      console.log('[RoleCheck] ⚠️ Blacklist aktif ama hiç rol seçilmemiş, izin verildi');
+      return { allowed: true };
+    }
+
     const hasBlockedRole = settings.blockedRoles.some(roleId =>
       memberRoles.includes(roleId)
     );

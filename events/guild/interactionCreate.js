@@ -1,4 +1,4 @@
-import { Events } from 'discord.js';
+import { Events, MessageFlags } from 'discord.js';
 import { ticketHandler, itirafHandler, handleCooldown, handleInteractionCreate } from "#handlers"
 import { Modal } from "#helpers"
 
@@ -30,7 +30,7 @@ export default {
       send: (embed) =>
         interaction.channel.send({
           embeds: [embed],
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         }),
     });
 
