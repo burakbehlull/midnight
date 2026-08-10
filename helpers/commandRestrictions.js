@@ -13,92 +13,55 @@ export async function checkCommandRestrictions(message, commandName) {
       commandName: commandName
     });
 
-    // Debug log
-    // console.log(`\n[CommandRestriction] ========== BAŞLANGIÇ ==========`);
-    // console.log(`[CommandRestriction] Komut: ${commandName}`);
-    // console.log(`[CommandRestriction] Kullanıcı: ${message.author.tag} (${message.author.id})`);
-    // console.log(`[CommandRestriction] Kanal: #${message.channel.name} (${message.channel.id})`);
-    // console.log('[CommandRestriction] Settings:', settings ? {
-    //   channelMode: settings.channelMode,
-    //   allowedChannels: settings.allowedChannels,
-    //   blockedChannels: settings.blockedChannels,
-    //   roleMode: settings.roleMode,
-    //   allowedRoles: settings.allowedRoles,
-    //   blockedRoles: settings.blockedRoles,
-    //   userMode: settings.userMode,
-    //   allowedUsers: settings.allowedUsers,
-    //   blockedUsers: settings.blockedUsers,
-    //   enabled: settings.enabled
-    // } : 'YOK');
-
+    // Ayar yoksa izin ver
     if (!settings) {
-      // console.log('[CommandRestriction] ✅ Ayar yok, izin verildi');
-      // console.log(`[CommandRestriction] ========== BİTİŞ ==========\n`);
       return { allowed: true };
     }
 
+    // Debug log - sadece ayar varsa
+    console.log(`\n[Restriction] ${commandName} | ${message.author.tag} | #${message.channel.name}`);
+    
     if (!settings.enabled) {
-      // console.log('[CommandRestriction] ❌ Komut devre dışı');
-      // console.log(`[CommandRestriction] ========== BİTİŞ ==========\n`);
+      console.log('[Restriction] ❌ Devre dışı\n');
       return { allowed: false, reason: '❌ Bu komut devre dışı bırakılmış!' };
     }
 
-    // Yönetici muafiyeti (isteğe bağlı) - YORUMA ALINDI, istersen aktif et
-    // if (message.member.permissions.has('Administrator')) {
-    //   console.log('[CommandRestriction] ✅ Yönetici muafiyeti');
-    //   return { allowed: true };
-    // }
-
     if (isExempt(message.member, settings)) {
-      // console.log('[CommandRestriction] ✅ Muafiyet var, izin verildi');
-      // console.log(`[CommandRestriction] ========== BİTİŞ ==========\n`);
+      console.log('[Restriction] ✅ Muafiyet\n');
       return { allowed: true };
     }
 
-    // console.log('[CommandRestriction] Kanal kontrolü yapılıyor...');
     const channelCheck = checkChannelRestriction(message.channel.id, settings);
     if (!channelCheck.allowed) {
-      // console.log('[CommandRestriction] ❌ Kanal kısıtlaması engelledi');
-      // console.log(`[CommandRestriction] ========== BİTİŞ ==========\n`);
+      console.log('[Restriction] ❌ Kanal engeli\n');
       return channelCheck;
     }
-    // console.log('[CommandRestriction] ✅ Kanal kontrolü geçti');
 
-    // console.log('[CommandRestriction] Rol kontrolü yapılıyor...');
     const roleCheck = checkRoleRestriction(message.member, settings);
     if (!roleCheck.allowed) {
-      // console.log('[CommandRestriction] ❌ Rol kısıtlaması engelledi');
-      // console.log(`[CommandRestriction] ========== BİTİŞ ==========\n`);
+      console.log('[Restriction] ❌ Rol engeli\n');
       return roleCheck;
     }
-    // console.log('[CommandRestriction] ✅ Rol kontrolü geçti');
 
-    // console.log('[CommandRestriction] Üye kontrolü yapılıyor...');
     const userCheck = checkUserRestriction(message.author.id, settings);
     if (!userCheck.allowed) {
-      // console.log('[CommandRestriction] ❌ Üye kısıtlaması engelledi');
-      // console.log(`[CommandRestriction] ========== BİTİŞ ==========\n`);
+      console.log('[Restriction] ❌ Üye engeli\n');
       return userCheck;
     }
-    console.log('[CommandRestriction] ✅ Üye kontrolü geçti');
 
-    // console.log('[CommandRestriction] ✅✅✅ TÜM KONTROLLER GEÇTİ, İZİN VERİLDİ');
-    // console.log(`[CommandRestriction] ========== BİTİŞ ==========\n`);
+    console.log('[Restriction] ✅ İzin verildi\n');
     return { allowed: true };
 
   } catch (error) {
-    console.error('Kısıtlama kontrolü hatası:', error);
+    console.error('Kısıtlama hatası:', error);
     return { allowed: true };
   }
 }
 
-
 function isExempt(member, settings) {
-
   if (settings.exemptUsers?.includes(member.id)) {
     return true;
   }
-
 
   if (settings.exemptRoles?.length > 0) {
     const hasExemptRole = member.roles.cache.some(role => 
@@ -109,7 +72,6 @@ function isExempt(member, settings) {
 
   return false;
 }
-
 
 function checkChannelRestriction(channelId, settings) {
   if (settings.channelMode === 'off') {
@@ -140,34 +102,31 @@ function checkChannelRestriction(channelId, settings) {
   return { allowed: true };
 }
 
-
 function checkRoleRestriction(member, settings) {
   if (settings.roleMode === 'off') {
     return { allowed: true };
   }
 
   const memberRoles = member.roles.cache.map(r => r.id);
-
-//  console.log('[RoleCheck] Kullanıcı rolleri:', memberRoles);
-  //console.log('[RoleCheck] Rol modu:', settings.roleMode);
-  //console.log('[RoleCheck] İzinli roller:', settings.allowedRoles);
-  //console.log('[RoleCheck] Engelli roller:', settings.blockedRoles);
+  console.log(`[RoleCheck] Kullanıcı: ${memberRoles.length} rol | Mod: ${settings.roleMode}`);
 
   if (settings.roleMode === 'whitelist') {
-    // Eğer whitelist aktif ama hiç rol seçilmemişse, izin verme
     if (!settings.allowedRoles || settings.allowedRoles.length === 0) {
-      console.log('[RoleCheck] ⚠️ Whitelist aktif ama hiç rol seçilmemiş!');
+      console.log('[RoleCheck] ⚠️ Whitelist aktif ama rol yok!');
       return {
         allowed: false,
         reason: '❌ Bu komut için henüz izinli rol belirlenmemiş!'
       };
     }
 
+    console.log('[RoleCheck] İzinli roller:', settings.allowedRoles);
+    console.log('[RoleCheck] Kullanıcı rolleri:', memberRoles);
+
     const hasAllowedRole = settings.allowedRoles.some(roleId =>
       memberRoles.includes(roleId)
     );
 
-    // console.log('[RoleCheck] Whitelist kontrolü - İzinli rol var mı?', hasAllowedRole);
+    console.log('[RoleCheck] İzinli rol var mı?', hasAllowedRole);
 
     if (!hasAllowedRole) {
       const roles = settings.allowedRoles.map(id => `<@&${id}>`).join(', ');
@@ -179,17 +138,13 @@ function checkRoleRestriction(member, settings) {
   }
 
   if (settings.roleMode === 'blacklist') {
-    // Eğer blacklist aktif ama hiç rol seçilmemişse, herkese izin ver
     if (!settings.blockedRoles || settings.blockedRoles.length === 0) {
-      console.log('[RoleCheck] ⚠️ Blacklist aktif ama hiç rol seçilmemiş, izin verildi');
       return { allowed: true };
     }
 
     const hasBlockedRole = settings.blockedRoles.some(roleId =>
       memberRoles.includes(roleId)
     );
-
-    // console.log('[RoleCheck] Blacklist kontrolü - Engelli rol var mı?', hasBlockedRole);
 
     if (hasBlockedRole) {
       return {
@@ -201,7 +156,6 @@ function checkRoleRestriction(member, settings) {
 
   return { allowed: true };
 }
-
 
 function checkUserRestriction(userId, settings) {
   if (settings.userMode === 'off') {
@@ -230,7 +184,6 @@ function checkUserRestriction(userId, settings) {
 
   return { allowed: true };
 }
-
 
 export async function handleAutoDelete(message, commandName) {
   try {
