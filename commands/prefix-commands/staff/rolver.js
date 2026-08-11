@@ -1,5 +1,4 @@
-import { PermissionsManager } from '#managers';
-import { messageSender } from '#helpers';
+import Manager from '#managers';
 
 export default {
   name: 'rolver',
@@ -8,9 +7,12 @@ export default {
   category: 'moderation',
   
   async execute(client, message, args) {
+    const manager = new Manager(client, {
+      action: message
+    });
+
     try {
-      const PM = new PermissionsManager(message);
-      const sender = new messageSender(message);
+      
 
       let member = message.mentions.members.first();
       if (!member && args[0]) {
@@ -24,24 +26,24 @@ export default {
         if (fetchedRole) role = fetchedRole;
       }
 
-      if (!member) return sender.reply(sender.errorEmbed('❌ Kullanıcıyı etiketlemeli veya geçerli bir ID girmelisin!'));
-      if (!role) return sender.reply(sender.errorEmbed('❌ Rolü etiketlemeli veya geçerli bir ID girmelisin!'));
+      if (!member) return manager.sender.reply(manager.sender.errorEmbed('❌ Kullanıcıyı etiketlemeli veya geçerli bir ID girmelisin!'));
+      if (!role) return manager.sender.reply(manager.sender.errorEmbed('❌ Rolü etiketlemeli veya geçerli bir ID girmelisin!'));
 
       const isRole = message.guild.roles.cache.get(role.id);
-      if (!isRole) return sender.reply(sender.errorEmbed('❌ Böyle bir rol yok!'));
+      if (!isRole) return manager.sender.reply(manager.sender.errorEmbed('❌ Böyle bir rol yok!'));
 
       const isUserHasRole = member.roles.cache.has(role.id);
-      if (isUserHasRole) return sender.reply(sender.errorEmbed('❌ Kullanıcı zaten bu role sahip!'));
+      if (isUserHasRole) return manager.sender.reply(manager.sender.errorEmbed('❌ Kullanıcı zaten bu role sahip!'));
 
       // Yetki Kontrolleri
-      const ctrl = await PM.control(PM.flags.ManageRoles, PM.flags.Administrator);
-      if (!ctrl) return sender.reply(sender.errorEmbed('❌ Bu komutu kullanmak için yetkin yok.'));
+      const ctrl = await manager.authority.control(manager.flags.ManageRoles, manager.flags.Administrator);
+      if (!ctrl) return manager.sender.reply(manager.sender.errorEmbed('❌ Bu komutu kullanmak için yetkin yok.'));
 
       await member.roles.add(role);
-      return sender.reply(sender.classic(`<@${member.id}> adlı kullanıcıya ${role} rolü başarıyla verildi.`));
+      return manager.sender.reply(manager.sender.classic(`<@${member.id}> adlı kullanıcıya ${role} rolü başarıyla verildi.`));
     } catch (error) {
       console.error('Hata:', error.message);
-      return sender.reply(sender.errorEmbed('❌ Bir hata oluştu.'));
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Bir hata oluştu.'));
     }
   }
 };
