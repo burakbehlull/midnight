@@ -141,6 +141,16 @@ Create ` config.json ` file and set permission settings:
 | components | A class that makes the components offered by Discord Js more useful | new Button(), new Modal() | 
 
 
+### Authority command inside object keys
+```js
+permissions: {
+    enabled: true // default true
+    authorities: [],
+    user: [],
+    roles: []
+}
+```
+
 ### Easy access through shared use: Manager class
 ```js
 import Manager from '#managers';

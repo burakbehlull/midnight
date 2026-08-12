@@ -8,29 +8,33 @@ export default {
   usage: '.fosterdismiss @kullanıcı',
   category: 'economy',
 
+  permissions: {
+    enabled: false
+  },
+
   async execute(client, message, args) {
-    const sender = new messageSender(message);
+    const manager = new Manager(client, { action: message });
     const parentId = message.author.id;
 
     const parentData = await Economy.findOne({ userId: parentId }) || new Economy({ userId: parentId });
 
     if (!parentData.marriedTo) {
-      return sender.reply(sender.errorEmbed('❌ Evlat atmak için önce evli olman gerek.'));
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Evlat atmak için önce evli olman gerek.'));
     }
     const partnerId = parentData.marriedTo;
 
     const target = message.mentions.users.first() || (args[0] ? await client.users.fetch(args[0]).catch(() => null) : null);
     if (!target) {
-      return sender.reply(sender.errorEmbed('❌ Atmak istediğin evladı etiketlemelisin. Kullanım: `.fosterdismiss @kullanıcı`'));
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Atmak istediğin evladı etiketlemelisin. Kullanım: `.fosterdismiss @kullanıcı`'));
     }
 
     if (target.id === parentId || target.id === partnerId) {
-      return sender.reply(sender.errorEmbed('❌ Kendini veya eşini atamazsın.'));
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Kendini veya eşini atamazsın.'));
     }
 
     const parentFosters = parentData.fosterlings || [];
     if (!parentFosters.includes(target.id)) {
-      return sender.reply(sender.errorEmbed(`❌ **${target.username}** senin evladın değil, onu atamazsın.`));
+      return manager.sender.reply(manager.sender.errorEmbed(`❌ **${target.username}** senin evladın değil, onu atamazsın.`));
     }
 
     const btns = new Button();
@@ -38,7 +42,7 @@ export default {
     btns.add('dismiss_cancel', '❌ Hayır, İptal', btns.style.Secondary);
     const row = btns.build();
 
-    const confirmEmbed = sender.classic(
+    const confirmEmbed = manager.sender.classic(
       `⚠️ <@${parentId}>, **${target.username}** adlı evladını aileden uzaklaştırmak istediğine emin misin?\n\n` +
       `Bu işlem geri alınamaz. Sadece <@${parentId}> butonları kullanabilir. 60 saniye içinde cevap ver!`
     );
@@ -73,18 +77,18 @@ export default {
         const refreshedPartner = await Economy.findOne({ userId: partnerId }) || new Economy({ userId: partnerId });
 
         if (!refreshedParent) {
-          const fail = sender.errorEmbed('❌ Ebeveyn verisi bulunamadı, işlem iptal edildi.');
+          const fail = manager.sender.errorEmbed('❌ Ebeveyn verisi bulunamadı, işlem iptal edildi.');
           return confirmMsg.edit({ embeds: [fail], components: [] }).catch(() => {});
         }
 
         if (!refreshedParent.marriedTo || refreshedParent.marriedTo !== partnerId) {
-          const fail = sender.errorEmbed('❌ Onaylandı ancak çift artık evli değil, işlem iptal edildi.');
+          const fail = manager.sender.errorEmbed('❌ Onaylandı ancak çift artık evli değil, işlem iptal edildi.');
           return confirmMsg.edit({ embeds: [fail], components: [] }).catch(() => {});
         }
 
         const stillFoster = (refreshedParent.fosterlings || []).includes(target.id);
         if (!stillFoster) {
-          const fail = sender.errorEmbed(`❌ **${target.username}** zaten senin evladın değil, işlem iptal edildi.`);
+          const fail = manager.sender.errorEmbed(`❌ **${target.username}** zaten senin evladın değil, işlem iptal edildi.`);
           return confirmMsg.edit({ embeds: [fail], components: [] }).catch(() => {});
         }
 
@@ -94,7 +98,7 @@ export default {
         await refreshedParent.save();
         await refreshedPartner.save();
 
-        const successEmbed = sender.classic(
+        const successEmbed = manager.sender.classic(
           `🚨 **Aile Duyurusu!**\n\n` +
           `<@${parentId}> ve <@${partnerId}> çifti, **${target.username}** adlı evladını aileden uzaklaştırdı. 💔`
         );
@@ -103,7 +107,7 @@ export default {
       }
 
       if (interaction.customId === 'dismiss_cancel') {
-        const cancelledEmbed = sender.classic(
+        const cancelledEmbed = manager.sender.classic(
           `✅ İşlem iptal edildi. **${target.username}** hala ailenin bir parçası. 👨‍👩‍👧`
         );
         return confirmMsg.edit({ embeds: [cancelledEmbed], components: [] }).catch(() => {});
@@ -112,7 +116,7 @@ export default {
 
     collector.on('end', async (_, reason) => {
       if (reason === 'answered' || answered) return;
-      const timeoutEmbed = sender.errorEmbed(
+      const timeoutEmbed = manager.sender.errorEmbed(
         `⏰ İşlem zaman aşımına uğradı. 60 saniye içinde cevap verilmedi. **${target.username}** atılmadı.`
       );
       confirmMsg.edit({ embeds: [timeoutEmbed], components: [] }).catch(() => {});

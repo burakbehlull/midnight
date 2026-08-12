@@ -8,13 +8,19 @@ export default {
   usage: '.shop',
   category: 'economy',
 
+  permissions: {
+    enabled: false
+  },
+
+
   async execute(client, message) {
-    const sender = new messageSender(message);
+    const manager = new Manager(client, { action: message });
+
 
     const shopItems = await Shop.find().sort({ id: 1 });
 
     if (!shopItems.length) {
-      return sender.reply(sender.errorEmbed('❌ Mağazada ürün bulunamadı.'));
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Mağazada ürün bulunamadı.'));
     }
 
     const pages = [];

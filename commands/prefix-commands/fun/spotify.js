@@ -1,6 +1,8 @@
 import { ActivityType, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
-import { messageSender, misc } from '#helpers';
+
+import { misc } from '#helpers';
+import Manager from "#managers";
 
 const { drawRoundedRect, formatTime } = misc;
 
@@ -10,9 +12,12 @@ export default {
     aliases: ["spoti", "şarkı", "dinlediğim", "müzik", "spotfy", "spo"],
     usage: "spotify [@etiket / ID]",
     category: "fun",
+    permissions: {
+        enabled: false
+    },
     execute: async (client, message, args) => {
-        const sender = new messageSender(message);
-        
+        const manager = new Manager(client, { action: message });
+
         const member = message.mentions.members.first() ||
                        message.guild.members.cache.get(args[0]) ||
                        message.member;
@@ -20,7 +25,7 @@ export default {
         const activity = member.presence?.activities?.find(a => a.type === ActivityType.Listening && a.name === "Spotify");
 
         if (!activity) {
-            return sender.reply(sender.errorEmbed("🎧 Bu kullanıcı şu anda Spotify dinlemiyor."));
+            return manager.sender.reply(manager.sender.errorEmbed("🎧 Bu kullanıcı şu anda Spotify dinlemiyor."));
         }
 
         const width = 850;

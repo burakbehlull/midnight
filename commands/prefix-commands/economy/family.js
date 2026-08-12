@@ -1,5 +1,5 @@
+import Manager from '#managers';
 import { Economy } from '#models';
-import { messageSender } from '#helpers';
 
 export default {
   name: 'family',
@@ -7,9 +7,13 @@ export default {
   aliases: ['aile'],
   usage: '.family [@kullanıcı]',
   category: 'economy',
+  
+  permissions: {
+    enabled: false
+  },
 
   async execute(client, message, args) {
-    const sender = new messageSender(message);
+    const manager = new Manager(client, { action: message });
     const target = message.mentions.users.first() || client.users.cache.get(args[0]) || message.author;
 
     const userData = await Economy.findOne({ userId: target.id }) || new Economy({ userId: target.id });
@@ -44,7 +48,7 @@ export default {
       return `<t:${Math.floor(marriedDate.getTime() / 1000)}:D> (${days} gün)`;
     })();
 
-    const embed = sender.classic(`👨‍👩‍👧‍👦 ${target.username} adlı kullanıcının aile ağacı`);
+    const embed = manager.sender.classic(`👨‍👩‍👧‍👦 ${target.username} adlı kullanıcının aile ağacı`);
     embed.addFields(
       { name: '❤️ Eşi', value: partnerId ? `<@${partnerId}>` : '_Yok_', inline: true },
       { name: '💍 Evlenme Tarihi', value: marriageSinceText, inline: true },
@@ -53,6 +57,6 @@ export default {
       { name: '👨‍👩‍👦 Anne / Babası', value: parentsText, inline: false }
     );
 
-    sender.reply(embed);
+    manager.sender.reply(embed);
   }
 };

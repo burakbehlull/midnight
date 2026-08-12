@@ -1,5 +1,5 @@
 import { EmbedBuilder } from 'discord.js';
-import { messageSender } from '#helpers';
+import Manager from '#managers';
 
 export default {
   name: 'banner',
@@ -7,7 +7,7 @@ export default {
   usage: 'banner @kullanıcı',
   category: 'user',
   async execute(client, message, args) {
-    const sender = new messageSender(message);
+    const manager = new Manager(client, { action: message });
     const user = message.mentions.users.first() || message.author;
 
     try {
@@ -15,10 +15,10 @@ export default {
       const bannerURL = fetchedUser.bannerURL({ dynamic: true, size: 1024 });
 
       if (!bannerURL) {
-        return sender.reply(sender.errorEmbed('❌ Kullanıcının bir bannerı yok.'));
+        return manager.sender.reply(manager.sender.errorEmbed('❌ Kullanıcının bir bannerı yok.'));
       }
 
-      const embed = new EmbedBuilder(sender.embed({
+      const embed = new EmbedBuilder(manager.sender.embed({
         title: 'Banner',
         footer: { text: fetchedUser.username, iconURL: fetchedUser.displayAvatarURL() }
       }))
@@ -31,7 +31,7 @@ export default {
 
     } catch (err) {
       console.error('Banner komutu hatası:', err.message);
-      return sender.reply(sender.errorEmbed('❌ Banner alınırken bir hata oluştu.'));
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Banner alınırken bir hata oluştu.'));
     }
   }
 };

@@ -1,29 +1,8 @@
+import { misc } from '#helpers';
 import { Economy } from '#models';
-import { messageSender, misc } from '#helpers';
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 
-const { drawRoundedRect } = misc;
-
-function xpForLevel(level) {
-  return Math.ceil(Math.pow(level / 0.1, 2));
-}
-
-function formatNumber(num) {
-  if (num >= 1e9) return (num / 1e9).toFixed(2) + "B";
-  if (num >= 1e6) return (num / 1e6).toFixed(2) + "M";
-  if (num >= 1e3) return (num / 1e3).toFixed(1) + "K";
-  return num.toString();
-}
-
-function applyText(canvas, text, defaultFontSize, fontFamily, maxWidth) {
-  const ctx = canvas.getContext("2d");
-  let fontSize = defaultFontSize;
-  do {
-    ctx.font = `bold ${fontSize}px ${fontFamily}`;
-    fontSize--;
-  } while (ctx.measureText(text).width > maxWidth);
-  return ctx.font;
-}
+const { drawRoundedRect, formatNumber, applyText, xpForLevel } = misc;
 
 export default {
   name: 'profile',
@@ -31,6 +10,10 @@ export default {
   usage: '.profile [@kullanıcı] veya .profile subtitle <metin>',
   aliases: ['profil', 'p'],
   category: 'economy',
+
+  permissions: {
+    enabled: false
+  },
 
   async execute(client, message, args) {
     if (args[0]?.toLowerCase() === 'subtitle') {

@@ -1,5 +1,5 @@
 import { DeletedMessage } from '#models';
-import { messageSender } from '#helpers';
+import Manager from '#managers';
 
 export default {
   name: 'snipe',
@@ -8,8 +8,8 @@ export default {
   category: 'moderation',
   async execute(client, message, args) {
     const channelId = message.channel.id;
-    const sender = new messageSender(message);
-    
+    const manager = new Manager(client, { action: message });
+
     const count = Math.min(parseInt(args[0]) || 1, 10);
 
     try {
@@ -18,22 +18,22 @@ export default {
         .limit(count);
 
       if (!deletedMessages.length) {
-        return sender.reply(sender.errorEmbed('❌ Bu kanalda henüz silinen mesaj yok!'));
+        return manager.sender.reply(manager.sender.errorEmbed('❌ Bu kanalda henüz silinen mesaj yok!'));
       }
 
       const formattedMessages = deletedMessages.map((msg, index) => 
         `**#${index + 1}** 👤 **${msg.authorTag}**: \`${msg.messageContent}\``
       ).join('\n\n');
 
-      return sender.reply(
-        sender.classic(
+      return manager.sender.reply(
+        manager.sender.classic(
 		
           `**Son silinen ${deletedMessages.length} mesaj:**\n\n${formattedMessages}`
         )
       );
     } catch (error) {
       console.error('Snipe hatası:', error);
-      return sender.reply(sender.errorEmbed('❌ Silinen mesajlar alınırken bir hata oluştu.'));
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Silinen mesajlar alınırken bir hata oluştu.'));
     }
   }
 };

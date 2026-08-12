@@ -1,6 +1,5 @@
 import { getVoiceConnection } from '@discordjs/voice'
-import { messageSender } from "#helpers"
-import { PermissionsManager } from '#managers';
+import Manager from '#managers';
 
 export default {
   name: 'sescik',
@@ -9,20 +8,17 @@ export default {
   category: 'server',
   
   async execute(client, message) {
-	const sender = new messageSender(message)
-	
-	const PM = new PermissionsManager(message);
-    const ctrl = await PM.control(PM.flags.Administrator)
-	if (!ctrl) return sender.reply(sender.errorEmbed("❌ Bu komutu kullanmak için yetkin yok."));
-	  
+    
+    const manager = new Manager(client, { action: message });
+
 	
     const connection = getVoiceConnection(message.guild.id);
 	
-    if (!connection) return sender.reply(sender.errorEmbed('Zaten hiçbir ses kanalında değilim.'));
+    if (!connection) return manager.sender.reply(manager.sender.errorEmbed('Zaten hiçbir ses kanalında değilim.'));
 
     connection.destroy();
 	
-	const IEmbed = sender.classic('📤 Ses kanalından ayrıldım.')
+	  const IEmbed = manager.sender.classic('📤 Ses kanalından ayrıldım.')
     message.channel.send({embeds: [IEmbed]});
   }
 };

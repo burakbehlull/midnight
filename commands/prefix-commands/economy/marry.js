@@ -1,5 +1,7 @@
+import { Button } from '#helpers';
+import Manager from '#managers';
+
 import { Economy } from '#models';
-import { messageSender, Button } from '#helpers';
 
 export default {
   name: 'marry',
@@ -8,8 +10,12 @@ export default {
   usage: '.marry [@kullanıcı] [yüzükId]',
   category: 'economy',
 
+  permissions: {
+    enabled: false
+  },
+
   async execute(client, message, args) {
-    const sender = new messageSender(message);
+    const manager = new Manager(client, { action: message });
     const authorId = message.author.id;
 
     const authorData = await Economy.findOne({ userId: authorId }) || new Economy({ userId: authorId });
@@ -22,7 +28,7 @@ export default {
       const diffTime = Math.abs(new Date() - marriedDate);
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-      return sender.reply(
+      return manager.sender.reply(
         `💍 **${partnerName}** ile **${diffDays}** gündür evlisiniz! ❤️`
       );
     }
@@ -31,32 +37,32 @@ export default {
     const ringId = args[1];
 
     if (!target) 
-      return sender.reply(sender.errorEmbed('❌ Evlenmek istediğin kişiyi etiketlemelisin. Kullanım: `.marry @kullanıcı yüzükId`'));
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Evlenmek istediğin kişiyi etiketlemelisin. Kullanım: `.marry @kullanıcı yüzükId`'));
 
     if (target.id === authorId)
-      return sender.reply(sender.errorEmbed('❌ Kendinle evlenemezsin.'));
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Kendinle evlenemezsin.'));
 
     if (target.bot)
-      return sender.reply(sender.errorEmbed('❌ Bir bot ile evlenemezsin.'));
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Bir bot ile evlenemezsin.'));
 
     const targetData = await Economy.findOne({ userId: target.id }) || new Economy({ userId: target.id });
 
     if (targetData.marriedTo) 
-      return sender.reply(sender.errorEmbed(`❌ **${target.username}** zaten başkasıyla evli.`));
+      return manager.sender.reply(manager.sender.errorEmbed(`❌ **${target.username}** zaten başkasıyla evli.`));
 
     if (!ringId || !['2', '3', '4'].includes(ringId)) 
-      return sender.reply(sender.errorEmbed('❌ Geçerli bir yüzük ID girmelisin. (Örn: 2, 3 veya 4)'));
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Geçerli bir yüzük ID girmelisin. (Örn: 2, 3 veya 4)'));
 
     const inventoryCount = authorData.inventory.get(ringId) || 0;
     if (inventoryCount < 1) 
-      return sender.reply(sender.errorEmbed('❌ Envanterinde bu yüzükten bulunmuyor.'));
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Envanterinde bu yüzükten bulunmuyor.'));
 
     const btns = new Button();
     btns.add('marry_accept', '✅ Kabul Et', btns.style.Success);
     btns.add('marry_reject', '❌ Reddet',  btns.style.Danger);
     const row = btns.build();
 
-    const proposalEmbed = sender.classic(
+    const proposalEmbed = manager.sender.classic(
       `💍 **${message.author.username}**, **${target.username}** ile evlenmek istiyor!\n\n` +
       `Sadece <@${target.id}> butonları kullanabilir. 60 saniye içinde cevap ver!`
     );
@@ -91,12 +97,12 @@ export default {
 
         const stock = refreshedAuthorData.inventory.get(ringId) || 0;
         if (stock < 1) {
-          const fail = sender.errorEmbed('❌ Kabul edildi ama yüzük envanterinden çıkmış, işlem iptal edildi.');
+          const fail = manager.sender.errorEmbed('❌ Kabul edildi ama yüzük envanterinden çıkmış, işlem iptal edildi.');
           return proposalMsg.edit({ embeds: [fail], components: [] }).catch(() => {});
         }
 
         if (refreshedAuthorData.marriedTo || refreshedTargetData.marriedTo) {
-          const fail = sender.errorEmbed('❌ Kabul edildi ancak biriniz artık evlisiniz, işlem iptal edildi.');
+          const fail = manager.sender.errorEmbed('❌ Kabul edildi ancak biriniz artık evlisiniz, işlem iptal edildi.');
           return proposalMsg.edit({ embeds: [fail], components: [] }).catch(() => {});
         }
 
@@ -112,7 +118,7 @@ export default {
         await refreshedAuthorData.save();
         await refreshedTargetData.save();
 
-        const successEmbed = sender.classic(
+        const successEmbed = manager.sender.classic(
           `🎉 Tebrikler! **${message.author.username}** ile **${target.username}** artık evli! 💍❤️`
         );
 
@@ -120,7 +126,7 @@ export default {
       }
 
       if (interaction.customId === 'marry_reject') {
-        const rejectedEmbed = sender.classic(
+        const rejectedEmbed = manager.sender.classic(
           `💔 **${target.username}**, evlenme teklifini reddetti. Yüzük envantere iade edildi.`
         );
         return proposalMsg.edit({ embeds: [rejectedEmbed], components: [] }).catch(() => {});
@@ -130,7 +136,7 @@ export default {
     collector.on('end', async (_, reason) => {
       if (reason === 'answered') return;
       if (answered) return;
-      const timeoutEmbed = sender.errorEmbed(`⏰ Evlenme teklifi zaman aşımına uğradı. **${target.username}** cevap vermedi.`);
+      const timeoutEmbed = manager.sender.errorEmbed(`⏰ Evlenme teklifi zaman aşımına uğradı. **${target.username}** cevap vermedi.`);
       proposalMsg.edit({ embeds: [timeoutEmbed], components: [] }).catch(() => {});
     });
   }

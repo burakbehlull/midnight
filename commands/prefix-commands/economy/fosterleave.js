@@ -1,5 +1,6 @@
 import { Economy } from '#models';
-import { messageSender, Button } from '#helpers';
+import { Button } from '#helpers';
+import Manager from '#managers';
 
 export default {
   name: 'fosterleave',
@@ -8,8 +9,12 @@ export default {
   usage: '.fosterleave',
   category: 'economy',
 
+  permissions: {
+    enabled: false
+  },
+
   async execute(client, message, args) {
-    const sender = new messageSender(message);
+    const manager = new Manager(client, { action: message });
     const userId = message.author.id;
 
     const userData = await Economy.findOne({ userId: userId }) || new Economy({ userId: userId });
@@ -17,7 +22,7 @@ export default {
     const parentEntry = await Economy.findOne({ fosterlings: userId }).lean();
 
     if (!parentEntry) {
-      return sender.reply(sender.errorEmbed('❌ Zaten kayıtlı bir ailen yok, ayrılacak bir ailen bulunamadı.'));
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Zaten kayıtlı bir ailen yok, ayrılacak bir ailen bulunamadı.'));
     }
 
     const parentId = parentEntry.userId;
@@ -31,7 +36,7 @@ export default {
     let parentsText = `<@${parentId}>`;
     if (partnerId) parentsText += ` ve <@${partnerId}>`;
 
-    const confirmEmbed = sender.classic(
+    const confirmEmbed = manager.sender.classic(
       `⚠️ <@${userId}>, aileden ${parentsText} ayrılmak istediğine emin misin?\n\n` +
       `Bu işlem geri alınamaz. Sadece <@${userId}> butonları kullanabilir. 60 saniye içinde cevap ver!`
     );
@@ -65,13 +70,13 @@ export default {
         const refreshedParent = await Economy.findOne({ userId: parentId });
 
         if (!refreshedParent) {
-          const fail = sender.errorEmbed('❌ Aile verisi bulunamadı, işlem iptal edildi.');
+          const fail = manager.sender.errorEmbed('❌ Aile verisi bulunamadı, işlem iptal edildi.');
           return confirmMsg.edit({ embeds: [fail], components: [] }).catch(() => {});
         }
 
         const stillInFamily = (refreshedParent.fosterlings || []).includes(userId);
         if (!stillInFamily) {
-          const fail = sender.errorEmbed('❌ Zaten aileden çıkarılmışsın, işlem iptal edildi.');
+          const fail = manager.sender.errorEmbed('❌ Zaten aileden çıkarılmışsın, işlem iptal edildi.');
           return confirmMsg.edit({ embeds: [fail], components: [] }).catch(() => {});
         }
 
@@ -84,7 +89,7 @@ export default {
           await refreshedPartner.save();
         }
 
-        const successEmbed = sender.classic(
+        const successEmbed = manager.sender.classic(
           `🚨 **Aile Duyurusu!**\n\n` +
           `**${message.author.username}**, ailesinden ${parentsText} gönüllü olarak ayrıldı! 👋`
         );
@@ -93,7 +98,7 @@ export default {
       }
 
       if (interaction.customId === 'leave_cancel') {
-        const cancelledEmbed = sender.classic(
+        const cancelledEmbed = manager.sender.classic(
           `✅ Ayrılma işlemi iptal edildi. Hala ailesinin ${parentsText} bir parçasısın! ❤️`
         );
         return confirmMsg.edit({ embeds: [cancelledEmbed], components: [] }).catch(() => {});
@@ -102,7 +107,7 @@ export default {
 
     collector.on('end', async (_, reason) => {
       if (reason === 'answered' || answered) return;
-      const timeoutEmbed = sender.errorEmbed(
+      const timeoutEmbed = manager.sender.errorEmbed(
         `⏰ Ayrılma işlemi zaman aşımına uğradı. 60 saniye içinde cevap verilmedi. Hala ailesinin bir parçasısın.`
       );
       confirmMsg.edit({ embeds: [timeoutEmbed], components: [] }).catch(() => {});

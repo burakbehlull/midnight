@@ -1,7 +1,6 @@
 import canvafy from 'canvafy'
-import { messageSender } from '#helpers';
-    
 
+import Manager from '#managers';
 
 export default {
     name: "ship",
@@ -9,10 +8,15 @@ export default {
     aliases: ["ships", "kalp"],
     description: 'Ship yapma komutu',
 	category: "fun",
+    
+    permissions: {
+        enabled: false
+    },
+
     execute: async (client, message, args) => {
-		const sender = new messageSender(message);
+		const manager = new Manager(client, { action: message });
         let user = message.mentions.members.first() || message.guild.members.cache.get(args[0]) || message.guild.members.cache.random();
-        if (!user) return sender.reply(sender.errorEmbed("Geçerli bir kullanıcı belirt!")).then(msg => {
+        if (!user) return manager.sender.reply(manager.sender.errorEmbed("Geçerli bir kullanıcı belirt!")).then(msg => {
             setTimeout(() => msg.delete(), 5000)
         });
 

@@ -1,5 +1,5 @@
+import Manager from '#managers';
 import { Economy } from '#models';
-import { messageSender } from '#helpers';
 
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 
@@ -9,12 +9,16 @@ export default {
   usage: '.divorce',
   category: 'economy',
 
+  permissions: {
+    enabled: false
+  },
+
   async execute(client, message) {
-    const sender = new messageSender(message);
+    const manager = new Manager(client, { action: message });
     const authorId = message.author.id;
 
     const authorData = await Economy.findOne({ userId: authorId });
-    if (!authorData?.marriedTo) return sender.reply(sender.errorEmbed('❌ Zaten evli değilsin.'));
+    if (!authorData?.marriedTo) return manager.sender.reply(manager.sender.errorEmbed('❌ Zaten evli değilsin.'));
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder().setCustomId('confirmDivorce').setLabel('Confirm').setStyle(ButtonStyle.Danger)

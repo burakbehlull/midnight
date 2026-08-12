@@ -1,5 +1,5 @@
+import Manager from '#managers';
 import { Economy, Shop } from '#models';
-import { messageSender } from '#helpers';
 
 export default {
   name: 'buy',
@@ -7,25 +7,30 @@ export default {
   usage: '.buy [itemId]',
   category: 'economy',
 
+  permissions: {
+    enabled: false
+  },
+
   async execute(client, message, args) {
-    const sender = new messageSender(message);
+    const manager = new Manager(client, { action: message });
+    
     const userId = message.author.id;
     const itemId = args[0];
 
     if (!itemId || isNaN(itemId)) {
-      return sender.reply(sender.errorEmbed('❌ Lütfen geçerli bir item ID gir. Örn: `.buy 1`'));
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Lütfen geçerli bir item ID gir. Örn: `.buy 1`'));
     }
 
     const item = await Shop.findOne({ id: parseInt(itemId) });
 
     if (!item) {
-      return sender.reply(sender.errorEmbed('❌ Geçersiz item ID.'));
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Geçersiz item ID.'));
     }
 
     const userData = await Economy.findOne({ userId }) || new Economy({ userId });
 
     if (userData.money < item.price) {
-      return sender.reply(sender.errorEmbed('❌ Yeterli paran yok.'));
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Yeterli paran yok.'));
     }
 
     userData.money -= item.price;

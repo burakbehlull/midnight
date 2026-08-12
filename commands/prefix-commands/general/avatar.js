@@ -1,5 +1,5 @@
 import { EmbedBuilder } from 'discord.js';
-import { messageSender } from '#helpers';
+import Manager from '#managers';
 
 export default {
   name: 'avatar',
@@ -7,12 +7,12 @@ export default {
   usage: 'avatar @kullanıcı',
   category: 'user',
   async execute(client, message, args) {
-    const sender = new messageSender(message);
+    const manager = new Manager(client, { action: message });
 
     const user = message.mentions.users.first() || message.author;
 
     try {
-      const embed = new EmbedBuilder(sender.embed({
+      const embed = new EmbedBuilder(manager.sender.embed({
         title: 'Avatar',
         footer: { text: user.username, iconURL: user.avatarURL() }
       }))

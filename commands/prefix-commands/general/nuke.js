@@ -1,24 +1,22 @@
-import { PermissionsManager } from '#managers';
-import { messageSender } from '#helpers';
+import { PermissionFlagsBits } from 'discord.js';
+import Manager from '#managers';
 
 export default {
   name: 'nuke',
   description: 'Bulunduğun ya da belirttiğin metin kanalını yeniler.',
+  permissions: {
+    authorities: [PermissionFlagsBits.ManageChannels]
+  },
   usage: 'nuke #kanal',
   cooldown: 5,
   category: 'moderation',
   async execute(client, message, args) {
-    const sender = new messageSender(message);
-    const PM = new PermissionsManager(message);
-
-    // Yetki kontrolü
-    const ctrl = await PM.control(PM.flags.ManageChannels);
-    if (!ctrl) return sender.reply(sender.errorEmbed('❌ Bu komutu kullanmak için **kanalları yönetme** yetkin olmalı.'));
+    const manager = new Manager(client, { action: message });
 
     const channel = message.mentions.channels.first() || message.channel;
 
     if (!channel.isTextBased?.()) {
-      return sender.reply(sender.errorEmbed('❌ Bu komut sadece metin tabanlı kanallarda kullanılabilir.'));
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Bu komut sadece metin tabanlı kanallarda kullanılabilir.'));
     }
 
     const {
@@ -59,7 +57,7 @@ export default {
 
     } catch (err) {
       console.error('Nuke komutu hatası:', err);
-      return sender.reply(sender.errorEmbed('❌ Kanal yenilenirken bir hata oluştu.'));
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Kanal yenilenirken bir hata oluştu.'));
     }
   }
 };

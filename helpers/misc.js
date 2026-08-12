@@ -57,6 +57,52 @@ function formatTime(ms) {
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
+function formatTimeLeft(msTime) {
+    const seconds = Math.max(1, Math.floor(msTime / 1000));
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+
+    const future = new Date(Date.now() + msTime);
+    const saat = future.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    const tarih = future.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    let relative;
+    if (seconds <= 60) {
+        relative = `${seconds} saniye kaldı`;
+    } else if (minutes < 60) {
+        relative = `${minutes} dakika kaldı`;
+    } else {
+        relative = `${hours} saat${minutes % 60 > 0 ? ` ${minutes % 60} dakika` : ''} kaldı`;
+    }
+
+    return {
+        relative,
+        exact: `${tarih} ${saat}`,
+        shortTime: `bugün saat ${saat}`
+    };
+}
+
+function formatNumber(num) {
+    if (num >= 1e9) return (num / 1e9).toFixed(2) + "B";
+    if (num >= 1e6) return (num / 1e6).toFixed(2) + "M";
+    if (num >= 1e3) return (num / 1e3).toFixed(1) + "K";
+    return num.toString();
+}
+
+function applyText(canvas, text, defaultFontSize, fontFamily, maxWidth) {
+    const ctx = canvas.getContext("2d");
+    let fontSize = defaultFontSize;
+    do {
+        ctx.font = `bold ${fontSize}px ${fontFamily}`;
+        fontSize--;
+    } while (ctx.measureText(text).width > maxWidth);
+    return ctx.font;
+}
+
+function xpForLevel(level) {
+    return Math.ceil(Math.pow(level / 0.1, 2));
+}
+
 export {
 	randomColor,
 	itentsMiddle,
@@ -64,4 +110,8 @@ export {
 	calculateLevel,
 	drawRoundedRect,
 	formatTime,
+    formatTimeLeft,
+    formatNumber,
+    applyText,
+    xpForLevel
 }

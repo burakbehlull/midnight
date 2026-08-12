@@ -1,5 +1,5 @@
+import Manager from '#managers';
 import { Economy } from '#models';
-import { messageSender } from '#helpers';
 
 export default {
   name: 'cookie',
@@ -7,13 +7,17 @@ export default {
   usage: '.cookie @kullanıcı',
   category: 'economy',
 
+  permissions: {
+    enabled: false
+  },
+
   async execute(client, message, args) {
-    const sender = new messageSender(message);
+    const manager = new Manager(client, { action: message });
     const authorId = message.author.id;
     const target = message.mentions.users.first() || client.users.cache.get(args[0]);
 
     if (!target || target.id === authorId)
-      return sender.reply(sender.errorEmbed('❌ Geçerli bir kullanıcı belirt.'));
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Geçerli bir kullanıcı belirt.'));
 
     const now = new Date();
     const authorData = await Economy.findOne({ userId: authorId }) || new Economy({ userId: authorId });
@@ -26,7 +30,7 @@ export default {
 
     if (!hasItem && now - lastUsed < cooldown) {
       const remaining = Math.ceil((cooldown - (now - lastUsed)) / 1000 / 60 / 60);
-      return sender.reply(sender.errorEmbed(`❌ ${remaining} saat sonra tekrar cookie gönderebilirsin.`));
+      return manager.sender.reply(manager.sender.errorEmbed(`❌ ${remaining} saat sonra tekrar cookie gönderebilirsin.`));
     }
 
     if (hasItem) {

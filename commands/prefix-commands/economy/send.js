@@ -1,5 +1,5 @@
+import Manager from '#managers';
 import { Economy } from '#models';
-import { messageSender } from '#helpers';
 
 export default {
   name: 'send',
@@ -7,22 +7,26 @@ export default {
   usage: '.send @kullanıcı miktar',
   category: 'economy',
 
+  permissions: {
+    enabled: false
+  },
+
   async execute(client, message, args) {
-    const sender = new messageSender(message);
+    const manager = new Manager(client, { action: message });
     const senderId = message.author.id;
     const target = message.mentions.users.first() || client.users.cache.get(args[0]);
     const amount = parseInt(args[1]);
 
     if (!target || isNaN(amount) || amount <= 0) {
-      return sender.reply(sender.errorEmbed('❌ Kullanıcı ve miktar belirt.'));
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Kullanıcı ve miktar belirt.'));
     }
 
-    if (target.id === senderId) return sender.reply(sender.errorEmbed('❌ Kendine para gönderemezsin.'));
+    if (target.id === senderId) return manager.sender.reply(manager.sender.errorEmbed('❌ Kendine para gönderemezsin.'));
 
     const senderData = await Economy.findOne({ userId: senderId }) || new Economy({ userId: senderId });
     const targetData = await Economy.findOne({ userId: target.id }) || new Economy({ userId: target.id });
 
-    if (senderData.money < amount) return sender.reply(sender.errorEmbed('❌ Yeterli paran yok.'));
+    if (senderData.money < amount) return manager.sender.reply(manager.sender.errorEmbed('❌ Yeterli paran yok.'));
 
     senderData.money -= amount;
     targetData.money += amount;

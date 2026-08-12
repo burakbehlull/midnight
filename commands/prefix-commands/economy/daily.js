@@ -1,5 +1,5 @@
+import Manager from '#managers';
 import { Economy } from '#models';
-import { messageSender } from '#helpers';
 
 export default {
   name: 'daily',
@@ -8,8 +8,13 @@ export default {
   usage: '.daily',
   category: 'economy',
 
+  permissions: {
+    enabled: false
+  },
+
   async execute(client, message) {
-    const sender = new messageSender(message);
+    const manager = new Manager(client, { action: message });
+
     const userId = message.author.id;
     const now = new Date();
 
@@ -24,7 +29,7 @@ export default {
 
     if (now - last < cooldown) {
       const remaining = Math.ceil((cooldown - (now - last)) / 1000 / 60 / 60);
-      return sender.reply(sender.errorEmbed(`❌ ${remaining} saat sonra tekrar deneyebilirsin.`));
+      return manager.sender.reply(manager.sender.errorEmbed(`❌ ${remaining} saat sonra tekrar deneyebilirsin.`));
     }
 
     let reward = Math.floor(Math.random() * (1000 - 200 + 1)) + 200;
@@ -36,10 +41,10 @@ export default {
     user.money += reward;
     user.cooldowns.daily = now;
     user.xp += 10;
+
     await user.save();
-	const name = message.author.globalName || message.author.username
+	  const name = message.author.globalName || message.author.username
 
-
-    message.channel.send(`**${name}**, bugünkü ödülün: **__${reward}__** para!`);
+    manager.sender.reply(manager.sender.successEmbed(`**${name}**, bugünkü ödülün: **__${reward}__** para!`));
   }
 };

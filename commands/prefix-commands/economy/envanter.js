@@ -1,6 +1,7 @@
-import { Economy, Shop } from '#models';
-import { messageSender } from '#helpers';
 import { EmbedBuilder } from 'discord.js';
+
+import Manager from '#managers';
+import { Economy, Shop } from '#models';
 
 export default {
   name: 'envanter',
@@ -8,14 +9,18 @@ export default {
   usage: '.envanter',
   category: 'economy',
 
+  permissions: {
+    enabled: false
+  },
+
   async execute(client, message) {
-    const sender = new messageSender(message);
+    const manager = new Manager(client, { action: message });
     const userId = message.author.id;
 
     const user = await Economy.findOne({ userId }) || new Economy({ userId });
     const inventoryEntries = [...user.inventory.entries()];
 
-    if (!inventoryEntries.length) return sender.reply(sender.classic('📦 Envanterin boş.'));
+    if (!inventoryEntries.length) return manager.sender.reply(manager.sender.classic('📦 Envanterin boş.'));
 
     const shopItems = await Shop.find();
 
@@ -28,7 +33,7 @@ export default {
 	  })
 	  .filter(Boolean);
 
-    if (!entries.length) return sender.reply(sender.classic('📦 **Envanterin boş.**'));
+    if (!entries.length) return manager.sender.reply(manager.sender.classic('📦 **Envanterin boş.**'));
 
     const pages = [];
     for (let i = 0; i < entries.length; i += 3) {

@@ -1,5 +1,5 @@
 import { Afk } from '#models';
-import { messageSender } from '#helpers';
+import Manager from '#helpers';
 
 export default {
   name: 'afk',
@@ -10,8 +10,8 @@ export default {
     const reason = args.join(' ') || 'Sebep belirtilmedi.';
     const existing = await Afk.findOne({ userId: message.author.id });
 	
-	const sender = new messageSender(message);
-    if (existing) return sender.reply(sender.errorEmbed('Zaten AFK modundasın.'));
+	const manager = new Manager(client, { action: message });
+    if (existing) return manager.sender.reply(manager.sender.errorEmbed('Zaten AFK modundasın.'));
     
 
     await Afk.create({
@@ -19,6 +19,6 @@ export default {
       reason,
     });
 
-    sender.reply(sender.classic(`Artık AFK modundasın. Sebep: **${reason}**`));
+    manager.sender.reply(manager.sender.classic(`Artık AFK modundasın. Sebep: **${reason}**`));
   }
 };
