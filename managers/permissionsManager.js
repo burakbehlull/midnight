@@ -59,8 +59,7 @@ class PermissionsManager {
   async checkPermissions(cmdPermissions = {}) {
     if (!this.user || !this.guild) return true;
 
-    const enabled = cmdPermissions?.enabled;
-    if (enabled === false) return true;
+    if (cmdPermissions?.enabled === false) return true;
 
     const isCreator = await this.selectOwnerIds("470548458072440842");
     if (isCreator) return true;
@@ -70,19 +69,22 @@ class PermissionsManager {
 
     await this.loadSettings();
 
-    if (await this.isOwner()) return true;
-    if (await this.isRoles()) return true;
+    const dbOwnerOk = await this.isOwner();
+    const dbRoleOk  = await this.isRoles();
+
+    if (dbOwnerOk) return true;
+    if (dbRoleOk)  return true;
 
     const { authorities = [], user = [], roles = [] } = cmdPermissions || {};
 
-    if (!authorities.length && !user.length && !roles.length) return true;
+    const cmdUserOk = Array.isArray(user) && user.length > 0 && user.includes(this.user.id);
+    const cmdRoleOk = Array.isArray(roles) && roles.length > 0 && this.member?.roles?.cache?.some(r => roles.includes(r.id));
+    const cmdAuthOk = Array.isArray(authorities) && authorities.length > 0 && this.member?.permissions?.has(authorities);
 
-    if (Array.isArray(user) && user.length > 0 && user.includes(this.user.id)) return true;
+    if (cmdUserOk) return true;
+    if (cmdRoleOk) return true;
+    if (cmdAuthOk) return true;
 
-    if (Array.isArray(roles) && roles.length > 0 && this.member?.roles?.cache?.some(r => roles.includes(r.id))) return true;
-
-    if (Array.isArray(authorities) && authorities.length > 0 && this.member?.permissions?.has(authorities)) return true;
-    
     return false;
   }
 

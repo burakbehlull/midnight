@@ -11,6 +11,10 @@ export default {
   usage: ".level-top <message | voice | streamer | camera>",
   description: "Lider tablosunu gösterir.",
   category: 'level',
+
+  permissions: {
+    enabled: false
+  },
   
   async execute(client, message, args) {
     const { guild } = message;

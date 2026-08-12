@@ -4,9 +4,6 @@ import Manager from '#managers';
 export default {
   name: 'nuke',
   description: 'Bulunduğun ya da belirttiğin metin kanalını yeniler.',
-  permissions: {
-    authorities: [PermissionFlagsBits.ManageChannels]
-  },
   usage: 'nuke #kanal',
   cooldown: 5,
   category: 'moderation',
