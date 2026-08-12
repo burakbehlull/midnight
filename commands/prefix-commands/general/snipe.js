@@ -1,11 +1,17 @@
-import { DeletedMessage } from '#models';
+import { PermissionFlagsBits } from 'discord.js';
+
 import Manager from '#managers';
+import { DeletedMessage } from '#models';
+
 
 export default {
   name: 'snipe',
   description: 'Bulunduğun kanalda silinen son mesajları gösterir (Varsayılan: 1, Maksimum: 10).',
   usage: 'snipe [sayı]',
   category: 'moderation',
+  permissions: {
+    authorities: [PermissionFlagsBits.ManageMessages],
+  },
   async execute(client, message, args) {
     const channelId = message.channel.id;
     const manager = new Manager(client, { action: message });

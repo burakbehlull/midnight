@@ -1,11 +1,18 @@
 import { getVoiceConnection } from '@discordjs/voice'
+import { PermissionFlagsBits } from 'discord.js';
+
 import Manager from '#managers';
+
 
 export default {
   name: 'sescik',
   description: 'Bot ses kanalından çıkar',
   usage: 'ses gir <#channel / channelId>',
   category: 'server',
+
+  permissions: {
+      authorities: [PermissionFlagsBits.Administrator],
+  },
   
   async execute(client, message) {
     

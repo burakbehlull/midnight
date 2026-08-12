@@ -6,6 +6,9 @@ export default {
   description: 'Etiketlenen kullanıcının veya kendi bannerını gösterir.',
   usage: 'banner @kullanıcı',
   category: 'user',
+  permissions: {
+    enabled: false
+  },
   async execute(client, message, args) {
     const manager = new Manager(client, { action: message });
     const user = message.mentions.users.first() || message.author;

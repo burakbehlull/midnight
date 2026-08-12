@@ -6,6 +6,9 @@ export default {
   description: 'Etiketlenen kullanıcının veya kendi avatarını gösterir.',
   usage: 'avatar @kullanıcı',
   category: 'user',
+  permissions: {
+    enabled: false
+  },
   async execute(client, message, args) {
     const manager = new Manager(client, { action: message });
 

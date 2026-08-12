@@ -4,8 +4,6 @@ import ms from 'ms';
 import Manager from '#managers';
 import { misc } from '#helpers';
 
-
-
 export default {
     name: "çekiliş",
     aliases: ["gstart", "giveaway"],

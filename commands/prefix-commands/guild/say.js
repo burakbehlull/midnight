@@ -5,9 +5,13 @@ export default {
   description: 'Sunucudaki istatistikleri gösterir.',
   usage: 'say',
   category: 'moderation',
+
+  permissions: {
+    enabled: false
+  },
   async execute(client, message, args) {
     const { guild } = message;
-	const sender = new messageSender(message);
+	  const manager = new Manager(client, { action: message });
 
     const totalMembers = guild.memberCount;
     const onlineMembers = guild.members.cache.filter(m => m.presence && m.presence.status !== 'offline').size;
@@ -19,7 +23,7 @@ export default {
     const boostCount = guild.premiumSubscriptionCount || 0;
     const boostTier = guild.premiumTier;
 
-	const embed = sender.embed({
+	const embed = manager.sender.embed({
 		title: null,
 		color: 0x2b2d31,
 		description: `

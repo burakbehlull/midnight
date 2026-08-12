@@ -1,6 +1,7 @@
 import { joinVoiceChannel, getVoiceConnection } from '@discordjs/voice'
-import Manager from '#managers';
 import { PermissionFlagsBits } from 'discord.js';
+
+import Manager from '#managers';
 
 
 export default {
@@ -15,7 +16,7 @@ export default {
   
   async execute(client, message, args) {
     const channel = message.mentions.channels.first() || message.guild.channels.cache.get(args[0]);
-    
+
 	  const manager = new Manager(client, { action: message });
 
 	

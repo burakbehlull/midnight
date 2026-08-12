@@ -10,6 +10,9 @@ export default {
   usage: 'nuke #kanal',
   cooldown: 5,
   category: 'moderation',
+  permissions: {
+    authorities: [PermissionFlagsBits.ManageMessages],
+  },
   async execute(client, message, args) {
     const manager = new Manager(client, { action: message });
 
