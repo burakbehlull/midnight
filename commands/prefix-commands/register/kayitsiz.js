@@ -1,6 +1,6 @@
+import Manager from "#managers";
 import { Settings } from "#models";
-import { PermissionsManager } from '#managers';
-import { messageSender } from '#helpers';
+import { PermissionFlagsBits } from "discord.js";
 
 export default {
   name: 'kayıtsız',
@@ -9,12 +9,14 @@ export default {
   usage: ".kayıtsız @user",
   category: 'register',
   
+  permissions: {
+    authorities: [PermissionFlagsBits.ManageRoles, PermissionFlagsBits.Administrator],
+  },
+
+
   async execute(client, message, args) {
-    const sender = new messageSender(message);
-    const PM = new PermissionsManager(message);
-	const ctrl = await PM.control(PM.flags.ManageRoles)
-	
-    if (!ctrl) return sender.reply(sender.errorEmbed("❌ Yetkin yok."));
+    const sender = new Manager(client, { action: message }).sender;
+
 
     const member = message.mentions.members.first();
     if (!member) return sender.reply(sender.errorEmbed("❌ Kullanıcı etiketle."));

@@ -1,7 +1,7 @@
-import { EmbedBuilder, ComponentType } from 'discord.js';
+import { EmbedBuilder, ComponentType, PermissionFlagsBits } from 'discord.js';
 import { Settings, Staff } from "#models";
-import { PermissionsManager } from '#managers';
-import { messageSender, Button } from '#helpers';
+import Manager from '#managers';
+import { Button } from '#helpers';
 
 
 export default {
@@ -10,12 +10,15 @@ export default {
   description: "Kullanıcıya kayıt rolü verir.",
   usage: ".kayıt @user isim | yaş",
   category: 'register',
+
+  permissions: {
+    authorities: [PermissionFlagsBits.ManageRoles, PermissionFlagsBits.Administrator],
+  },
+  
   
   async execute(client, message, args) {
 	  
-    const sender = new messageSender(message);
-    const PM = new PermissionsManager(message);
-	const ctrl = await PM.control(PM.flags.ManageRoles)
+    const sender = new Manager(client, { action: message }).sender;
 	
     if (!ctrl) return sender.reply(sender.errorEmbed("❌ Yetkin yok."));
 
@@ -28,16 +31,17 @@ export default {
 
     await member.setNickname(`${args[1]} | ${args[2]}`);
 	
-	await Staff.findOneAndUpdate(
-	  { userId: message.author.id, guildId: message.guild.id },
-	  { $inc: { registerCount: 1 } },
-	  { upsert: true, new: true }
-	);
+    await Staff.findOneAndUpdate(
+      { userId: message.author.id, guildId: message.guild.id },
+      { $inc: { registerCount: 1 } },
+      { upsert: true, new: true }
+    );
 
     const btn = new Button();
     btn.add("erkek_btn", "Erkek", btn.style.Primary);
     btn.add("kadin_btn", "Kadın", btn.style.Danger);
-	const row = btn.build();
+	  const row = btn.build();
+
     const msg = await message.channel.send({
       embeds: [
 		sender.embed({

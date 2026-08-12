@@ -1,5 +1,6 @@
 import { Punishment, Settings } from "#models";
-import { messageSender } from "#helpers";
+import Manager from "#helpers";
+import { PermissionFlagsBits } from "discord.js";
 
 
 export default {
@@ -8,14 +9,20 @@ export default {
   description: 'Belirtilen kullanıcıyu jaile atar',
   usage: 'jail @user süre sebep',
   category: 'moderation',
+
+  permissions: {
+    authorities: [PermissionFlagsBits.ManageRoles, PermissionFlagsBits.Administrator],
+  },
+
+
   async execute(client, message, args) {
-	const sender = new messageSender(message)
-	  
+	  const sender = new Manager(client, { action: message }).sender;
+
     const target = message.mentions.members.first() || message.guild.members.cache.get(args[0]);
     const duration = args[1];
     const reason = args.slice(2).join(" ") || "Sebep belirtilmedi";
 
-	if(!target) return sender.reply(sender.errorEmbed("Kullancı belirtin!"))
+	  if(!target) return sender.reply(sender.errorEmbed("Kullancı belirtin!"))
 
     const settings = await Settings.findOne({ guildId: message.guild.id });
     if (!settings?.jailRoleId) return sender.reply(sender.errorEmbed("❌ Jail rolü ayarlanmamış."));
@@ -31,7 +38,7 @@ export default {
       duration
     });
 
-	message.channel.send({ embeds: [sender.classic(`${target} adlı kullanıcı ${duration} boyunca cezalandırıldı.`)] });
+	  message.channel.send({ embeds: [sender.classic(`${target} adlı kullanıcı ${duration} boyunca cezalandırıldı.`)] });
 
   }
 };

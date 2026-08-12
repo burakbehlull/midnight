@@ -1,5 +1,5 @@
 import { Staff } from "#models";
-import { messageSender } from "#helpers";
+import Manager from "#managers";
 
 
 export default {
@@ -8,10 +8,14 @@ export default {
   description: "Kullanıcının çektiği yetkilileri gösterir",
   usage: "yetkililerim",
   category: 'register',
+
+  permissions: {
+      authorities: [PermissionFlagsBits.ManageRoles, PermissionFlagsBits.Administrator],
+  },
   
   async execute(client, message) {
-	const sender = new messageSender(message)
-	  
+	const sender = new Manager(client, { action: message }).sender;
+
     const staff = await Staff.findOne({ userId: message.author.id, guildId: message.guild.id });
 
     if (!staff?.startedUsers?.length) return sender.reply(sender.errorEmbed("❌ Hiç yetkili başlatmamışsın."));

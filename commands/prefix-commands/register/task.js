@@ -1,5 +1,6 @@
 import { Staff } from "#models";
-import { messageSender } from "#helpers";
+import { PermissionFlagsBits } from "discord.js";
+import Manager from "#managers";
 
 export default {
   name: "task",
@@ -7,9 +8,13 @@ export default {
   description: "Kullanıcının istatistiklerini görür",
   usage: "task @user/userId",
   category: 'register',
+
+  permissions: {
+    authorities: [PermissionFlagsBits.ManageRoles, PermissionFlagsBits.Administrator],
+  },
   
   async execute(client, message) {
-	const sender = new messageSender(message);
+	  const sender = new Manager(client, { action: message }).sender;
 
     const data = await Staff.findOne({ userId: message.author.id, guildId: message.guild.id });
 
@@ -27,17 +32,17 @@ export default {
       });
     }
 	
-	const embed = sender.embed({
-		author: { name: message.guild.name, iconURL: message.guild.iconURL()},
-		title: `Görevler - \` ${message.author.username} \``,
-		color: 0x00AE86,
-		fields: [
-			{ name: "Kayıt Sayısı", value: `${data.registerCount || 0}`, inline: true },
-			{ name: "Yetkiye Başlatma", value: `${data.startedStaffCount || 0}`, inline: true },
-			{ name: "Sorun Çözme Sayısı", value: `0`, inline: true },
-			{ name: "Yetkiye Başlama Tarihi", value: formattedStartDate },
-		]		
-	})
+	  const embed = sender.embed({
+      author: { name: message.guild.name, iconURL: message.guild.iconURL()},
+      title: `Görevler - \` ${message.author.username} \``,
+      color: 0x00AE86,
+      fields: [
+        { name: "Kayıt Sayısı", value: `${data.registerCount || 0}`, inline: true },
+        { name: "Yetkiye Başlatma", value: `${data.startedStaffCount || 0}`, inline: true },
+        { name: "Sorun Çözme Sayısı", value: `0`, inline: true },
+        { name: "Yetkiye Başlama Tarihi", value: formattedStartDate },
+      ]		
+	  })
 	
     message.channel.send({ embeds: [embed] });
   }

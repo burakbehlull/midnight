@@ -1,8 +1,7 @@
 import { EmbedBuilder, ButtonStyle } from 'discord.js';
 
-import { messageSender, Button } from '#helpers';
+import { Button } from '#helpers';
 import { Settings } from '#models';
-import { PermissionsManager } from '#managers';
 
 export default {
   name: 'itiraf-setup',
@@ -12,24 +11,21 @@ export default {
   category: "fun",
   async execute(client, message, args) {
 	  
-	  const PM = new PermissionsManager(message);
-    const sender = new messageSender(message);
+    const sender = new Manager(client, { action: message }).sender;
 	
     try {
 		
-	  const ctrl = await PM.control(PM.flags.Administrator);
-      if (!ctrl) return sender.reply(sender.errorEmbed('❌ Bu komutu kullanmak için yeterli yetkin yok.'));
-      
+	 
 		
       const channel = message.mentions.channels.first();
       if (!channel) return sender.reply(sender.errorEmbed('❌ Lütfen bir kanal etiketle.'));
 
-	  const embed = sender.embed({
-		   author: { name: message.guild.name, iconURL: message.guild.iconURL() },
-		   title: "İtiraf Kutusu",
-		   color: sender.colors.iceBlue,
-		   description: "**Aşağıdaki butonlardan birini seçerek itirafını gönderebilirsin.**"
-	  })
+      const embed = sender.embed({
+        author: { name: message.guild.name, iconURL: message.guild.iconURL() },
+        title: "İtiraf Kutusu",
+        color: sender.colors.iceBlue,
+        description: "**Aşağıdaki butonlardan birini seçerek itirafını gönderebilirsin.**"
+      })
 
 
       const btn = new Button();

@@ -1,4 +1,4 @@
-import { messageSender, Button } from '#helpers';
+import { Button } from '#helpers';
 import Manager from '#managers';
 
 export default {
@@ -12,9 +12,6 @@ export default {
       action: message
     });
 
-    const ctrl = await manager.authority.control(manager.flags.Administrator);
-    if (!ctrl) return manager.sender.reply(manager.sender.errorEmbed('❌ Bu komutu kullanmak için yeterli yetkin yok.'));
-      
     const btn = new Button();
     btn.add('ticket:create', '🎫 Ticket Aç', btn.style.Primary);
 

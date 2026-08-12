@@ -6,6 +6,10 @@ export default {
   description: "Yetkili kullanıcıları gösterir",
   usage: "topyetkili",
   category: 'register',
+
+  permissions: {
+    authorities: [PermissionFlagsBits.ManageRoles, PermissionFlagsBits.Administrator],
+  },
   
   async execute(client, message) {
     const top = await Staff.find({ guildId: message.guild.id })

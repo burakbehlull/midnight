@@ -7,14 +7,18 @@ export default {
   description: 'Belirtilen kullanıcıya uyarı verir',
   usage: 'uyarı @user sebep',
   category: 'moderation',
+
+  permissions: {
+    authorities: [PermissionFlagsBits.ManageRoles, PermissionFlagsBits.Administrator],
+  },
   
   async execute(client, message, args) {
-	const sender = new messageSender(message)
+	  const sender = new Manager(client, { action: message }).sender;
 
     const target = message.mentions.members.first() || message.guild.members.cache.get(args[0]);
     const reason = args.slice(1).join(" ") || "Sebep belirtilmedi";
 	
-	if(!target) return sender.reply(sender.errorEmbed("Kullancı belirtin!"))
+	  if(!target) return sender.reply(sender.errorEmbed("Kullancı belirtin!"))
 		
     await Punishment.create({
       userId: target.id,

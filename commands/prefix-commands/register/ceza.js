@@ -1,5 +1,6 @@
 import { Punishment } from "#models";
-import { messageSender } from "#helpers";
+import Manager from "#managers";
+import { PermissionFlagsBits } from "discord.js";
 
 export default {
   name: "ceza",
@@ -7,13 +8,18 @@ export default {
   description: 'Belirtilen kullanıcıya ceza verir',
   usage: 'ceza @user sebep',
   category: 'moderation',
+
+  permissions: {
+    authorities: [PermissionFlagsBits.ManageRoles, PermissionFlagsBits.Administrator],
+  },
+
   async execute(client, message, args) {
-	const sender = new messageSender(message)
+	  const sender = new Manager(client, { action: message }).sender;
 	  
     const target = message.mentions.members.first() || message.guild.members.cache.get(args[0]);
     const reason = args.slice(1).join(" ") || "Sebep belirtilmedi";
 	
-	if(!target) return sender.reply(sender.errorEmbed("Kullancı belirtin!"))
+	  if(!target) return sender.reply(sender.errorEmbed("Kullancı belirtin!"))
 	
 
     await Punishment.create({
@@ -24,7 +30,7 @@ export default {
       reason
     });
 
-	message.channel.send({ embeds: [sender.classic(`${target} için ceza kaydı oluşturuldu.`)] });
+	  message.channel.send({ embeds: [sender.classic(`${target} için ceza kaydı oluşturuldu.`)] });
 
   }
 };

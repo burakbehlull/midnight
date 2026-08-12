@@ -27,10 +27,6 @@ export default {
       action: message
     });
 
-    const ctrl = await manager.authority.control();
-    if (!ctrl) return manager.sender.reply(manager.sender.errorEmbed('❌ Bu komutu kullanmak için yeterli yetkin yok.'));
-      
-
     const commandsByCategory = new Map();
     
     const commandTypes = new Map();

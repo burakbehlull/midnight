@@ -1,5 +1,6 @@
+import Manager from "#managers";
 import { Punishment } from "#models";
-import { messageSender } from "#helpers";
+import { PermissionFlagsBits } from "discord.js";
 
 export default {
   name: "sicil",
@@ -7,14 +8,18 @@ export default {
   description: 'Belirtilen kullanıcının sicilini gösterir',
   usage: 'sicil me/@user',
   category: 'moderation',
+
+  permissions: {
+    authorities: [PermissionFlagsBits.ManageRoles, PermissionFlagsBits.Administrator],
+  },
   
   async execute(client, message, args) {
-	const sender = new messageSender(message)
+	  const sender = new Manager(client, { action: message }).sender;
 	  
     const userId = message.mentions.users.first()?.id || args[0];
     const data = await Punishment.find({ userId, guildId: message.guild.id });
 
-	if(!data.length > 0) return sender.reply(sender.errorEmbed("Kaydın yok."))
+	  if(!data.length > 0) return sender.reply(sender.errorEmbed("Kaydın yok."))
 		
     const warns = data.filter(d => d.type === 'warn');
     const jails = data.filter(d => d.type === 'jail');
