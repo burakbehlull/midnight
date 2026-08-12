@@ -1,5 +1,6 @@
 import { Staff } from "#models";
 import Manager from "#managers";
+import { PermissionFlagsBits } from "discord.js";
 
 
 export default {

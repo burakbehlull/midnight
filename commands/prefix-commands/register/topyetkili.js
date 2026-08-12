@@ -1,4 +1,5 @@
 import { Staff } from "#models";
+import { PermissionFlagsBits } from "discord.js";
 
 export default {
   name: "topyetkili",

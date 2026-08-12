@@ -1,5 +1,6 @@
 import { Punishment } from "#models";
 import { messageSender } from "#helpers";
+import { PermissionFlagsBits } from "discord.js";
 
 export default {
   name: "uyarı",
