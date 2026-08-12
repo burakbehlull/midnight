@@ -1,5 +1,5 @@
+import Manager from '#managers';
 import { InviteModel } from '#models';
-import { messageSender } from "#helpers";
 
 export default {
   name: 'invites',
@@ -7,20 +7,25 @@ export default {
   description: 'Kullanıcının davet sayısını gösterir.',
   usage: "invites @kullanıcı",
   category: 'invite',
+
+  permissions: {
+    enabled: false
+  },
+
   async execute(client, message, args) {
-	const sender = new messageSender(message);
+	  const manager = new Manager(client, { action: message });
 
     try {
       const user = message.mentions.users.first() || message.author;
       const record = await InviteModel.findOne({ guildId: message.guild.id, userId: user.id });
       const count = record ? record.invitesCount : 0;
 
-      sender.reply(sender.classic(
+      manager.sender.reply(manager.sender.classic(
 		`**${user.globalName}**, toplam \`${count}\` kişiyi davet ettin.`
 	  ));
     } catch (err) {
       console.error(err);
-      sender.reply(sender.errorEmbed('Bir hata oluştu.'));
+      manager.sender.reply(manager.sender.errorEmbed('Bir hata oluştu.'));
     }
   },
 };

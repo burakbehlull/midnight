@@ -103,6 +103,15 @@ function xpForLevel(level) {
     return Math.ceil(Math.pow(level / 0.1, 2));
 }
 
+const formatTopUsers = async (array, fieldName, guild) => {
+    const formatted = await Promise.all(array.map(async (data, index) => {
+        const user = await guild.members.fetch(data.userId).catch(() => null);
+        const username = user ? `${user.user.globalName || user.user.username}` : `Unknown (${data.userId})`;
+        return `\` ${index + 1} \` **${username}**: ${data[fieldName]}`;
+    }));
+    return formatted.join('\n');
+};
+
 export {
 	randomColor,
 	itentsMiddle,
@@ -113,5 +122,6 @@ export {
     formatTimeLeft,
     formatNumber,
     applyText,
-    xpForLevel
+    xpForLevel,
+    formatTopUsers
 }

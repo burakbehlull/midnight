@@ -1,6 +1,7 @@
-import{ Level } from "#models";
 import { EmbedBuilder } from "discord.js";
-import { messageSender } from "#helpers";
+
+import Manager from "#managers";
+import{ Level } from "#models";
 
 export default {
   name: "level",
@@ -12,12 +13,12 @@ export default {
     const target = message.mentions.users.first() || message.author;
     const userId = target.id;
     const guildId = message.guild.id;
-	const sender = new messageSender(message)
+	const manager = new Manager(client, { action: message });
 
     const userData = await Level.findOne({ userId, guildId });
-    if (!userData) return message.channel.send({embeds: [sender.errorEmbed(`${target} için bir kayıt bulunamadı.`)]});
+    if (!userData) return message.channel.send({embeds: [manager.sender.errorEmbed(`${target} için bir kayıt bulunamadı.`)]});
     
-	const embed = sender.embed({
+	const embed = manager.sender.embed({
 		author: { name: message.guild.name, iconURL: message.guild.iconURL()},
 		title: `Seviye Bilgileri: \` ${target.globalName || target.username} \``,
 		color: "Blue",
