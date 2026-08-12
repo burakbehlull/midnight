@@ -76,10 +76,11 @@ class PermissionsManager {
     if (dbRoleOk)  return true;
 
     const { authorities = [], user = [], roles = [] } = cmdPermissions || {};
+    const authFlagEnabled = this.permissionSettings?.isAuthority !== false;
 
     const cmdUserOk = Array.isArray(user) && user.length > 0 && user.includes(this.user.id);
     const cmdRoleOk = Array.isArray(roles) && roles.length > 0 && this.member?.roles?.cache?.some(r => roles.includes(r.id));
-    const cmdAuthOk = Array.isArray(authorities) && authorities.length > 0 && this.member?.permissions?.has(authorities);
+    const cmdAuthOk = authFlagEnabled && Array.isArray(authorities) && authorities.length > 0 && this.member?.permissions?.has(authorities);
 
     if (cmdUserOk) return true;
     if (cmdRoleOk) return true;
