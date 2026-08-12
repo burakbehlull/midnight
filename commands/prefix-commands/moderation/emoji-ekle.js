@@ -1,4 +1,5 @@
 import Manager from '#managers';
+import { PermissionFlagsBits } from 'discord.js';
 
 export default {
   name: 'emoji',
@@ -6,6 +7,11 @@ export default {
   description: 'Bir emoji veya bağlantı ile sunucuya emoji ekler.',
   usage: 'emoji-yükle <emoji | url> <isim>',
   category: 'server',  
+
+  permissions: {
+    authorities: [PermissionFlagsBits.ManageMessages, PermissionFlagsBits.Administrator],
+  },
+
   async execute(client, message, args) {
     const manager = new Manager(client, { action: message });
 

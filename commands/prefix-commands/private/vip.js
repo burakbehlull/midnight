@@ -1,24 +1,25 @@
+import Manager from '#managers';
+
 import { Settings } from '#models'; 
-import { PermissionsManager } from '#managers';
-import { messageSender } from '#helpers';
+import { PermissionFlagsBits } from 'discord.js';
 
 export default {
     name: 'vip',
     description: 'Etiketlenen kullanıcıya vip rolünü verir.',
     usage: '.vip @kullanıcı',
 	category: 'moderation',
-	
+    permissions: {
+        authorities: [PermissionFlagsBits.ManageRoles, PermissionFlagsBits.Administrator],
+    },
     async execute(client, message, args) {
+		const manager = new Manager(client, { action: message });
+
+
         const targetUser = message.mentions.members.first();
         const guildId = message.guild.id;
-		const sender = new messageSender(message)
 
-        if (!targetUser) return sender.reply(sender.errorEmbed('Lütfen bir kullanıcı etiketleyin.'));
-        
-		const PM = new PermissionsManager(message);
-      
-		const ctrl = await PM.control(PM.flags.ManageRoles, PM.flags.Administrator);
-		if (!ctrl) return sender.reply(sender.errorEmbed('❌ Bu komutu kullanmak için yetkin yok.'));
+
+        if (!targetUser) return manager.sender.reply(manager.sender.errorEmbed('Lütfen bir kullanıcı etiketleyin.'));
 
 
         try {
@@ -28,14 +29,14 @@ export default {
             
 
             const vipRole = message.guild.roles.cache.get(settings.vipRoleId);
-            if (!vipRole) return sender.reply(sender.errorEmbed('Ayarlanan Vip rolü sunucuda bulunamıyor!'));
+            if (!vipRole) return manager.sender.reply(manager.sender.errorEmbed('Ayarlanan Vip rolü sunucuda bulunamıyor!'));
 
             await targetUser.roles.add(vipRole);
-            return sender.reply(sender.classic(`${targetUser} kullanıcısına vip rolü verildi.`));
+            return manager.sender.reply(manager.sender.classic(`${targetUser} kullanıcısına vip rolü verildi.`));
 
         } catch (err) {
             console.error('Hata:', err);
-            return sender.reply(sender.errorEmbed('❌ Bir hata oluştu, lütfen daha sonra tekrar deneyin.'));
+            return manager.sender.reply(manager.sender.errorEmbed('❌ Bir hata oluştu, lütfen daha sonra tekrar deneyin.'));
         }
     }
 };
