@@ -1,5 +1,5 @@
 import { Punishment, Settings } from "#models";
-import Manager from "#helpers";
+import Manager from "#managers";
 import { PermissionFlagsBits } from "discord.js";
 
 
