@@ -1,4 +1,5 @@
 import Manager from '#managers';
+import { PermissionFlagsBits } from 'discord.js';
 
 export default {
   name: 'rolal',
@@ -6,6 +7,10 @@ export default {
   usage: '.rolal @kullanıcı @rol | .rolal kullanıcıID rolID',
   aliases: ['take-role'],
   category: 'moderation',
+
+  permissions: {
+    authorities: [PermissionFlagsBits.ManageRoles, PermissionFlagsBits.Administrator],
+  },
   
   async execute(client, message, args) {
     
@@ -37,12 +42,9 @@ export default {
       const isUserHasRole = member.roles.cache.has(role.id);
       if (!isUserHasRole) return manager.sender.reply(manager.sender.errorEmbed('❌ Kullanıcı bu role sahip değil!'));
 
-      // Yetki Kontrolleri
-      const ctrl = await manager.authority.control(manager.flags.ManageRoles, manager.flags.Administrator);
-      if (!ctrl) return manager.sender.reply(manager.sender.errorEmbed('❌ Bu komutu kullanmak için yetkin yok.'));
-
       await member.roles.remove(role);
       return manager.sender.reply(manager.sender.classic(`<@${member.id}> adlı kullanıcıdan ${role} rolü başarıyla alındı!`));
+    
     } catch (error) {
       console.error('Hata:', error.message);
       return manager.sender.reply(manager.sender.errorEmbed('❌ Bir hata oluştu.'));

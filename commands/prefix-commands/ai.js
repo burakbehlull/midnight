@@ -10,9 +10,15 @@ export default {
   usage: '.ai <message>',
   category: 'extra',
 
+  permissions: {
+		enabled: false
+	},
+
   async execute(client, message, args) {
-	const gemini = new GeminiAI()
+
+	  const gemini = new GeminiAI()
     const userInput = args.join(' ');
+    
     if (!userInput) {
       return message.reply('❌ Lütfen bir mesaj yaz.');
     }

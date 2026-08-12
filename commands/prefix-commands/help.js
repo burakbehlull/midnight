@@ -89,6 +89,10 @@ export default {
   description: 'Komutları kategorilere göre listeler.',
   category: 'extra',
 
+  permissions: {
+		enabled: false
+	},
+
   async execute(client, message, args) {
     try {
       const { commands, commandIds } = await loadAllCommands(client);

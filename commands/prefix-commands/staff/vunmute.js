@@ -1,19 +1,20 @@
-import { PermissionsManager } from '#managers';
-import { messageSender } from '#helpers';
+import Manager from '#managers';
+import { PermissionFlagsBits } from 'discord.js';
 
 export default {
   name: 'vunmute',
   description: 'Etiketlenen kullanıcının ses kanalındaki susturmasını kaldırır.',
   usage: '.vunmute @kullanıcı',
   category: 'moderation',
+
+  permissions: {
+    authorities: [PermissionFlagsBits.ManageChannels, PermissionFlagsBits.Administrator],
+  },
+    
   
   async execute(client, message, args) {
     try {
-      const PM = new PermissionsManager(message);
-      const sender = new messageSender(message);
-
-      const ctrl = await PM.control(PM.flags.MuteMembers);
-      if (!ctrl) return sender.reply(sender.errorEmbed("❌ Bu komutu kullanmak için `Üyeleri Sustur` yetkin olmalı."), true);
+      const sender = new Manager(client, { action: message }).sender;
 
       const hedef = message.mentions.members.first();
       if (!hedef) return sender.reply(sender.errorEmbed("❌ Lütfen bir kullanıcı etiketleyin."), true);

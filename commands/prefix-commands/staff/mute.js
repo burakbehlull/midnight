@@ -1,5 +1,5 @@
-import { PermissionsManager } from '#managers';
-import { messageSender } from '#helpers';
+import Manager from '#managers';
+import { PermissionFlagsBits } from 'discord.js';
 
 export default {
   name: 'mute',
@@ -7,16 +7,17 @@ export default {
   usage: '.mute @kullanıcı',
   aliases: ["sustur"],
   category: 'moderation',
+
+  permissions: {
+    authorities: [PermissionFlagsBits.ManageChannels, PermissionFlagsBits.Administrator],
+  },
   
   
   async execute(client, message, args) {
 	  
-	const PM = new PermissionsManager(message);
-	const sender = new messageSender(message);
+    const sender = new Manager(client, { action: message }).sender;
 	  
-    const ctrl = await PM.control(PM.flags.ManageMessages, PM.flags.Administrator)
-	if (!ctrl) return sender.reply(sender.errorEmbed('❌ Bu komutu kullanmak için yetkin yok.'));
-	
+
     const member = message.mentions.members.first();
     if (!member) return sender.reply(sender.errorEmbed('❌ Susturmak için bir kullanıcı etiketlemelisin.'));
 

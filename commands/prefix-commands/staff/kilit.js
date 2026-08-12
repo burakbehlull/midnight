@@ -1,21 +1,19 @@
-import { PermissionsManager } from '#managers';
-import { messageSender } from '#helpers';
+import Manager from '#managers';
+import { PermissionFlagsBits } from 'discord.js';
 
 export default {
     name: "kilit",
 	aliases: ["lock"],
 	usage: "kilit <aç>",
 	category: 'moderation',
-	
+	permissions: {
+		authorities: [PermissionFlagsBits.ManageChannels, PermissionFlagsBits.Administrator],
+	},
 	
     async execute(client, message, args) {
         const channel = message.channel;
 		
-		const sender = new messageSender(message);
-		const PM = new PermissionsManager(message);
-		
-		const ctrl = PM.control(PM.flags.ManageChannels, PM.flags.Administrator)
-		if (!ctrl) return sender.reply(sender.errorEmbed("❌ Yetkin yok."));
+		const sender = new Manager(client, { action: message }).sender;
 		
 		const choose = args[0]
 		const permissions = channel.permissionOverwrites.cache.get(message.guild.roles.everyone.id);

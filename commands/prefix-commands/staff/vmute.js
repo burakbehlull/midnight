@@ -1,21 +1,22 @@
 import ms from 'ms';
 
-import { PermissionsManager } from '#managers';
-import { messageSender } from '#helpers';
+import Manager from '#managers';
+import { PermissionFlagsBits } from 'discord.js';
 
 export default {
   name: 'vmute',
   description: 'Etiketlenen kullanıcıyı belirli bir süre boyunca ses kanalında susturur.',
   usage: '.vunmute <@kullanıcı> <süre | 1m | 1h> <sebep>',
   category: 'moderation',
+
+  permissions: {
+    authorities: [PermissionFlagsBits.ManageChannels, PermissionFlagsBits.Administrator],
+  },
+    
   
   async execute(client, message, args) {
     try {
-      const PM = new PermissionsManager(message);
-      const sender = new messageSender(message);
-
-      const ctrl = await PM.control(PM.flags.MuteMembers);
-      if (!ctrl) return sender.reply(sender.errorEmbed("❌ Bu komutu kullanmak için `Üyeleri Sustur` yetkin olmalı."), true);
+      const sender = new Manager(client, { action: message }).sender;
 
       const target = message.mentions.members.first();
 	  

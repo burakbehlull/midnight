@@ -1,5 +1,5 @@
-import { PermissionsManager } from '#managers';
-import { messageSender } from '#helpers';
+import Manager from '#managers';
+import { PermissionFlagsBits } from 'discord.js';
 
 export default {
   name: 'ban',
@@ -9,19 +9,18 @@ export default {
   cooldown: 10,
   category: 'moderation',
 
+  permissions: {
+    authorities: [PermissionFlagsBits.BanMembers, PermissionFlagsBits.Administrator],
+  },
+
   async execute(client, message, args) {
-    const PM = new PermissionsManager(message);
-    const sender = new messageSender(message);
+    const sender = new Manager(client, { action: message }).sender;
 
     if (!message.guild || !message.member) {
       return sender.reply(sender.errorEmbed('❌ Bu komut sadece sunucularda kullanılabilir.'));
     }
 
     try {
-      const hasPerm = await PM.control(PM.flags.Administrator);
-      if (!hasPerm) return sender.reply(sender.errorEmbed('❌ Bu komutu kullanmak için yeterli yetkin yok.'));
-      
-
       let target = message.mentions.members.first();
       if (!target && args[0]) {
         target = await message.guild.members.fetch(args[0]).catch(() => null);

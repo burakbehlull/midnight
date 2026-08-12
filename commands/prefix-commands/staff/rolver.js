@@ -1,10 +1,15 @@
 import Manager from '#managers';
+import { PermissionFlagsBits } from 'discord.js';
 
 export default {
   name: 'rolver',
   description: 'Kullanıcıya rol verir.',
   usage: '.rolver @kullanıcı @rol | .rolver kullanıcıID rolID',
   category: 'moderation',
+
+  permissions: {
+      authorities: [PermissionFlagsBits.ManageRoles, PermissionFlagsBits.Administrator],
+  },
   
   async execute(client, message, args) {
     const manager = new Manager(client, {
@@ -34,10 +39,6 @@ export default {
 
       const isUserHasRole = member.roles.cache.has(role.id);
       if (isUserHasRole) return manager.sender.reply(manager.sender.errorEmbed('❌ Kullanıcı zaten bu role sahip!'));
-
-      // Yetki Kontrolleri
-      const ctrl = await manager.authority.control(manager.flags.ManageRoles, manager.flags.Administrator);
-      if (!ctrl) return manager.sender.reply(manager.sender.errorEmbed('❌ Bu komutu kullanmak için yetkin yok.'));
 
       await member.roles.add(role);
       return manager.sender.reply(manager.sender.classic(`<@${member.id}> adlı kullanıcıya ${role} rolü başarıyla verildi.`));

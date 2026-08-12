@@ -1,5 +1,5 @@
-import { PermissionsManager } from '#managers';
-import { messageSender } from '#helpers';
+import Manager from '#managers';
+import { PermissionFlagsBits } from 'discord.js';
 
 export default {
   name: 'sil',
@@ -8,20 +8,19 @@ export default {
   aliases: ["clear"],
   cooldown: 5,
   category: 'moderation',
+  permissions: {
+      authorities: [PermissionFlagsBits.ManageRoles, PermissionFlagsBits.Administrator],
+  },
   
   async execute(client, message, args) {
-    const PM = new PermissionsManager(message);
-	const sender = new messageSender(message);
+
+	  const sender = new Manager(client, { action: message }).sender;
 
     const deleteCount = parseInt(args[0]);
 
     if (isNaN(deleteCount) || deleteCount < 1 || deleteCount > 100) {
       return sender.reply(sender.errorEmbed('❌ Lütfen 1 ile 100 arasında bir sayı belirtin.'));
     }
-
-    // Yetki Kontrolü
-    const ctrl = await PM.control(PM.flags.ManageRoles, PM.flags.Administrator)
-	if (!ctrl) return sender.reply(sender.errorEmbed('❌ Bu komutu kullanmak için yetkin yok.'));
 
     try {
       await message.channel.bulkDelete(deleteCount, true);

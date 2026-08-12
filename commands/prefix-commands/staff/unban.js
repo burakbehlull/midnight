@@ -1,15 +1,17 @@
-import { PermissionsManager } from '#managers';
-import { messageSender } from '#helpers';
+import Manager from '#managers';
+import { PermissionFlagsBits } from 'discord.js';
 
 export default {
   name: 'unban',
   description: 'Belirtilen ID\'ye sahip kullanıcının banını kaldırır.',
   usage: 'unban <userId>',
   category: 'moderation',
+  permissions: {
+      authorities: [PermissionFlagsBits.BanMembers, PermissionFlagsBits.Administrator],
+  },
   
   async execute(client, message, args) {
-    const PM = new PermissionsManager(message);
-	const sender = new messageSender(message);
+	  const sender = new Manager(client, { action: message }).sender;
 	
     const userId = args[0];
     const guild = message.guild;
@@ -17,9 +19,6 @@ export default {
     if (!userId) {
       return sender.reply(sender.errorEmbed("❌ Lütfen bir kullanıcı ID'si belirtin."));
     }
-
-    const ctrl = await PM.control(PM.flags.ManageRoles, PM.flags.Administrator)
-	if (!ctrl) return sender.reply(sender.errorEmbed('❌ Bu komutu kullanmak için yetkin yok.'));
 
     try {
       await guild.bans.remove(userId);

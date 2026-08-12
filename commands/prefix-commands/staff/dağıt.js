@@ -1,5 +1,5 @@
-import { messageSender } from '#helpers';
-import { PermissionsManager } from '#managers';
+import Manager from '#managers';
+import { PermissionFlagsBits } from 'discord.js';
 
 
 export default {
@@ -9,16 +9,14 @@ export default {
 	cooldown: 5,
 	usage: '.dağıt',
 	category: 'moderation',
+    permissions: {
+        authorities: [PermissionFlagsBits.ManageChannels, PermissionFlagsBits.Administrator],
+    },
 
     async execute(client, message) {
         const voiceChannel = message.member.voice.channel;
 		
-		const sender = new messageSender(message);
-		const PM = new PermissionsManager(message);
-		
-		const ctrl = await PM.control(PM.flags.Administrator)
-		if (!ctrl) return sender.reply(sender.errorEmbed("❌ Yetkin yok."));
-		
+		const sender = new Manager(client, { action: message }).sender;
 		
         if (!voiceChannel) return sender.reply(sender.errorEmbed('Önce bir ses kanalına gir!'));
 
