@@ -274,6 +274,25 @@ export default {
           await handleResetSettings(interaction, message.guild, commandsByCategory);
         }
 
+        if (interaction.customId === 'remove_channel_button') {
+          await openChannelRemove(interaction, message.guild, commandsByCategory);
+        }
+        if (interaction.customId === 'remove_channel_select') {
+          await confirmChannelRemove(interaction, message.guild, commandsByCategory);
+        }
+        if (interaction.customId === 'remove_role_button') {
+          await openRoleRemove(interaction, message.guild, commandsByCategory);
+        }
+        if (interaction.customId === 'remove_role_select') {
+          await confirmRoleRemove(interaction, message.guild, commandsByCategory);
+        }
+        if (interaction.customId === 'remove_user_button') {
+          await openUserRemove(interaction, message.guild, commandsByCategory);
+        }
+        if (interaction.customId === 'remove_user_select') {
+          await confirmUserRemove(interaction, message.guild, commandsByCategory);
+        }
+
         if (interaction.customId === 'back_to_category') {
           await interaction.update({
             embeds: [categoryEmbed],
@@ -313,43 +332,61 @@ function createSettingsEmbed(commandName, settings, guild, commandInfo) {
 
   let channelText = '❌ Kapalı (Tüm kanallarda kullanılabilir)';
   if (settings.channelMode === 'whitelist') {
-    const channels = settings.allowedChannels.length > 0 
-      ? settings.allowedChannels.map(id => `<#${id}>`).join(', ')
-      : '⚠️ Henüz kanal seçilmedi';
-    channelText = `✅ **Whitelist** — Sadece seçili kanallarda\n${channels}`;
+    if (!settings.allowedChannels || settings.allowedChannels.length === 0) {
+      channelText = `✅ **Whitelist** — ⚠️ Henüz kanal seçilmedi`;
+    } else {
+      const chunks = chunkArray(settings.allowedChannels, 20);
+      channelText = `✅ **Whitelist** — Sadece şu **${settings.allowedChannels.length}** kanalda:\n${chunks[0].map(id => `<#${id}>`).join(', ')}`;
+      if (chunks.length > 1) channelText += ` +${settings.allowedChannels.length - 20} tane daha`;
+    }
   } else if (settings.channelMode === 'blacklist') {
-    const channels = settings.blockedChannels.length > 0
-      ? settings.blockedChannels.map(id => `<#${id}>`).join(', ')
-      : '⚠️ Henüz kanal seçilmedi';
-    channelText = `🚫 **Blacklist** — Seçili kanallar hariç\n${channels}`;
+    if (!settings.blockedChannels || settings.blockedChannels.length === 0) {
+      channelText = `🚫 **Blacklist** — ⚠️ Henüz kanal seçilmedi`;
+    } else {
+      const chunks = chunkArray(settings.blockedChannels, 20);
+      channelText = `🚫 **Blacklist** — Şu **${settings.blockedChannels.length}** kanal hariç:\n${chunks[0].map(id => `<#${id}>`).join(', ')}`;
+      if (chunks.length > 1) channelText += ` +${settings.blockedChannels.length - 20} tane daha`;
+    }
   }
   embed.addFields({ name: '📺 Kanal Kısıtlaması', value: channelText, inline: false });
 
   let roleText = '❌ Kapalı (Tüm roller kullanabilir)';
   if (settings.roleMode === 'whitelist') {
-    const roles = settings.allowedRoles.length > 0
-      ? settings.allowedRoles.map(id => `<@&${id}>`).join(', ')
-      : '⚠️ Henüz rol seçilmedi';
-    roleText = `✅ **Whitelist** — Sadece seçili roller\n${roles}`;
+    if (!settings.allowedRoles || settings.allowedRoles.length === 0) {
+      roleText = `✅ **Whitelist** — ⚠️ Henüz rol seçilmedi`;
+    } else {
+      const chunks = chunkArray(settings.allowedRoles, 20);
+      roleText = `✅ **Whitelist** — Sadece şu **${settings.allowedRoles.length}** rol:\n${chunks[0].map(id => `<@&${id}>`).join(', ')}`;
+      if (chunks.length > 1) roleText += ` +${settings.allowedRoles.length - 20} tane daha`;
+    }
   } else if (settings.roleMode === 'blacklist') {
-    const roles = settings.blockedRoles.length > 0
-      ? settings.blockedRoles.map(id => `<@&${id}>`).join(', ')
-      : '⚠️ Henüz rol seçilmedi';
-    roleText = `🚫 **Blacklist** — Seçili roller hariç\n${roles}`;
+    if (!settings.blockedRoles || settings.blockedRoles.length === 0) {
+      roleText = `🚫 **Blacklist** — ⚠️ Henüz rol seçilmedi`;
+    } else {
+      const chunks = chunkArray(settings.blockedRoles, 20);
+      roleText = `🚫 **Blacklist** — Şu **${settings.blockedRoles.length}** rol hariç:\n${chunks[0].map(id => `<@&${id}>`).join(', ')}`;
+      if (chunks.length > 1) roleText += ` +${settings.blockedRoles.length - 20} tane daha`;
+    }
   }
   embed.addFields({ name: '🎭 Rol Kısıtlaması', value: roleText, inline: false });
 
   let userText = '❌ Kapalı (Tüm üyeler kullanabilir)';
   if (settings.userMode === 'whitelist') {
-    const users = settings.allowedUsers.length > 0
-      ? settings.allowedUsers.map(id => `<@${id}>`).join(', ')
-      : '⚠️ Henüz üye seçilmedi';
-    userText = `✅ **Whitelist** — Sadece seçili üyeler\n${users}`;
+    if (!settings.allowedUsers || settings.allowedUsers.length === 0) {
+      userText = `✅ **Whitelist** — ⚠️ Henüz üye seçilmedi`;
+    } else {
+      const chunks = chunkArray(settings.allowedUsers, 20);
+      userText = `✅ **Whitelist** — Sadece şu **${settings.allowedUsers.length}** üye:\n${chunks[0].map(id => `<@${id}>`).join(', ')}`;
+      if (chunks.length > 1) userText += ` +${settings.allowedUsers.length - 20} tane daha`;
+    }
   } else if (settings.userMode === 'blacklist') {
-    const users = settings.blockedUsers.length > 0
-      ? settings.blockedUsers.map(id => `<@${id}>`).join(', ')
-      : '⚠️ Henüz üye seçilmedi';
-    userText = `🚫 **Blacklist** — Seçili üyeler hariç\n${users}`;
+    if (!settings.blockedUsers || settings.blockedUsers.length === 0) {
+      userText = `🚫 **Blacklist** — ⚠️ Henüz üye seçilmedi`;
+    } else {
+      const chunks = chunkArray(settings.blockedUsers, 20);
+      userText = `🚫 **Blacklist** — Şu **${settings.blockedUsers.length}** üye hariç:\n${chunks[0].map(id => `<@${id}>`).join(', ')}`;
+      if (chunks.length > 1) userText += ` +${settings.blockedUsers.length - 20} tane daha`;
+    }
   }
   embed.addFields({ name: '👤 Üye Kısıtlaması', value: userText, inline: false });
 
@@ -359,7 +396,9 @@ function createSettingsEmbed(commandName, settings, guild, commandInfo) {
   return embed;
 }
 
-function createSettingsComponents(settings) {
+function createSettingsComponents(settings, opts = {}) {
+  const { hideRemoveButtons = false } = opts;
+
   const channelModeSelect = new StringSelectMenuBuilder()
     .setCustomId('channel_mode')
     .setPlaceholder('Kanal kısıtlama modu seçin...')
@@ -405,12 +444,37 @@ function createSettingsComponents(settings) {
     .setStyle(ButtonStyle.Secondary)
     .setEmoji('◀️');
 
-  return [
+  const rows = [
     new ActionRowBuilder().addComponents(channelModeSelect),
     new ActionRowBuilder().addComponents(roleModeSelect),
     new ActionRowBuilder().addComponents(userModeSelect),
-    new ActionRowBuilder().addComponents(toggleButton, resetButton, backButton)
   ];
+
+  if (!hideRemoveButtons) {
+    const removeChannelBtn = new ButtonBuilder()
+      .setCustomId('remove_channel_button')
+      .setLabel('Kanal Kaldır')
+      .setStyle(ButtonStyle.Secondary)
+      .setEmoji('📺');
+
+    const removeRoleBtn = new ButtonBuilder()
+      .setCustomId('remove_role_button')
+      .setLabel('Rol Kaldır')
+      .setStyle(ButtonStyle.Secondary)
+      .setEmoji('🎭');
+
+    const removeUserBtn = new ButtonBuilder()
+      .setCustomId('remove_user_button')
+      .setLabel('Üye Kaldır')
+      .setStyle(ButtonStyle.Secondary)
+      .setEmoji('👤');
+
+    rows.push(new ActionRowBuilder().addComponents(removeChannelBtn, removeRoleBtn, removeUserBtn));
+  }
+
+  rows.push(new ActionRowBuilder().addComponents(toggleButton, resetButton, backButton));
+
+  return rows;
 }
 
 async function handleChannelMode(interaction, guild, commandsByCategory) {
@@ -469,7 +533,7 @@ async function handleChannelMode(interaction, guild, commandsByCategory) {
   
   const components = [
     new ActionRowBuilder().addComponents(channelSelect),
-    ...createSettingsComponents(settings)
+    ...createSettingsComponents(settings, { hideRemoveButtons: true })
   ];
   
   await interaction.update({ embeds: [embed], components });
@@ -530,7 +594,7 @@ async function handleRoleMode(interaction, guild, commandsByCategory) {
   
   const components = [
     new ActionRowBuilder().addComponents(roleSelect),
-    ...createSettingsComponents(settings)
+    ...createSettingsComponents(settings, { hideRemoveButtons: true })
   ];
   
   await interaction.update({ embeds: [embed], components });
@@ -591,7 +655,7 @@ async function handleUserMode(interaction, guild, commandsByCategory) {
   
   const components = [
     new ActionRowBuilder().addComponents(userSelect),
-    ...createSettingsComponents(settings)
+    ...createSettingsComponents(settings, { hideRemoveButtons: true })
   ];
   
   await interaction.update({ embeds: [embed], components });
@@ -610,20 +674,45 @@ async function handleChannelSelect(interaction, guild, commandsByCategory) {
     });
   }
   
+  const targetList = settings.channelMode === 'whitelist' 
+    ? (settings.allowedChannels || []) 
+    : (settings.blockedChannels || []);
+
+  const selectedSet = new Set(selectedChannels);
+  const existingSet = new Set(targetList);
+
+  const added = [];
+  const removed = [];
+
+  selectedSet.forEach(id => {
+    if (existingSet.has(id)) {
+      removed.push(id);
+      existingSet.delete(id);
+    } else {
+      added.push(id);
+      existingSet.add(id);
+    }
+  });
+
+  const finalList = [...existingSet];
+
   if (settings.channelMode === 'whitelist') {
-    const merged = [...new Set([...(settings.allowedChannels || []), ...selectedChannels])];
-    settings.allowedChannels = merged;
+    settings.allowedChannels = finalList;
     settings.blockedChannels = [];
   } else if (settings.channelMode === 'blacklist') {
-    const merged = [...new Set([...(settings.blockedChannels || []), ...selectedChannels])];
-    settings.blockedChannels = merged;
+    settings.blockedChannels = finalList;
     settings.allowedChannels = [];
   }
   
   await settings.save();
   
+  const parts = [];
+  if (added.length > 0) parts.push(`✅ Eklenen: **${added.length}** kanal`);
+  if (removed.length > 0) parts.push(`❌ Kaldırılan: **${removed.length}** kanal`);
+  parts.push(`📊 Toplam: **${finalList.length}** kanal`);
+  
   await interaction.reply({
-    content: `✅ Kanal kısıtlaması güncellendi! Yeni eklenen: **${selectedChannels.length}** kanal. Toplam: **${settings.channelMode === 'whitelist' ? settings.allowedChannels.length : settings.blockedChannels.length}** kanal.`,
+    content: parts.join('\n'),
     flags: MessageFlags.Ephemeral
   });
   
@@ -654,20 +743,45 @@ async function handleRoleSelect(interaction, guild, commandsByCategory) {
     });
   }
   
+  const targetList = settings.roleMode === 'whitelist'
+    ? (settings.allowedRoles || [])
+    : (settings.blockedRoles || []);
+
+  const selectedSet = new Set(selectedRoles);
+  const existingSet = new Set(targetList);
+
+  const added = [];
+  const removed = [];
+
+  selectedSet.forEach(id => {
+    if (existingSet.has(id)) {
+      removed.push(id);
+      existingSet.delete(id);
+    } else {
+      added.push(id);
+      existingSet.add(id);
+    }
+  });
+
+  const finalList = [...existingSet];
+
   if (settings.roleMode === 'whitelist') {
-    const merged = [...new Set([...(settings.allowedRoles || []), ...selectedRoles])];
-    settings.allowedRoles = merged;
+    settings.allowedRoles = finalList;
     settings.blockedRoles = [];
   } else if (settings.roleMode === 'blacklist') {
-    const merged = [...new Set([...(settings.blockedRoles || []), ...selectedRoles])];
-    settings.blockedRoles = merged;
+    settings.blockedRoles = finalList;
     settings.allowedRoles = [];
   }
   
   await settings.save();
   
+  const parts = [];
+  if (added.length > 0) parts.push(`✅ Eklenen: **${added.length}** rol`);
+  if (removed.length > 0) parts.push(`❌ Kaldırılan: **${removed.length}** rol`);
+  parts.push(`📊 Toplam: **${finalList.length}** rol`);
+  
   await interaction.reply({
-    content: `✅ Rol kısıtlaması güncellendi! Yeni eklenen: **${selectedRoles.length}** rol. Toplam: **${settings.roleMode === 'whitelist' ? settings.allowedRoles.length : settings.blockedRoles.length}** rol.`,
+    content: parts.join('\n'),
     flags: MessageFlags.Ephemeral
   });
   
@@ -698,20 +812,45 @@ async function handleUserSelect(interaction, guild, commandsByCategory) {
     });
   }
   
+  const targetList = settings.userMode === 'whitelist'
+    ? (settings.allowedUsers || [])
+    : (settings.blockedUsers || []);
+
+  const selectedSet = new Set(selectedUsers);
+  const existingSet = new Set(targetList);
+
+  const added = [];
+  const removed = [];
+
+  selectedSet.forEach(id => {
+    if (existingSet.has(id)) {
+      removed.push(id);
+      existingSet.delete(id);
+    } else {
+      added.push(id);
+      existingSet.add(id);
+    }
+  });
+
+  const finalList = [...existingSet];
+
   if (settings.userMode === 'whitelist') {
-    const merged = [...new Set([...(settings.allowedUsers || []), ...selectedUsers])];
-    settings.allowedUsers = merged;
+    settings.allowedUsers = finalList;
     settings.blockedUsers = [];
   } else if (settings.userMode === 'blacklist') {
-    const merged = [...new Set([...(settings.blockedUsers || []), ...selectedUsers])];
-    settings.blockedUsers = merged;
+    settings.blockedUsers = finalList;
     settings.allowedUsers = [];
   }
   
   await settings.save();
   
+  const parts = [];
+  if (added.length > 0) parts.push(`✅ Eklenen: **${added.length}** üye`);
+  if (removed.length > 0) parts.push(`❌ Kaldırılan: **${removed.length}** üye`);
+  parts.push(`📊 Toplam: **${finalList.length}** üye`);
+  
   await interaction.reply({
-    content: `✅ Üye kısıtlaması güncellendi! Yeni eklenen: **${selectedUsers.length}** üye. Toplam: **${settings.userMode === 'whitelist' ? settings.allowedUsers.length : settings.blockedUsers.length}** üye.`,
+    content: parts.join('\n'),
     flags: MessageFlags.Ephemeral
   });
   
@@ -777,4 +916,236 @@ async function handleResetSettings(interaction, guild, commandsByCategory) {
   const components = createSettingsComponents(settings);
   
   await interaction.message.edit({ embeds: [embed], components });
+}
+
+// ============ YARDIMCI FONKSİYONLAR ============
+
+function chunkArray(arr, size) {
+  if (!arr) return [];
+  const chunks = [];
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size));
+  }
+  return chunks;
+}
+
+// ============ KALDIRMA İŞLEMLERİ (Remove Mode) ============
+
+async function openChannelRemove(interaction, guild, commandsByCategory) {
+  const commandName = interaction.message.embeds[0].title.split('— ')[1]?.trim();
+  const settings = await CommandSettings.findOne({ guildId: guild.id, commandName });
+  
+  if (!settings) {
+    return interaction.reply({ content: '❌ Ayar bulunamadı!', flags: MessageFlags.Ephemeral });
+  }
+
+  const currentList = settings.channelMode === 'whitelist'
+    ? (settings.allowedChannels || [])
+    : (settings.blockedChannels || []);
+
+  if (!currentList || currentList.length === 0) {
+    return interaction.reply({ content: '❌ Kaldırılacak kanal yok!', flags: MessageFlags.Ephemeral });
+  }
+
+  const options = [];
+  for (const id of currentList.slice(0, 25)) {
+    const ch = guild.channels.cache.get(id);
+    options.push({
+      label: ch ? `#${ch.name}` : `#bilinmeyen-${id.slice(-4)}`,
+      value: id,
+      emoji: '📺'
+    });
+  }
+
+  const select = new StringSelectMenuBuilder()
+    .setCustomId('remove_channel_select')
+    .setPlaceholder('Kaldırmak istediğiniz kanalları seçin...')
+    .setMinValues(1)
+    .setMaxValues(options.length)
+    .addOptions(options);
+
+  const commandInfo = findCommandInfo(commandsByCategory, commandName);
+  const embed = createSettingsEmbed(commandName, settings, guild, commandInfo);
+  
+  const components = [
+    new ActionRowBuilder().addComponents(select),
+    ...createSettingsComponents(settings, { hideRemoveButtons: true })
+  ];
+
+  await interaction.update({ embeds: [embed], components });
+}
+
+async function confirmChannelRemove(interaction, guild, commandsByCategory) {
+  const selected = interaction.values;
+  const commandName = interaction.message.embeds[0].title.split('— ')[1]?.trim();
+  const settings = await CommandSettings.findOne({ guildId: guild.id, commandName });
+
+  if (!settings) return;
+
+  if (settings.channelMode === 'whitelist') {
+    settings.allowedChannels = (settings.allowedChannels || []).filter(id => !selected.includes(id));
+  } else if (settings.channelMode === 'blacklist') {
+    settings.blockedChannels = (settings.blockedChannels || []).filter(id => !selected.includes(id));
+  }
+  await settings.save();
+
+  await interaction.reply({
+    content: `🗑️ **${selected.length}** kanal kaldırıldı!`,
+    flags: MessageFlags.Ephemeral
+  });
+
+  const commandInfo = findCommandInfo(commandsByCategory, commandName);
+  const embed = createSettingsEmbed(commandName, settings, guild, commandInfo);
+  const components = createSettingsComponents(settings);
+
+  await interaction.message.edit({ embeds: [embed], components });
+}
+
+async function openRoleRemove(interaction, guild, commandsByCategory) {
+  const commandName = interaction.message.embeds[0].title.split('— ')[1]?.trim();
+  const settings = await CommandSettings.findOne({ guildId: guild.id, commandName });
+
+  if (!settings) {
+    return interaction.reply({ content: '❌ Ayar bulunamadı!', flags: MessageFlags.Ephemeral });
+  }
+
+  const currentList = settings.roleMode === 'whitelist'
+    ? (settings.allowedRoles || [])
+    : (settings.blockedRoles || []);
+
+  if (!currentList || currentList.length === 0) {
+    return interaction.reply({ content: '❌ Kaldırılacak rol yok!', flags: MessageFlags.Ephemeral });
+  }
+
+  const options = [];
+  for (const id of currentList.slice(0, 25)) {
+    const r = guild.roles.cache.get(id);
+    options.push({
+      label: r ? `@${r.name}` : `@silinmis-rol-${id.slice(-4)}`,
+      value: id,
+      emoji: '🎭'
+    });
+  }
+
+  const select = new StringSelectMenuBuilder()
+    .setCustomId('remove_role_select')
+    .setPlaceholder('Kaldırmak istediğiniz rolleri seçin...')
+    .setMinValues(1)
+    .setMaxValues(options.length)
+    .addOptions(options);
+
+  const commandInfo = findCommandInfo(commandsByCategory, commandName);
+  const embed = createSettingsEmbed(commandName, settings, guild, commandInfo);
+
+  const components = [
+    new ActionRowBuilder().addComponents(select),
+    ...createSettingsComponents(settings, { hideRemoveButtons: true })
+  ];
+
+  await interaction.update({ embeds: [embed], components });
+}
+
+async function confirmRoleRemove(interaction, guild, commandsByCategory) {
+  const selected = interaction.values;
+  const commandName = interaction.message.embeds[0].title.split('— ')[1]?.trim();
+  const settings = await CommandSettings.findOne({ guildId: guild.id, commandName });
+
+  if (!settings) return;
+
+  if (settings.roleMode === 'whitelist') {
+    settings.allowedRoles = (settings.allowedRoles || []).filter(id => !selected.includes(id));
+  } else if (settings.roleMode === 'blacklist') {
+    settings.blockedRoles = (settings.blockedRoles || []).filter(id => !selected.includes(id));
+  }
+  await settings.save();
+
+  await interaction.reply({
+    content: `🗑️ **${selected.length}** rol kaldırıldı!`,
+    flags: MessageFlags.Ephemeral
+  });
+
+  const commandInfo = findCommandInfo(commandsByCategory, commandName);
+  const embed = createSettingsEmbed(commandName, settings, guild, commandInfo);
+  const components = createSettingsComponents(settings);
+
+  await interaction.message.edit({ embeds: [embed], components });
+}
+
+async function openUserRemove(interaction, guild, commandsByCategory) {
+  const commandName = interaction.message.embeds[0].title.split('— ')[1]?.trim();
+  const settings = await CommandSettings.findOne({ guildId: guild.id, commandName });
+
+  if (!settings) {
+    return interaction.reply({ content: '❌ Ayar bulunamadı!', flags: MessageFlags.Ephemeral });
+  }
+
+  const currentList = settings.userMode === 'whitelist'
+    ? (settings.allowedUsers || [])
+    : (settings.blockedUsers || []);
+
+  if (!currentList || currentList.length === 0) {
+    return interaction.reply({ content: '❌ Kaldırılacak üye yok!', flags: MessageFlags.Ephemeral });
+  }
+
+  const options = [];
+  for (const id of currentList.slice(0, 25)) {
+    const m = guild.members.cache.get(id);
+    options.push({
+      label: m ? `${m.user.username} (${m.displayName})` : `id-${id.slice(-6)}`,
+      value: id,
+      emoji: '👤'
+    });
+  }
+
+  const select = new StringSelectMenuBuilder()
+    .setCustomId('remove_user_select')
+    .setPlaceholder('Kaldırmak istediğiniz üyeleri seçin...')
+    .setMinValues(1)
+    .setMaxValues(options.length)
+    .addOptions(options);
+
+  const commandInfo = findCommandInfo(commandsByCategory, commandName);
+  const embed = createSettingsEmbed(commandName, settings, guild, commandInfo);
+
+  const components = [
+    new ActionRowBuilder().addComponents(select),
+    ...createSettingsComponents(settings, { hideRemoveButtons: true })
+  ];
+
+  await interaction.update({ embeds: [embed], components });
+}
+
+async function confirmUserRemove(interaction, guild, commandsByCategory) {
+  const selected = interaction.values;
+  const commandName = interaction.message.embeds[0].title.split('— ')[1]?.trim();
+  const settings = await CommandSettings.findOne({ guildId: guild.id, commandName });
+
+  if (!settings) return;
+
+  if (settings.userMode === 'whitelist') {
+    settings.allowedUsers = (settings.allowedUsers || []).filter(id => !selected.includes(id));
+  } else if (settings.userMode === 'blacklist') {
+    settings.blockedUsers = (settings.blockedUsers || []).filter(id => !selected.includes(id));
+  }
+  await settings.save();
+
+  await interaction.reply({
+    content: `🗑️ **${selected.length}** üye kaldırıldı!`,
+    flags: MessageFlags.Ephemeral
+  });
+
+  const commandInfo = findCommandInfo(commandsByCategory, commandName);
+  const embed = createSettingsEmbed(commandName, settings, guild, commandInfo);
+  const components = createSettingsComponents(settings);
+
+  await interaction.message.edit({ embeds: [embed], components });
+}
+
+function findCommandInfo(commandsByCategory, commandName) {
+  if (!commandsByCategory) return null;
+  for (const [, cmds] of commandsByCategory) {
+    const found = cmds.find(c => c.name === commandName);
+    if (found) return found;
+  }
+  return null;
 }
