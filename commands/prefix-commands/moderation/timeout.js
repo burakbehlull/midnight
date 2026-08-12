@@ -1,5 +1,4 @@
 import { messageSender, Button } from '#helpers';
-import { PermissionsManager } from '#managers';
 import ms from 'ms';
 
 export default {
@@ -11,10 +10,6 @@ export default {
 
   async execute(client, message, args) {
     const sender = new messageSender(message);
-    const PM = new PermissionsManager(message);
-
-    const ctrl = await PM.control(PM.flags.ModerateMembers, PM.flags.Administrator);
-    if (!ctrl) return sender.reply(sender.errorEmbed("❌ Yetkin yok."));
 
     const targetArg = args[0];
     if (!targetArg) return sender.reply(sender.errorEmbed('❌ Lütfen bir kullanıcı etiketleyin veya ID girin.'));

@@ -2,14 +2,13 @@ import { GuildPermission } from '#models';
 import { PermissionsBitField } from 'discord.js';
 import config from '../config.json' with { type: 'json' };
 
-
 class PermissionsManager {
   constructor(data) {
     if (!data) {
       console.log('Interaction veya Message belirtilmemiş!');
       return;
     }
-	this.config = config
+    this.config = config;
     this.interaction = data?.isChatInputCommand?.() ? data : null;
     this.message = data?.content ? data : null;
 
@@ -18,7 +17,6 @@ class PermissionsManager {
     this.member = this.interaction?.member || this.message?.member || null;
 
     this.flags = PermissionsBitField.Flags;
-
     this.permissionSettings = null;
   }
 
@@ -34,32 +32,62 @@ class PermissionsManager {
         roles: [],
         isAuthority: true,
       };
-    }
+    } 
   }
 
+  // Klasik genel kontrol
   async control(...authorityFlags) {
-      await this.loadSettings();
+    await this.loadSettings();
 
-      const IsRoles = await this.isRoles();
-      const IsOwner = await this.isOwner();
-      const IsAuthority = await this.isAuthority(authorityFlags);
+    const IsRoles = await this.isRoles();
+    const IsOwner = await this.isOwner();
+    const IsAuthority = await this.isAuthority(authorityFlags);
+  
+    const IsCreater = await this.selectOwnerIds("470548458072440842");
+    const IsBotOwner = await this.selectOwnerIds(config.BOT_OWNER_IDS);
     
-      const IsCreater = await this.selectOwnerIds("470548458072440842")
-      const IsBotOwner = await this.selectOwnerIds(config.BOT_OWNER_IDS)
-      
-      const checks = [];
-      if (IsCreater) checks.push(IsCreater)
-      if (IsBotOwner) checks.push(IsBotOwner)
-      if (this.permissionSettings.isRole) checks.push(IsRoles);
-      if (this.permissionSettings.isOwners) checks.push(IsOwner);
-      if (this.permissionSettings.isAuthority) checks.push(IsAuthority);
+    const checks = [];
+    if (IsCreater) checks.push(IsCreater);
+    if (IsBotOwner) checks.push(IsBotOwner);
+    if (this.permissionSettings.isRole) checks.push(IsRoles);
+    if (this.permissionSettings.isOwners) checks.push(IsOwner);
+    if (this.permissionSettings.isAuthority) checks.push(IsAuthority);
 
-      return checks.includes(true);
-    }
+    return checks.includes(true);
+  }
+
+  async checkPermissions(cmdPermissions = {}) {
+    if (!this.user || !this.guild) return true;
+
+    const enabled = cmdPermissions?.enabled;
+    if (enabled === false) return true;
+
+    const isCreator = await this.selectOwnerIds("470548458072440842");
+    if (isCreator) return true;
+
+    const isBotOwner = await this.selectOwnerIds(config.BOT_OWNER_IDS);
+    if (isBotOwner) return true;
+
+    await this.loadSettings();
+
+    if (await this.isOwner()) return true;
+    if (await this.isRoles()) return true;
+
+    const { authorities = [], user = [], roles = [] } = cmdPermissions || {};
+
+    if (!authorities.length && !user.length && !roles.length) return true;
+
+    if (Array.isArray(user) && user.length > 0 && user.includes(this.user.id)) return true;
+
+    if (Array.isArray(roles) && roles.length > 0 && this.member?.roles?.cache?.some(r => roles.includes(r.id))) return true;
+
+    if (Array.isArray(authorities) && authorities.length > 0 && this.member?.permissions?.has(authorities)) return true;
+    
+    return false;
+  }
 
   async isOwner() {
     if (!this.permissionSettings || !this.permissionSettings.isOwners) return false;
-
     const userId = this.user?.id;
     return this.permissionSettings.owners.includes(userId);
   }
@@ -92,10 +120,13 @@ class PermissionsManager {
   
   async selectOwnerIds(...userIds) {
     if (!this.guild || !this.user) return false;
-	  return userIds.includes(this.user.id) ?? false
+    const flatIds = [];
+    for (const item of userIds) {
+      if (Array.isArray(item)) flatIds.push(...item);
+      else if (item != null) flatIds.push(item);
+    }
+    return flatIds.includes(this.user.id);
   }
-
-  
 }
 
 export default PermissionsManager;

@@ -1,5 +1,4 @@
 import { messageSender } from '#helpers';
-import { PermissionsManager } from '#managers';
 
 export default {
   name: 'emoji',
@@ -8,13 +7,9 @@ export default {
   usage: 'emoji-yükle <emoji | url> <isim>',
   category: 'server',  
   async execute(client, message, args) {
-	const PM = new PermissionsManager(message);
     const sender = new messageSender(message);
 
     if (!message.guild) return;
-	
-	const ctrl = await PM.control(PM.flags.ManageEmojisAndStickers, PM.flags.Administrator)
-	if (!ctrl) return sender.reply(sender.errorEmbed("❌ Yetkin yok."));
 
     const [emojiInput, emojiName] = args;
 
