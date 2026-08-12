@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import { ModLogConfig } from '#models';
 import Manager from '#managers';
 
@@ -60,13 +60,13 @@ export default {
   description: 'Log sistemini ayarlar',
   usage: '/logs <seçenekler> <aç/kapat> <#kanal>',
   category: 'server',
+  permissions: {
+    authorities: [PermissionFlagsBits.Administrator],
+  },
 
   async execute(client, interaction) {
     const manager = new Manager(client, { action: interaction });
 	
-    const ctrl = await manager.authority.control(manager.authority.flags.Administrator);
-    if (!ctrl) return interaction.reply({ content: '❌ Bu komutu kullanmak için yetkin yok.', ephemeral: true });
-
     const guildId = interaction.guild.id;
     const option = interaction.options.getString('seçenek');
     const kanal = interaction.options.getChannel('kanal');

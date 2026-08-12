@@ -38,7 +38,6 @@ export async function checkCommandRestrictions(ctx, commandName) {
       return { allowed: true };
     }
 
-    console.log(`\n[Restriction] ${commandName} | ${user?.tag || user?.id} | #${channelName}`);
     
     if (!settings.enabled) {
       return { allowed: false, reason: '❌ Bu komut devre dışı bırakılmış!' };
@@ -135,7 +134,6 @@ function checkRoleRestriction(member, settings) {
       memberRoles.includes(roleId)
     );
 
-    console.log('[RoleCheck] İzinli rol var mı?', hasAllowedRole);
 
     if (!hasAllowedRole) {
       const roles = settings.allowedRoles.map(id => `<@&${id}>`).join(', ');

@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import { Settings } from '#models';
 import Manager from '#managers';
 
@@ -186,12 +186,13 @@ export default {
    description: 'Sunucu sistemini ayarlar',
    usage: '/settings <subcommand> <değer|rol|kanal>',
    category: 'server',
+    permissions: {
+      authorities: [PermissionFlagsBits.Administrator],
+    },
 
   async execute(client,interaction) {
     const manager = new Manager(client, { action: interaction });
-    const ctrl = await manager.authority.control(manager.authority.flags.Administrator);
-    if (!ctrl) return interaction.reply({ content: '❌ Bu komutu kullanmak için yetkin yok.', ephemeral: true });
-
+    
     const subcommandGroup = interaction.options.getSubcommandGroup(false);
     const subcommand = interaction.options.getSubcommand();
 
