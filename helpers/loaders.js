@@ -118,7 +118,7 @@ async function commandExecuter(client, slashCommands, prefixCommands){
 	
 	if(slashCommands.length > 0){
 		for (const sc of slashCommands) {
-			client.slashCommands.set(sc.name, sc.execute);
+			client.slashCommands.set(sc.name, sc);
 		}
 	}
 }

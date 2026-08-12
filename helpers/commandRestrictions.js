@@ -1,55 +1,68 @@
 import { CommandSettings } from '#models';
 
+function resolveContext(ctx) {
+  const isInteraction = ctx?.isChatInputCommand?.() || ctx?.user;
+  const isMessage = ctx?.author;
+
+  return {
+    isInteraction,
+    guildId: ctx.guild?.id,
+    user: isInteraction ? ctx.user : (isMessage ? ctx.author : null),
+    member: ctx.member,
+    channelId: ctx.channel?.id,
+    channelName: ctx.channel?.name || 'unknown'
+  };
+}
+
 /**
  * Komut kısıtlamalarını kontrol eder
- * @param {Message} message - Discord mesaj objesi
+ * @param {Message|BaseInteraction} ctx - Discord mesaj veya interaction objesi
  * @param {string} commandName - Komut adı
  * @returns {Promise<{allowed: boolean, reason: string}>}
  */
-export async function checkCommandRestrictions(message, commandName) {
+export async function checkCommandRestrictions(ctx, commandName) {
   try {
+    const context = resolveContext(ctx);
+    const { guildId, user, member, channelId, channelName } = context;
+
+    if (!guildId) {
+      return { allowed: true };
+    }
+
     const settings = await CommandSettings.findOne({
-      guildId: message.guild.id,
+      guildId,
       commandName: commandName
     });
 
-    // Ayar yoksa izin ver
     if (!settings) {
       return { allowed: true };
     }
 
-    // Debug log - sadece ayar varsa
-    console.log(`\n[Restriction] ${commandName} | ${message.author.tag} | #${message.channel.name}`);
+    console.log(`\n[Restriction] ${commandName} | ${user?.tag || user?.id} | #${channelName}`);
     
     if (!settings.enabled) {
-      console.log('[Restriction] ❌ Devre dışı\n');
       return { allowed: false, reason: '❌ Bu komut devre dışı bırakılmış!' };
     }
 
-    if (isExempt(message.member, settings)) {
-      console.log('[Restriction] ✅ Muafiyet\n');
+    if (member && isExempt(member, settings)) {
       return { allowed: true };
     }
 
-    const channelCheck = checkChannelRestriction(message.channel.id, settings);
+    const channelCheck = checkChannelRestriction(channelId, settings);
     if (!channelCheck.allowed) {
-      console.log('[Restriction] ❌ Kanal engeli\n');
       return channelCheck;
     }
 
-    const roleCheck = checkRoleRestriction(message.member, settings);
+    const roleCheck = checkRoleRestriction(member, settings);
     if (!roleCheck.allowed) {
-      console.log('[Restriction] ❌ Rol engeli\n');
       return roleCheck;
     }
 
-    const userCheck = checkUserRestriction(message.author.id, settings);
+    const userCheck = checkUserRestriction(user?.id, settings);
     if (!userCheck.allowed) {
-      console.log('[Restriction] ❌ Üye engeli\n');
       return userCheck;
     }
 
-    console.log('[Restriction] ✅ İzin verildi\n');
     return { allowed: true };
 
   } catch (error) {
@@ -108,19 +121,15 @@ function checkRoleRestriction(member, settings) {
   }
 
   const memberRoles = member.roles.cache.map(r => r.id);
-  console.log(`[RoleCheck] Kullanıcı: ${memberRoles.length} rol | Mod: ${settings.roleMode}`);
 
   if (settings.roleMode === 'whitelist') {
     if (!settings.allowedRoles || settings.allowedRoles.length === 0) {
-      console.log('[RoleCheck] ⚠️ Whitelist aktif ama rol yok!');
       return {
         allowed: false,
         reason: '❌ Bu komut için henüz izinli rol belirlenmemiş!'
       };
     }
 
-    console.log('[RoleCheck] İzinli roller:', settings.allowedRoles);
-    console.log('[RoleCheck] Kullanıcı rolleri:', memberRoles);
 
     const hasAllowedRole = settings.allowedRoles.some(roleId =>
       memberRoles.includes(roleId)
@@ -185,17 +194,27 @@ function checkUserRestriction(userId, settings) {
   return { allowed: true };
 }
 
-export async function handleAutoDelete(message, commandName) {
+export async function handleAutoDelete(ctx, commandName) {
   try {
+    const guildId = ctx.guild?.id;
+    if (!guildId) return;
+
     const settings = await CommandSettings.findOne({
-      guildId: message.guild.id,
+      guildId,
       commandName: commandName
     });
 
     if (settings?.autoDelete && settings.deleteAfter > 0) {
       setTimeout(async () => {
         try {
-          await message.delete();
+          if (ctx?.isMessage?.()) {
+            await ctx.delete().catch(() => {});
+          } else if (ctx?.isChatInputCommand?.() || ctx?.reply || ctx?.fetchReply) {
+            try {
+              const reply = await ctx.fetchReply().catch(() => null);
+              if (reply) await reply.delete().catch(() => {});
+            } catch {}
+          }
         } catch (err) {
           console.error('Mesaj silinirken hata:', err);
         }

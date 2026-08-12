@@ -1,6 +1,6 @@
 import { Events, MessageFlags } from 'discord.js';
 import { ticketHandler, itirafHandler, handleCooldown, handleInteractionCreate } from "#handlers"
-import { Modal } from "#helpers"
+import { Modal, checkCommandRestrictions, handleAutoDelete } from "#helpers"
 
 
 export default {
@@ -21,6 +21,15 @@ export default {
       return;
     }
 	
+	const restrictionCheck = await checkCommandRestrictions(interaction, command.name);
+	if (!restrictionCheck.allowed) {
+	  if (!interaction.replied && !interaction.deferred) {
+		return interaction.reply({ content: restrictionCheck.reason, flags: MessageFlags.Ephemeral }).catch(() => {});
+	  } else {
+		return interaction.followUp({ content: restrictionCheck.reason, flags: MessageFlags.Ephemeral }).catch(() => {});
+	  }
+	}
+
 	const passed = await handleCooldown({
       userId: interaction.user.id,
       commandName: command.name,
@@ -37,7 +46,9 @@ export default {
     if (!passed) return;
 
     try {
-      await command(client, interaction);
+      await command.execute(client, interaction);
+	  
+	  await handleAutoDelete(interaction, command.name);
     } catch (error) {
       console.error(`Error executing ${interaction.commandName}`);
       console.error(error);

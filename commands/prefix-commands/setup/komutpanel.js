@@ -33,18 +33,64 @@ export default {
 
     const commandsByCategory = new Map();
     
+    const commandTypes = new Map();
+    
     client.prefixCommands.forEach(cmd => {
-      if (!cmd.category) return;
+      if (!cmd.category || !cmd.name) return;
       
       const category = cmd.category;
       if (!commandsByCategory.has(category)) {
         commandsByCategory.set(category, []);
       }
       
-      commandsByCategory.get(category).push({
-        name: cmd.name,
-        description: cmd.description || 'Açıklama yok'
-      });
+      const existing = commandsByCategory.get(category).find(c => c.name === cmd.name);
+      if (existing) {
+        existing.hasPrefix = true;
+        existing.types = existing.types || new Set();
+        existing.types.add('prefix');
+      } else {
+        commandsByCategory.get(category).push({
+          name: cmd.name,
+          description: cmd.description || 'Açıklama yok',
+          hasPrefix: true,
+          hasSlash: false,
+          types: new Set(['prefix'])
+        });
+      }
+      
+      if (!commandTypes.has(cmd.name)) {
+        commandTypes.set(cmd.name, new Set());
+      }
+      commandTypes.get(cmd.name).add('prefix');
+    });
+
+    client.slashCommands.forEach(cmd => {
+      if (!cmd.name) return;
+      const category = cmd.category || 'extra';
+      
+      if (!commandsByCategory.has(category)) {
+        commandsByCategory.set(category, []);
+      }
+      
+      const existing = commandsByCategory.get(category).find(c => c.name === cmd.name);
+      if (existing) {
+        existing.hasSlash = true;
+        existing.types = existing.types || new Set();
+        existing.types.add('slash');
+      } else {
+        commandsByCategory.get(category).push({
+          name: cmd.name,
+          description: cmd.description || cmd.data?.description || 'Açıklama yok',
+          hasPrefix: false,
+          hasSlash: true,
+          types: new Set(['slash'])
+        });
+      }
+      
+      if (!commandTypes.has(cmd.name)) {
+        commandTypes.set(cmd.name, new Set());
+      }
+      commandTypes.get(cmd.name).add('slash');
     });
 
     const categories = [
@@ -136,11 +182,18 @@ export default {
           const commandSelect = new StringSelectMenuBuilder()
             .setCustomId('command_select')
             .setPlaceholder('Bir komut seçin...')
-            .addOptions(uniqueCommands.slice(0, 25).map(cmd => ({
-              label: `.${cmd.name}`,
-              value: cmd.name,
-              description: cmd.description.substring(0, 100)
-            })));
+            .addOptions(uniqueCommands.slice(0, 25).map(cmd => {
+              let typeLabel = '';
+              if (cmd.hasPrefix && cmd.hasSlash) typeLabel = ' [PREFIX+SLASH]';
+              else if (cmd.hasPrefix) typeLabel = ' [PREFIX]';
+              else if (cmd.hasSlash) typeLabel = ' [SLASH]';
+              
+              return {
+                label: `${cmd.name}${typeLabel}`,
+                value: cmd.name,
+                description: cmd.description.substring(0, 100)
+              };
+            }));
 
           const backButton = new ButtonBuilder()
             .setCustomId('back_to_category')
@@ -174,7 +227,13 @@ export default {
             await settings.save();
           }
 
-          const settingsEmbed = createSettingsEmbed(commandName, settings, message.guild);
+          let commandInfo = null;
+          for (const [, cmds] of commandsByCategory) {
+            const found = cmds.find(c => c.name === commandName);
+            if (found) { commandInfo = found; break; }
+          }
+
+          const settingsEmbed = createSettingsEmbed(commandName, settings, message.guild, commandInfo);
           const components = createSettingsComponents(settings);
 
           await interaction.update({
@@ -184,35 +243,35 @@ export default {
         }
 
         if (interaction.customId === 'channel_mode') {
-          await handleChannelMode(interaction, message.guild);
+          await handleChannelMode(interaction, message.guild, commandsByCategory);
         }
 
         if (interaction.customId === 'role_mode') {
-          await handleRoleMode(interaction, message.guild);
+          await handleRoleMode(interaction, message.guild, commandsByCategory);
         }
 
         if (interaction.customId === 'user_mode') {
-          await handleUserMode(interaction, message.guild);
+          await handleUserMode(interaction, message.guild, commandsByCategory);
         }
 
         if (interaction.customId === 'channel_select') {
-          await handleChannelSelect(interaction, message.guild);
+          await handleChannelSelect(interaction, message.guild, commandsByCategory);
         }
 
         if (interaction.customId === 'role_select') {
-          await handleRoleSelect(interaction, message.guild);
+          await handleRoleSelect(interaction, message.guild, commandsByCategory);
         }
 
         if (interaction.customId === 'user_select') {
-          await handleUserSelect(interaction, message.guild);
+          await handleUserSelect(interaction, message.guild, commandsByCategory);
         }
 
         if (interaction.customId === 'toggle_enabled') {
-          await handleToggleEnabled(interaction, message.guild);
+          await handleToggleEnabled(interaction, message.guild, commandsByCategory);
         }
 
         if (interaction.customId === 'reset_settings') {
-          await handleResetSettings(interaction, message.guild);
+          await handleResetSettings(interaction, message.guild, commandsByCategory);
         }
 
         if (interaction.customId === 'back_to_category') {
@@ -239,11 +298,18 @@ export default {
   }
 };
 
-function createSettingsEmbed(commandName, settings, guild) {
+function createSettingsEmbed(commandName, settings, guild, commandInfo) {
   const embed = new EmbedBuilder()
-    .setTitle(`⚙️ Komut Ayarları — .${commandName}`)
+    .setTitle(`⚙️ Komut Ayarları — ${commandName}`)
     .setColor(settings.enabled ? '#5865F2' : '#ED4245')
     .setTimestamp();
+
+  if (commandInfo) {
+    const types = [];
+    if (commandInfo.hasPrefix) types.push('📝 Prefix');
+    if (commandInfo.hasSlash) types.push('⚡ Slash');
+    embed.addFields({ name: '🔖 Komut Türü', value: types.join(' + ') || 'Bilinmiyor', inline: true });
+  }
 
   let channelText = '❌ Kapalı (Tüm kanallarda kullanılabilir)';
   if (settings.channelMode === 'whitelist') {
@@ -347,9 +413,9 @@ function createSettingsComponents(settings) {
   ];
 }
 
-async function handleChannelMode(interaction, guild) {
+async function handleChannelMode(interaction, guild, commandsByCategory) {
   const mode = interaction.values[0];
-  const commandName = interaction.message.embeds[0].title.split('— .')[1];
+  const commandName = interaction.message.embeds[0].title.split('— ')[1]?.trim();
   
   let settings = await CommandSettings.findOne({ guildId: guild.id, commandName });
   if (!settings) {
@@ -363,21 +429,43 @@ async function handleChannelMode(interaction, guild) {
     settings.blockedChannels = [];
     await settings.save();
     
-    const embed = createSettingsEmbed(commandName, settings, guild);
+    let commandInfo = null;
+    if (commandsByCategory) {
+      for (const [, cmds] of commandsByCategory) {
+        const found = cmds.find(c => c.name === commandName);
+        if (found) { commandInfo = found; break; }
+      }
+    }
+    
+    const embed = createSettingsEmbed(commandName, settings, guild, commandInfo);
     const components = createSettingsComponents(settings);
     return interaction.update({ embeds: [embed], components });
   }
 
   await settings.save();
 
+  const defaultChannels = (mode === 'whitelist' ? settings.allowedChannels : settings.blockedChannels) || [];
+
   const channelSelect = new ChannelSelectMenuBuilder()
     .setCustomId('channel_select')
-    .setPlaceholder(`${mode === 'whitelist' ? '✅ Sadece bu kanallarda kullanılabilir' : '🚫 Bu kanallar hariç her yerde kullanılabilir'}`)
+    .setPlaceholder(`${mode === 'whitelist' ? '✅ Sadece bu kanallarda kullanılabilir' : '🚫 Bu kanallar hariç her yerde kullanılabilir'}${defaultChannels.length > 0 ? ` · ${defaultChannels.length} kanal kayıtlı` : ''}`)
     .setChannelTypes([ChannelType.GuildText])
     .setMinValues(1)
     .setMaxValues(10);
 
-  const embed = createSettingsEmbed(commandName, settings, guild);
+  if (defaultChannels.length > 0 && typeof channelSelect.setDefaultValues === 'function') {
+    try { channelSelect.setDefaultValues(defaultChannels.slice(0, 25)); } catch {}
+  }
+
+  let commandInfo = null;
+  if (commandsByCategory) {
+    for (const [, cmds] of commandsByCategory) {
+      const found = cmds.find(c => c.name === commandName);
+      if (found) { commandInfo = found; break; }
+    }
+  }
+
+  const embed = createSettingsEmbed(commandName, settings, guild, commandInfo);
   
   const components = [
     new ActionRowBuilder().addComponents(channelSelect),
@@ -387,9 +475,9 @@ async function handleChannelMode(interaction, guild) {
   await interaction.update({ embeds: [embed], components });
 }
 
-async function handleRoleMode(interaction, guild) {
+async function handleRoleMode(interaction, guild, commandsByCategory) {
   const mode = interaction.values[0];
-  const commandName = interaction.message.embeds[0].title.split('— .')[1];
+  const commandName = interaction.message.embeds[0].title.split('— ')[1]?.trim();
   
   let settings = await CommandSettings.findOne({ guildId: guild.id, commandName });
   if (!settings) {
@@ -403,20 +491,42 @@ async function handleRoleMode(interaction, guild) {
     settings.blockedRoles = [];
     await settings.save();
     
-    const embed = createSettingsEmbed(commandName, settings, guild);
+    let commandInfo = null;
+    if (commandsByCategory) {
+      for (const [, cmds] of commandsByCategory) {
+        const found = cmds.find(c => c.name === commandName);
+        if (found) { commandInfo = found; break; }
+      }
+    }
+    
+    const embed = createSettingsEmbed(commandName, settings, guild, commandInfo);
     const components = createSettingsComponents(settings);
     return interaction.update({ embeds: [embed], components });
   }
 
   await settings.save();
 
+  const defaultRoles = (mode === 'whitelist' ? settings.allowedRoles : settings.blockedRoles) || [];
+
   const roleSelect = new RoleSelectMenuBuilder()
     .setCustomId('role_select')
-    .setPlaceholder(`${mode === 'whitelist' ? '✅ Sadece bu rollerdekiler kullanabilir' : '🚫 Bu roller hariç herkes kullanabilir'}`)
+    .setPlaceholder(`${mode === 'whitelist' ? '✅ Sadece bu rollerdekiler kullanabilir' : '🚫 Bu roller hariç herkes kullanabilir'}${defaultRoles.length > 0 ? ` · ${defaultRoles.length} rol kayıtlı` : ''}`)
     .setMinValues(1)
     .setMaxValues(10);
 
-  const embed = createSettingsEmbed(commandName, settings, guild);
+  if (defaultRoles.length > 0 && typeof roleSelect.setDefaultValues === 'function') {
+    try { roleSelect.setDefaultValues(defaultRoles.slice(0, 25)); } catch {}
+  }
+
+  let commandInfo = null;
+  if (commandsByCategory) {
+    for (const [, cmds] of commandsByCategory) {
+      const found = cmds.find(c => c.name === commandName);
+      if (found) { commandInfo = found; break; }
+    }
+  }
+
+  const embed = createSettingsEmbed(commandName, settings, guild, commandInfo);
   
   const components = [
     new ActionRowBuilder().addComponents(roleSelect),
@@ -426,9 +536,9 @@ async function handleRoleMode(interaction, guild) {
   await interaction.update({ embeds: [embed], components });
 }
 
-async function handleUserMode(interaction, guild) {
+async function handleUserMode(interaction, guild, commandsByCategory) {
   const mode = interaction.values[0];
-  const commandName = interaction.message.embeds[0].title.split('— .')[1];
+  const commandName = interaction.message.embeds[0].title.split('— ')[1]?.trim();
   
   let settings = await CommandSettings.findOne({ guildId: guild.id, commandName });
   if (!settings) {
@@ -442,20 +552,42 @@ async function handleUserMode(interaction, guild) {
     settings.blockedUsers = [];
     await settings.save();
     
-    const embed = createSettingsEmbed(commandName, settings, guild);
+    let commandInfo = null;
+    if (commandsByCategory) {
+      for (const [, cmds] of commandsByCategory) {
+        const found = cmds.find(c => c.name === commandName);
+        if (found) { commandInfo = found; break; }
+      }
+    }
+    
+    const embed = createSettingsEmbed(commandName, settings, guild, commandInfo);
     const components = createSettingsComponents(settings);
     return interaction.update({ embeds: [embed], components });
   }
 
   await settings.save();
 
+  const defaultUsers = (mode === 'whitelist' ? settings.allowedUsers : settings.blockedUsers) || [];
+
   const userSelect = new UserSelectMenuBuilder()
     .setCustomId('user_select')
-    .setPlaceholder(`${mode === 'whitelist' ? '✅ Sadece bu üyeler kullanabilir' : '🚫 Bu üyeler hariç herkes kullanabilir'}`)
+    .setPlaceholder(`${mode === 'whitelist' ? '✅ Sadece bu üyeler kullanabilir' : '🚫 Bu üyeler hariç herkes kullanabilir'}${defaultUsers.length > 0 ? ` · ${defaultUsers.length} üye kayıtlı` : ''}`)
     .setMinValues(1)
     .setMaxValues(10);
 
-  const embed = createSettingsEmbed(commandName, settings, guild);
+  if (defaultUsers.length > 0 && typeof userSelect.setDefaultValues === 'function') {
+    try { userSelect.setDefaultValues(defaultUsers.slice(0, 25)); } catch {}
+  }
+
+  let commandInfo = null;
+  if (commandsByCategory) {
+    for (const [, cmds] of commandsByCategory) {
+      const found = cmds.find(c => c.name === commandName);
+      if (found) { commandInfo = found; break; }
+    }
+  }
+
+  const embed = createSettingsEmbed(commandName, settings, guild, commandInfo);
   
   const components = [
     new ActionRowBuilder().addComponents(userSelect),
@@ -465,9 +597,9 @@ async function handleUserMode(interaction, guild) {
   await interaction.update({ embeds: [embed], components });
 }
 
-async function handleChannelSelect(interaction, guild) {
+async function handleChannelSelect(interaction, guild, commandsByCategory) {
   const selectedChannels = interaction.values;
-  const commandName = interaction.message.embeds[0].title.split('— .')[1];
+  const commandName = interaction.message.embeds[0].title.split('— ')[1]?.trim();
   
   let settings = await CommandSettings.findOne({ guildId: guild.id, commandName });
   
@@ -479,29 +611,39 @@ async function handleChannelSelect(interaction, guild) {
   }
   
   if (settings.channelMode === 'whitelist') {
-    settings.allowedChannels = selectedChannels;
+    const merged = [...new Set([...(settings.allowedChannels || []), ...selectedChannels])];
+    settings.allowedChannels = merged;
     settings.blockedChannels = [];
   } else if (settings.channelMode === 'blacklist') {
-    settings.blockedChannels = selectedChannels;
+    const merged = [...new Set([...(settings.blockedChannels || []), ...selectedChannels])];
+    settings.blockedChannels = merged;
     settings.allowedChannels = [];
   }
   
   await settings.save();
   
   await interaction.reply({
-    content: `✅ Kanal kısıtlaması güncellendi! **${selectedChannels.length}** kanal ${settings.channelMode === 'whitelist' ? 'izin listesine' : 'engelleme listesine'} eklendi.`,
+    content: `✅ Kanal kısıtlaması güncellendi! Yeni eklenen: **${selectedChannels.length}** kanal. Toplam: **${settings.channelMode === 'whitelist' ? settings.allowedChannels.length : settings.blockedChannels.length}** kanal.`,
     flags: MessageFlags.Ephemeral
   });
   
-  const embed = createSettingsEmbed(commandName, settings, guild);
+  let commandInfo = null;
+  if (commandsByCategory) {
+    for (const [, cmds] of commandsByCategory) {
+      const found = cmds.find(c => c.name === commandName);
+      if (found) { commandInfo = found; break; }
+    }
+  }
+
+  const embed = createSettingsEmbed(commandName, settings, guild, commandInfo);
   const components = createSettingsComponents(settings);
   
   await interaction.message.edit({ embeds: [embed], components });
 }
 
-async function handleRoleSelect(interaction, guild) {
+async function handleRoleSelect(interaction, guild, commandsByCategory) {
   const selectedRoles = interaction.values;
-  const commandName = interaction.message.embeds[0].title.split('— .')[1];
+  const commandName = interaction.message.embeds[0].title.split('— ')[1]?.trim();
   
   let settings = await CommandSettings.findOne({ guildId: guild.id, commandName });
   
@@ -513,29 +655,39 @@ async function handleRoleSelect(interaction, guild) {
   }
   
   if (settings.roleMode === 'whitelist') {
-    settings.allowedRoles = selectedRoles;
+    const merged = [...new Set([...(settings.allowedRoles || []), ...selectedRoles])];
+    settings.allowedRoles = merged;
     settings.blockedRoles = [];
   } else if (settings.roleMode === 'blacklist') {
-    settings.blockedRoles = selectedRoles;
+    const merged = [...new Set([...(settings.blockedRoles || []), ...selectedRoles])];
+    settings.blockedRoles = merged;
     settings.allowedRoles = [];
   }
   
   await settings.save();
   
   await interaction.reply({
-    content: `✅ Rol kısıtlaması güncellendi! **${selectedRoles.length}** rol ${settings.roleMode === 'whitelist' ? 'izin listesine' : 'engelleme listesine'} eklendi.`,
+    content: `✅ Rol kısıtlaması güncellendi! Yeni eklenen: **${selectedRoles.length}** rol. Toplam: **${settings.roleMode === 'whitelist' ? settings.allowedRoles.length : settings.blockedRoles.length}** rol.`,
     flags: MessageFlags.Ephemeral
   });
   
-  const embed = createSettingsEmbed(commandName, settings, guild);
+  let commandInfo = null;
+  if (commandsByCategory) {
+    for (const [, cmds] of commandsByCategory) {
+      const found = cmds.find(c => c.name === commandName);
+      if (found) { commandInfo = found; break; }
+    }
+  }
+
+  const embed = createSettingsEmbed(commandName, settings, guild, commandInfo);
   const components = createSettingsComponents(settings);
   
   await interaction.message.edit({ embeds: [embed], components });
 }
 
-async function handleUserSelect(interaction, guild) {
+async function handleUserSelect(interaction, guild, commandsByCategory) {
   const selectedUsers = interaction.values;
-  const commandName = interaction.message.embeds[0].title.split('— .')[1];
+  const commandName = interaction.message.embeds[0].title.split('— ')[1]?.trim();
   
   let settings = await CommandSettings.findOne({ guildId: guild.id, commandName });
   
@@ -547,28 +699,38 @@ async function handleUserSelect(interaction, guild) {
   }
   
   if (settings.userMode === 'whitelist') {
-    settings.allowedUsers = selectedUsers;
+    const merged = [...new Set([...(settings.allowedUsers || []), ...selectedUsers])];
+    settings.allowedUsers = merged;
     settings.blockedUsers = [];
   } else if (settings.userMode === 'blacklist') {
-    settings.blockedUsers = selectedUsers;
+    const merged = [...new Set([...(settings.blockedUsers || []), ...selectedUsers])];
+    settings.blockedUsers = merged;
     settings.allowedUsers = [];
   }
   
   await settings.save();
   
   await interaction.reply({
-    content: `✅ Üye kısıtlaması güncellendi! **${selectedUsers.length}** üye ${settings.userMode === 'whitelist' ? 'izin listesine' : 'engelleme listesine'} eklendi.`,
+    content: `✅ Üye kısıtlaması güncellendi! Yeni eklenen: **${selectedUsers.length}** üye. Toplam: **${settings.userMode === 'whitelist' ? settings.allowedUsers.length : settings.blockedUsers.length}** üye.`,
     flags: MessageFlags.Ephemeral
   });
   
-  const embed = createSettingsEmbed(commandName, settings, guild);
+  let commandInfo = null;
+  if (commandsByCategory) {
+    for (const [, cmds] of commandsByCategory) {
+      const found = cmds.find(c => c.name === commandName);
+      if (found) { commandInfo = found; break; }
+    }
+  }
+
+  const embed = createSettingsEmbed(commandName, settings, guild, commandInfo);
   const components = createSettingsComponents(settings);
   
   await interaction.message.edit({ embeds: [embed], components });
 }
 
-async function handleToggleEnabled(interaction, guild) {
-  const commandName = interaction.message.embeds[0].title.split('— .')[1];
+async function handleToggleEnabled(interaction, guild, commandsByCategory) {
+  const commandName = interaction.message.embeds[0].title.split('— ')[1]?.trim();
   
   let settings = await CommandSettings.findOne({ guildId: guild.id, commandName });
   if (!settings) {
@@ -578,14 +740,22 @@ async function handleToggleEnabled(interaction, guild) {
   settings.enabled = !settings.enabled;
   await settings.save();
   
-  const embed = createSettingsEmbed(commandName, settings, guild);
+  let commandInfo = null;
+  if (commandsByCategory) {
+    for (const [, cmds] of commandsByCategory) {
+      const found = cmds.find(c => c.name === commandName);
+      if (found) { commandInfo = found; break; }
+    }
+  }
+
+  const embed = createSettingsEmbed(commandName, settings, guild, commandInfo);
   const components = createSettingsComponents(settings);
   
   await interaction.update({ embeds: [embed], components });
 }
 
-async function handleResetSettings(interaction, guild) {
-  const commandName = interaction.message.embeds[0].title.split('— .')[1];
+async function handleResetSettings(interaction, guild, commandsByCategory) {
+  const commandName = interaction.message.embeds[0].title.split('— ')[1]?.trim();
   
   await CommandSettings.deleteOne({ guildId: guild.id, commandName });
   
@@ -594,8 +764,16 @@ async function handleResetSettings(interaction, guild) {
     flags: MessageFlags.Ephemeral 
   });
   
+  let commandInfo = null;
+  if (commandsByCategory) {
+    for (const [, cmds] of commandsByCategory) {
+      const found = cmds.find(c => c.name === commandName);
+      if (found) { commandInfo = found; break; }
+    }
+  }
+
   const settings = new CommandSettings({ guildId: guild.id, commandName });
-  const embed = createSettingsEmbed(commandName, settings, guild);
+  const embed = createSettingsEmbed(commandName, settings, guild, commandInfo);
   const components = createSettingsComponents(settings);
   
   await interaction.message.edit({ embeds: [embed], components });
