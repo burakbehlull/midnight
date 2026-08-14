@@ -27,6 +27,10 @@ export default {
       action: message
     });
 
+    //const ctrl = await manager.authority.isGuildOwner();
+    //if (!ctrl) return message.reply({ content: '❌ Bu komutu kullanmak owner olmalısın.', ephemeral: true });
+
+
     const commandsByCategory = new Map();
     
     const commandTypes = new Map();
