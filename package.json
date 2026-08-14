@@ -23,6 +23,7 @@
     "@discordjs/voice": "^0.18.0",
     "@google/generative-ai": "^0.24.1",
     "canvafy": "^7.2.1",
+    "clean-error-stack": "^1.1.2",
     "dayjs": "^1.11.13",
     "discord.js": "^14.17.3",
     "dotenv": "^16.5.0",
