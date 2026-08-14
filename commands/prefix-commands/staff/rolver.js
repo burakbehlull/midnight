@@ -4,6 +4,7 @@ import { PermissionFlagsBits } from 'discord.js';
 export default {
   name: 'rolver',
   description: 'Kullanıcıya rol verir.',
+  aliases: ['giverole'],
   usage: '.rolver @kullanıcı @rol | .rolver kullanıcıID rolID',
   category: 'moderation',
 

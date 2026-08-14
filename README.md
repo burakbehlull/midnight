@@ -50,25 +50,26 @@ Create ` config.json ` file and set permission settings:
 | **streamer** | Gives streamer role | user | stable |
 | **vip** | Gives vip role | user | stable |
 | **photo** | Gives photo role | user | stable |
-| **sil** | Deletes messages | amount | stable |
-| **çek** | Pulls the tagged user | user | stable |
-| **git** | Goes to the user you were tagged in | user | stable |
+| **clear** | Deletes messages | amount | stable |
+| **pull** | Pulls the tagged user | user | stable |
+| **where** | Show your user | user | stable |
+| **go** | Goes to the user you were tagged in | user | stable |
 | **kayit** | Saves the user you tagged in | user, name, age | stable |
 | **kayitsiz** | Gives the user | user | stable |
 | **vmute** | Throws voice mute on tagged user | user, second -exp. 10m -, reason | stable |
 | **vunmute** | Unmute | user, reason | stable |
 | **mute** | Throws chat mute on tagged user | user, reason | stable |
 | **unmute** | user unmute for chat | user, reason | stable |
-| **rolal** | Takes the user | user, role | stable |
-| **rolver** | Gives the user | user, role | stable |
+| **removerole** | Takes the user | user, role | stable |
+| **giverole** | Gives the user | user, role | stable |
 | **say** | Guild information | ... | stable |
 | **kilit** | lock to Chat | aç | stable |
 | **sesgir** | Join voice channel | channelId | stable |
 | **sescik** | Leave voice channel | .. | stable |
-| **cihaz** | Shows user device | user | stable |
+| **device** | Shows user device | user | stable |
 | **allvmute** | Mutes all user in channel | channel | stable |
 | **allvunmute** | Unmutes all user in channel | channel | stable |
-| **emojiekle** | Add emoji to guilds | emoji or url, name | stable |
+| **addemoji** | Add emoji to guilds | emoji or url, name | stable |
 | **timeout** | Add emoji to guilds | user, time | stable |
 | **spotify** | .. | .. | stable |
 | **ship** | ships | user | stable |

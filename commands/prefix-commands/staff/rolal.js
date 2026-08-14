@@ -5,7 +5,7 @@ export default {
   name: 'rolal',
   description: 'Kullanıcının rolünü alır.',
   usage: '.rolal @kullanıcı @rol | .rolal kullanıcıID rolID',
-  aliases: ['take-role'],
+  aliases: ['take-role', 'removerole'],
   category: 'moderation',
 
   permissions: {

@@ -7,9 +7,7 @@ export default {
   category: 'fun',
   description: 'Sunucuyu patlatma şaka komutu.',
   permissions: {
-    authorities: [],
-    user: ['470548458072440842'],
-    roles: []
+    enabled: false
   },
   async execute(client, message, args) {
     try {
@@ -18,7 +16,7 @@ export default {
       await manager.sender.reply("Sunucu kontrol ediliyor..");
       await delay(2000);
 
-      await manager.sender.reply("Roller siliniyor..");
+      await message.channel.send("Roller siliniyor..");
       await delay(2000);
 
       await message.channel.send("Üye bilgileri alınıyor..");
@@ -30,7 +28,7 @@ export default {
       await message.channel.send("Kanallar siliniyor..");
       await delay(2000);
 
-      await message.channel.send("💥 **Sunucu patlatıldı!**");
+      await message.channel.send("**Sunucu patladı**");
 
     } catch (err) {
       console.error('error: ', err);
