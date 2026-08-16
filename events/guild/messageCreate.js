@@ -1,7 +1,7 @@
 import { Events } from 'discord.js';
 import { afkHandler, levelMessageHandler, statsUtilsHandler, handleCooldown } from "#handlers"
 import { Settings } from "#models";
-import { checkCommandRestrictions, handleAutoDelete } from "#helpers";
+import { checkCommandRestrictions, handleAutoDelete, normalizePrefixArgs } from "#helpers";
 import Manager, { PermissionsManager } from "#managers";
 import "dotenv/config"
 
@@ -30,8 +30,8 @@ export default {
 
     if (!prefix || !message.content.startsWith(prefix)) return;
 
-    const args = message.content.slice(prefix.length).trim().split(/ +/);
-    const commandName = args.shift().toLowerCase();
+    const rawArgs = message.content.slice(prefix.length).trim().split(/ +/);
+    const commandName = rawArgs.shift().toLowerCase();
 
     const command = client.prefixCommands.get(commandName);
 
@@ -64,7 +64,12 @@ export default {
       if (!passed) return;
 
       try {
-        await command.execute(client, message, args);
+        if (command.type === 'hybrid') {
+          const options = await normalizePrefixArgs(message, command, rawArgs);
+          await command.execute(client, message, options);
+        } else {
+          await command.execute(client, message, rawArgs);
+        }
       
       await handleAutoDelete(message, command.name);
       } catch (error) {

@@ -1,3 +1,5 @@
+import { hybridReply, isInteraction } from './hybridContext.js';
+
 class Utils {
 	constructor(client){
 		this.client = client
@@ -87,17 +89,17 @@ class Utils {
 		
 
 		try {
-			let channel = guild.channels.cache.get(channelId);
+			let channel = guild.channels?.cache?.get(channelId);
 			if (!channel) {
-				channel = await guild.channels.fetch(channelId);
+				channel = await guild.channels?.fetch(channelId);
 			}
 
-			if (channel.guild.id !== guild.id) {
+			if (channel && guild?.id && channel.guild?.id !== guild.id) {
 				console.warn(`[Sender/getGuildChannel]: Channel (${channelId}) does not belong to this guild`);
 				return null;
 			}
 
-			return channel;
+			return channel || null;
 		} catch (err) {
 			console.error(`[Sender/getGuildChannel]: Error while checking channel (${channelId})`, err);
 			return null;
@@ -111,18 +113,16 @@ class Utils {
         if (text) content.content = text;
 		if (embeds || embed) content.embeds = embeds ? embeds : [embed];
         if (components) content.components = components;
-        if (ephemeral) content.ephemeral = ephemeral;
-		
-		let channel;
+        if (isInteraction(this.client) && ephemeral) content.ephemeral = ephemeral;
 		
 		if(reply){
-			this.client.reply(content)
+			return await hybridReply(this.client, content)
 		} else if(id){
-			channel = await this.getChannel(id)
-			channel.send(content)
+			const channel = await this.getChannelHybrid(id)
+			if (channel) return await channel.send(content).catch(() => null);
 		} else {
-			channel = this.client.channel
-			channel.send(content)
+			const channel = this.client.channel || this.client.guild?.channels?.cache?.get(this.client.channelId);
+			if (channel) return await channel.send(content).catch(() => null);
 		}
 		
 	}

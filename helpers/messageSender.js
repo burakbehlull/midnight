@@ -1,4 +1,5 @@
 import { EmbedBuilder } from 'discord.js';
+import { hybridReply, isInteraction } from './hybridContext.js';
 
 const colors = {
   liveRed: '#FF6B6B', 
@@ -50,7 +51,7 @@ class messageSender {
 
 	send(embed, channelId, components) {
 		const id = channelId
-		const channel = this.client.channels.cache.get(id) || this.client.channels.fetch(id);
+		const channel = this.client.channels?.cache?.get(id) || this.client.guild?.channels?.cache?.get(id) || this.client.client?.channels?.cache?.get(id);
 
 		if (!channel) {
 			console.warn(`[messageSender] Kanal bulunamadı: ${id}`);
@@ -60,13 +61,19 @@ class messageSender {
 		channel.send({ embeds: [embed], components: components }).catch(console.error);
 	}
 	
-	reply(content, userSees, components){
+	async reply(content, userSees, components){
 		const type = typeof(content)
+		const payload = {}
 		if(type == "object"){
-			this.client.reply({ embeds: [content], components: components, ephemeral: userSees })
-			return
+			payload.embeds = [content]
+		} else {
+			payload.content = content
 		}
-		this.client.reply({ content, components: components, ephemeral: userSees })
+		if (components) payload.components = components
+		if (isInteraction(this.client) && userSees) {
+			payload.ephemeral = true
+		}
+		return await hybridReply(this.client, payload)
 	}
 	
 	errorEmbed(description){

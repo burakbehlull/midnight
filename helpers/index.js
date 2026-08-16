@@ -12,6 +12,14 @@ import * as Loaders from "./loaders.js"
 import Utils from "./utils.js"
 
 import { checkCommandRestrictions, handleAutoDelete } from "./commandRestrictions.js"
+import {
+  normalizePrefixArgs,
+  normalizeSlashOptions,
+  hybridReply,
+  getActor,
+  getMemberActor,
+  isInteraction
+} from "./hybridContext.js"
 
 
 export {
@@ -29,5 +37,12 @@ export {
 	getFilesRecursively,
 	
 	checkCommandRestrictions,
-	handleAutoDelete
+	handleAutoDelete,
+
+  normalizePrefixArgs,
+  normalizeSlashOptions,
+  hybridReply,
+  getActor,
+  getMemberActor,
+  isInteraction
 }

@@ -42,6 +42,22 @@ async function getSlashCommands() {
   return slashCommands
 }
 
+async function getHybridCommands() {
+  const hybridCommands = [];
+  const commandsPath = path.join(__dirname, "../commands/hybrid-commands");
+  const commandFiles = await getFilesRecursively(commandsPath);
+
+  for (const filePath of commandFiles) {
+    const command = (await import(`file://${filePath}`)).default;
+    if (!command?.name || !command?.data) continue;
+
+    hybridCommands.push({ ...command, type: 'hybrid' });
+  }
+  console.log(`🔗 ${hybridCommands.length} tane Hybrid komut yüklendi`);
+
+  return hybridCommands;
+}
+
 async function getEvents() {
   const events = [];
   const eventsPath = path.join(__dirname, "../events");
@@ -100,7 +116,7 @@ async function eventExecuter(client, events){
 	}
 }
 
-async function commandExecuter(client, slashCommands, prefixCommands){
+async function commandExecuter(client, slashCommands, prefixCommands, hybridCommands = []){
 	
 	client.prefixCommands = new Collection();
 	client.slashCommands = new Collection();
@@ -115,21 +131,60 @@ async function commandExecuter(client, slashCommands, prefixCommands){
 			}
 		}	
 	}
+
+	if(hybridCommands.length > 0){
+		const seenPrefix = new Set([...client.prefixCommands.keys()]);
+		for (const hc of hybridCommands) {
+			const prefixName = (hc.name || '').toLowerCase();
+			if (prefixName && !seenPrefix.has(prefixName)) {
+				client.prefixCommands.set(prefixName, hc);
+				seenPrefix.add(prefixName);
+			}
+			if (Array.isArray(hc.aliases)) {
+				for (const alias of hc.aliases) {
+					const a = (alias || '').toLowerCase();
+					if (a && !seenPrefix.has(a)) {
+						client.prefixCommands.set(a, hc);
+						seenPrefix.add(a);
+					}
+				}
+			}
+		}
+	}
 	
 	if(slashCommands.length > 0){
 		for (const sc of slashCommands) {
 			client.slashCommands.set(sc.name, sc);
 		}
 	}
+
+	if(hybridCommands.length > 0){
+		const seenSlash = new Set([...client.slashCommands.keys()]);
+		for (const hc of hybridCommands) {
+			const slashName = (hc.name || '').toLowerCase();
+			if (slashName && !seenSlash.has(slashName)) {
+				client.slashCommands.set(slashName, hc);
+				seenSlash.add(slashName);
+			}
+		}
+	}
+}
+
+async function getDeployableSlashCommands() {
+	const slashOnly = await getSlashCommands();
+	const hybrid = await getHybridCommands();
+	return [...slashOnly, ...hybrid];
 }
 
 export {
     getPrefixCommands,
     getSlashCommands,
+    getHybridCommands,
     getEvents,
 	
     eventExecuter,
     commandExecuter,
     
-    deploySlashCommands
+	deploySlashCommands,
+	getDeployableSlashCommands,
 }

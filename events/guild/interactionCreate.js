@@ -1,6 +1,6 @@
 import { Events, MessageFlags } from 'discord.js';
 import { ticketHandler, itirafHandler, handleCooldown, handleInteractionCreate } from "#handlers"
-import { Modal, checkCommandRestrictions, handleAutoDelete } from "#helpers"
+import { Modal, checkCommandRestrictions, handleAutoDelete, normalizeSlashOptions } from "#helpers"
 import { PermissionsManager } from "#managers";
 
 
@@ -56,7 +56,12 @@ export default {
       if (!passed) return;
 
       try {
-        await command.execute(client, interaction);
+        if (command.type === 'hybrid') {
+          const options = await normalizeSlashOptions(interaction);
+          await command.execute(client, interaction, options);
+        } else {
+          await command.execute(client, interaction);
+        }
       
       await handleAutoDelete(interaction, command.name);
       } catch (error) {

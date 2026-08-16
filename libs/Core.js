@@ -1,7 +1,7 @@
 import { Loaders } from '#helpers'
 
-const { getPrefixCommands, getSlashCommands, getEvents, 
-	deploySlashCommands, eventExecuter, commandExecuter } = Loaders
+const { getPrefixCommands, getSlashCommands, getHybridCommands, getEvents, 
+	deploySlashCommands, eventExecuter, commandExecuter, getDeployableSlashCommands } = Loaders
 
 import config from '../config.json' with { type: 'json' };
 
@@ -17,12 +17,14 @@ class Core {
 	  
 	  const prefixCommands = await getPrefixCommands()
 	  const slashCommands = await getSlashCommands()
+	  const hybridCommands = await getHybridCommands()
 	  const events = await getEvents()
 	 
-	  await commandExecuter(client, slashCommands, prefixCommands)
+	  await commandExecuter(client, slashCommands, prefixCommands, hybridCommands)
 	  
 	  if(config.AUTO_SLASH_COMMAND_DEPLOY) {
-	    await deploySlashCommands(this.token, this.botId, slashCommands)
+	    const deployable = await getDeployableSlashCommands()
+	    await deploySlashCommands(this.token, this.botId, deployable)
 	  }
 
 	  await eventExecuter(client, events)  
