@@ -78,8 +78,12 @@ class messageSender {
 	
 	errorEmbed(description){
 		const msg = this.client
+		const guild = msg?.guild ?? null;
+		const author = guild && guild.name
+			? { name: guild.name, iconURL: guild.iconURL?.() ?? undefined }
+			: null;
 		return this.embed({
-		  author: { name: msg.guild.name, iconURL: msg.guild.iconURL()},
+		  author,
 		  color: 0xFF0000,
 		  title: null,
 		  description: description
@@ -88,8 +92,12 @@ class messageSender {
 	
 	classic(description){
 		const msg = this.client
+		const guild = msg?.guild ?? null;
+		const author = guild && guild.name
+			? { name: guild.name, iconURL: guild.iconURL?.() ?? undefined }
+			: null;
 		return this.embed({
-		  author: { name: msg.guild.name, iconURL: msg.guild.iconURL()},
+		  author,
 		  color: 0x89CFF0,
 		  title: null,
 		  description: description

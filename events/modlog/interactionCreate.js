@@ -6,10 +6,13 @@ export default {
   async execute(client, interaction) {
     if (!interaction.isChatInputCommand()) return;
 
+    // DM'de (guild = null) mod log tutmaya gerek yok, doğrudan dön
+    if (!interaction.guild) return;
+
     const logger = new modLogger(client);
     const cmd = interaction.commandName;
-    const args = interaction.options.data
-      .map(opt => `${opt.name}: ${opt.value}`)
+    const args = (interaction.options?.data ?? [])
+      .map(opt => `${opt.name}: ${opt.value ?? ''}`)
       .join(', ');
 
     await logger.logEvent({
@@ -17,9 +20,9 @@ export default {
       type: 'command',
 	  color: '#e02299',
 	  title: null,
-	  author: { name: interaction.guild.name, iconURL: interaction.guild.iconURL() },
+	  author: { name: interaction.guild.name, iconURL: interaction.guild.iconURL?.() ?? undefined },
 	  description: `<@${interaction.user.id}>, <#${interaction.channel?.id}> kanalında, \`${cmd}\` komutunu kullandı.\n**İçerik**:  \`/${cmd} ${args}\``,
-	  footer: { text: interaction.user.username, iconURL: interaction.user.displayAvatarURL() }
+	  footer: { text: interaction.user.username, iconURL: interaction.user.displayAvatarURL?.() ?? undefined }
 
     });
   }

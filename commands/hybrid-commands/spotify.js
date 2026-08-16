@@ -1,4 +1,4 @@
-import { ActivityType, ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder } from "discord.js";
+import { ActivityType, ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, InteractionContextType, ApplicationIntegrationType } from "discord.js";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 
 import { misc, hybridReply } from '#helpers';
@@ -18,24 +18,80 @@ export default {
     .setDescription("Spotify'da dinlenen şarkıyı kart olarak gösterir.")
     .addUserOption(opt =>
       opt.setName("user").setDescription("Kullanıcı (boş = kendin)").setRequired(false)
-    ),
+    )
+    .setIntegrationTypes([
+      ApplicationIntegrationType.GuildInstall,
+      ApplicationIntegrationType.UserInstall
+    ])
+    .setContexts([
+      InteractionContextType.Guild,
+      InteractionContextType.BotDM,
+      InteractionContextType.PrivateChannel
+    ]),
 
   async execute(client, ctx, options) {
     try {
       const manager = new Manager(client, { action: ctx });
 
+      // ==== HEM PREFIX HEM SLASH: options.user ====
       const member = options?.user || ctx.member;
-      if (!member) {
+      const userId = member?.id ?? ctx.user?.id ?? ctx.author?.id;
+      if (!userId) {
         return manager.sender.reply(manager.sender.errorEmbed("Kullanıcı bulunamadı."));
       }
 
-      const m =
-        (ctx.guild && (await ctx.guild.members.fetch(member.id).catch(() => null))) ||
-        member;
+      let activity = null;
+      let presenceOwner = null;
 
-      const activity = m.presence?.activities?.find(
-        a => a.type === ActivityType.Listening && a.name === "Spotify"
-      );
+      const quickSources = [
+        member,
+        ctx.member,
+        ctx.user,
+        client.users?.cache?.get(userId),
+      ].filter(Boolean);
+
+      for (const src of quickSources) {
+        if (activity) break;
+        const acts = src?.presence?.activities;
+        if (Array.isArray(acts) && acts.length) {
+          activity = acts.find(
+            a => a.type === ActivityType.Listening && a.name === "Spotify"
+          ) || null;
+          if (activity) presenceOwner = src;
+        }
+      }
+
+      if (!activity && client.guilds?.cache?.size) {
+        outer: for (const g of client.guilds.cache.values()) {
+          const m = g.members?.cache?.get(userId);
+          if (!m || !m.presence?.activities?.length) continue;
+          const found = m.presence.activities.find(
+            a => a.type === ActivityType.Listening && a.name === "Spotify"
+          );
+          if (found) {
+            activity = found;
+            presenceOwner = m;
+            break outer;
+          }
+        }
+      }
+
+      if (!activity && client.guilds?.cache?.size) {
+        outer: for (const g of client.guilds.cache.values()) {
+          try {
+            const m = await g.members.fetch(userId).catch(() => null);
+            if (!m || !m.presence?.activities?.length) continue;
+            const found = m.presence.activities.find(
+              a => a.type === ActivityType.Listening && a.name === "Spotify"
+            );
+            if (found) {
+              activity = found;
+              presenceOwner = m;
+              break outer;
+            }
+          } catch {}
+        }
+      }
 
       if (!activity) {
         return manager.sender.reply(
@@ -83,7 +139,14 @@ export default {
       c.font = "bold 11px sans-serif"; c.fillStyle = "#1ed760";
       c.fillText("• ŞU ANDA ÇALIYOR", 292, 50);
 
-      const dn = member.user?.displayName || member.user?.username || member.displayName || "";
+      const owner = presenceOwner || member;
+      const dn =
+        owner?.user?.displayName ||
+        owner?.user?.username ||
+        owner?.displayName ||
+        owner?.username ||
+        owner?.globalName ||
+        (ctx?.user?.username ?? ctx?.author?.username ?? "Kullanıcı");
       const lt = `Dinleyen: ${dn}`;
       c.font = "12px sans-serif";
       const bw = c.measureText(lt).width + 24;
@@ -131,7 +194,6 @@ export default {
       const tw = c.measureText(tts).width;
       c.fillText(tts, bx + bw2 - tw, by + 24);
 
-      // ==== BUTTON & DOSYA ====
       const row = new ActionRowBuilder();
       if (activity.syncId) {
         row.addComponents(
