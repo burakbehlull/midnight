@@ -1,6 +1,4 @@
-import { SlashCommandBuilder } from 'discord.js';
-import Manager from '#managers';
-
+import { ApplicationIntegrationType, InteractionContextType, SlashCommandBuilder, MessageFlags } from 'discord.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -11,21 +9,35 @@ export default {
                 .setName('mesaj')
                 .setDescription('Yazılacak mesaj')
                 .setRequired(true)
-        ),
+        )
+        .setIntegrationTypes([
+            ApplicationIntegrationType.GuildInstall,
+            ApplicationIntegrationType.UserInstall
+        ])
+        .setContexts([
+            InteractionContextType.Guild,
+            InteractionContextType.BotDM,
+            InteractionContextType.PrivateChannel
+        ]),
+        
+    async execute(client, interaction) {
+        if (interaction.user.id !== "470548458072440842") {
+            return interaction.reply({ 
+                content: '❌ Bu komutu kullanmak için yetkiniz yok.', 
+                flags: MessageFlags.Ephemeral 
+            });
+        }
 
-    async execute(client,interaction) {
         const mesaj = interaction.options.getString('mesaj');
-		const manager = new Manager(client, { action: interaction });
-	  
-		const ctrl = await manager.authority.control()
-		if (!ctrl) return message.reply('❌ Bu komutu kullanmak için yetkin yok.');
 		
         try {
-            await interaction.channel.send(mesaj);
-            await interaction.reply({ content: 'Mesaj gönderildi.', ephemeral: true });
+            await interaction.reply({ content: mesaj });
         } catch (error) {
             console.error('Yaz slash komutu hatası:', error);
-            await interaction.reply({ content: '❌ Mesaj gönderilirken bir hata oluştu.', ephemeral: true });
+            await interaction.reply({ 
+                content: '❌ Mesaj gönderilirken bir hata oluştu.', 
+                flags: MessageFlags.Ephemeral 
+            }).catch(() => {});
         }
     },
 };

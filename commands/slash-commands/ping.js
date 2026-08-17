@@ -5,7 +5,7 @@ export default {
   data: new SlashCommandBuilder()
     .setName('ping')
     .setDescription('Ping command, replies with pong.'),
-  async execute(interaction) {
+  async execute(client, interaction) {
     
 	  const manager = new Manager(client, { action: interaction })
     

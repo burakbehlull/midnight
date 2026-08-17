@@ -20,13 +20,13 @@ export default {
       opt.setName("user").setDescription("Kullanıcı (boş = kendin)").setRequired(false)
     )
     .setIntegrationTypes([
-      ApplicationIntegrationType.GuildInstall,
+      //  ApplicationIntegrationType.GuildInstall,
       ApplicationIntegrationType.UserInstall
     ])
     .setContexts([
-      InteractionContextType.Guild,
       InteractionContextType.BotDM,
       InteractionContextType.PrivateChannel
+      // InteractionContextType.Guild
     ]),
 
   async execute(client, ctx, options) {
