@@ -35,6 +35,11 @@ export default {
 
       if (!userInput) return
 
+      const ownerCheckRegex = /kimin\s+(botu|yılanı|yilani|yılanısın|yilanisin|botusun)/i;
+      if (ownerCheckRegex.test(userInput)) {
+        return message.reply('Burağın yılanıyım 🐍');
+      }
+
       await message.channel.sendTyping();
 
       const gemini = new GeminiAI();

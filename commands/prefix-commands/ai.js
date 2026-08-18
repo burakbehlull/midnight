@@ -23,6 +23,11 @@ export default {
       return message.reply('❌ Lütfen bir mesaj yaz.');
     }
 
+    const ownerCheckRegex = /kimin\s+(botu|yılanı|yilani|yılanısın|yilanisin|botusun)/i;
+    if (ownerCheckRegex.test(userInput)) {
+      return message.reply('Burağın yılanıyım 🐍');
+    }
+
     await message.channel.sendTyping();
 
     const reply = await gemini.ask(message.channel.id, userInput);
