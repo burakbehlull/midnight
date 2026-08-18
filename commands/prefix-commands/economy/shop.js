@@ -1,5 +1,5 @@
 import { Shop } from '#models';
-import { messageSender } from '#helpers';
+import Manager from '#managers';
 import { EmbedBuilder } from 'discord.js';
 
 export default {
