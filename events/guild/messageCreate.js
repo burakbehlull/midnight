@@ -1,9 +1,8 @@
 import { Events } from 'discord.js';
 import { afkHandler, levelMessageHandler, statsUtilsHandler, handleCooldown } from "#handlers"
 import { Settings } from "#models";
-import { checkCommandRestrictions, handleAutoDelete, normalizePrefixArgs, splitMessage } from "#helpers";
-import Manager, { PermissionsManager } from "#managers";
-import { GeminiAI } from "#libs";
+import { checkCommandRestrictions, handleAutoDelete, normalizePrefixArgs } from "#helpers";
+import Manager from "#managers";
 import "dotenv/config"
 
 export default {
@@ -27,30 +26,6 @@ export default {
     await levelMessageHandler(message.author.id, message.guild?.id, message);
     await statsUtilsHandler.updateMessageStats(message.author.id, message.guild?.id, message.channel.id);
     await afkHandler(message);
-	
-
-    if (message.mentions.has(client.user)) {
-      const mentionRegex = new RegExp(`<@!?${client.user.id}>\\s*`);
-      const userInput = message.content.replace(mentionRegex, '').trim();
-
-      if (!userInput) return
-
-      const ownerCheckRegex = /kimin\s+(botu|yılanı|yilani|yılanısın|yilanisin|botusun)/i;
-      if (ownerCheckRegex.test(userInput)) {
-        return message.reply('Burağın yılanıyım 🐍');
-      }
-
-      await message.channel.sendTyping();
-
-      const gemini = new GeminiAI();
-      const reply = await gemini.ask(message.channel.id, userInput);
-
-      const parts = splitMessage(reply, 1500);
-      for (const part of parts) {
-        await message.reply({ content: part });
-      }
-      return;
-    }
 
     if (!prefix || !message.content.startsWith(prefix)) return;
 
