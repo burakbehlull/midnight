@@ -30,24 +30,34 @@ export default {
   async execute(client, ctx, options) {
     const manager = new Manager(client, { action: ctx });
 
-    let user;
+    let rawUser;
     if (options?.user) {
-      user = options.user;
+      rawUser = options.user;
     } else if (ctx.mentions?.users?.first()) {
-      user = ctx.mentions.users.first();
+      rawUser = ctx.mentions.users.first();
     } else {
-      user = ctx.user || ctx.author;
+      rawUser = ctx.user || ctx.author;
+    }
+    const user = rawUser?.user ?? rawUser;
+    if (!user) {
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Kullanıcı bulunamadı.'));
     }
 
+    const username = user.username || user.user?.username || 'Kullanıcı';
+    const avatarUrl = user.displayAvatarURL?.({ size: 1024 }) || user.user?.displayAvatarURL?.({ size: 1024 }) || '';
+    const hasAnimated = !!(user.avatar?.startsWith('a_') || user.user?.avatar?.startsWith('a_'));
+
+    const getExt = (ext) => user.displayAvatarURL?.({ extension: ext, size: 1024 }) || user.user?.displayAvatarURL?.({ extension: ext, size: 1024 }) || '';
+
     try {
-      const embed = new EmbedBuilder(manager.sender.embed({
-        title: `${user.username} - Avatar`,
-        footer: { text: user.username, iconURL: user.displayAvatarURL() }
-      }))
+      const embed = manager.sender.embed({
+        title: `${username} - Avatar`,
+        footer: { text: username, iconURL: avatarUrl || undefined }
+      })
         .setDescription(
-          `**[PNG](${user.displayAvatarURL({ extension: 'png', size: 1024 })}) | [JPG](${user.displayAvatarURL({ extension: 'jpg', size: 1024 })}) | [WEBP](${user.displayAvatarURL({ extension: 'webp', size: 1024 })})${user.avatar?.startsWith('a_') ? ` | [GIF](${user.displayAvatarURL({ extension: 'gif', size: 1024 })})` : ''}**`
+          `**[PNG](${getExt('png')}) | [JPG](${getExt('jpg')}) | [WEBP](${getExt('webp')})${hasAnimated ? ` | [GIF](${getExt('gif')})` : ''}**`
         )
-        .setImage(user.displayAvatarURL({ size: 1024 }));
+        .setImage(avatarUrl);
 
       return hybridReply(ctx, { embeds: [embed] });
     } catch (err) {

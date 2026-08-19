@@ -30,27 +30,35 @@ export default {
   async execute(client, ctx, options) {
     const manager = new Manager(client, { action: ctx });
 
-    let user;
+    let rawUser;
     if (options?.user) {
-      user = options.user;
+      rawUser = options.user;
     } else if (ctx.mentions?.users?.first()) {
-      user = ctx.mentions.users.first();
+      rawUser = ctx.mentions.users.first();
     } else {
-      user = ctx.user || ctx.author;
+      rawUser = ctx.user || ctx.author;
+    }
+    const user = rawUser?.user ?? rawUser;
+    if (!user) {
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Kullanıcı bulunamadı.'));
     }
 
     try {
-      const fetchedUser = await client.users.fetch(user.id, { force: true });
+      const userId = user.id;
+      const fetchedUser = await client.users.fetch(userId, { force: true });
       const bannerURL = fetchedUser.bannerURL({ size: 1024 });
 
       if (!bannerURL) {
         return manager.sender.reply(manager.sender.errorEmbed('❌ Kullanıcının bir bannerı yok.'));
       }
 
-      const embed = new EmbedBuilder(manager.sender.embed({
-        title: `${fetchedUser.username} - Banner`,
-        footer: { text: fetchedUser.username, iconURL: fetchedUser.displayAvatarURL() }
-      }))
+      const username = fetchedUser.username || 'Kullanıcı';
+      const avatarUrl = fetchedUser.displayAvatarURL?.() || '';
+
+      const embed = manager.sender.embed({
+        title: `${username} - Banner`,
+        footer: { text: username, iconURL: avatarUrl || undefined }
+      })
         .setImage(bannerURL)
         .setDescription(
           `**[PNG](${bannerURL.replace(/\.(webp|png|jpg|gif)/, '.png')}) | [JPG](${bannerURL.replace(/\.(webp|png|jpg|gif)/, '.jpg')}) | [WEBP](${bannerURL.replace(/\.(webp|png|jpg|gif)/, '.webp')})${bannerURL.includes('.gif') || fetchedUser.banner?.startsWith('a_') ? ` | [GIF](${bannerURL.replace(/\.(webp|png|jpg|gif)/, '.gif')})` : ''}**`

@@ -28,19 +28,23 @@ class messageSender {
 	}
 
 	embed({ title, description, image, thumbnail, fields=[], author, color=0x0099FF, footer, timestamp}){
-       const guild = this.client
+       const ctx = this.client
 		
-	    const user = guild.author ?? guild.user
-        const IFooter = footer ?? {
-			text: user.username,
-			iconURL: user.displayAvatarURL()
+	   const user = ctx.author ?? ctx.user
+	   const safeFooterText = footer?.text ?? (user?.username ?? ' ')
+	   const safeFooterIconURL = footer?.iconURL ?? (user?.displayAvatarURL ? user.displayAvatarURL() : undefined)
+	   const IFooter = footer ?? {
+			text: safeFooterText || ' ',
+			iconURL: safeFooterIconURL
 		};
+	   if (IFooter.text === undefined || IFooter.text === null) IFooter.text = ' ';
+	   if (IFooter.iconURL === undefined) delete IFooter.iconURL;
 		
         const IEmbed= new EmbedBuilder()
         .setColor(color)
-        .setTitle(title)
-        .setTimestamp(timestamp)
-        .setFooter(IFooter)
+        if (title !== undefined && title !== null) IEmbed.setTitle(title)
+        if (timestamp !== undefined && timestamp !== null) IEmbed.setTimestamp(timestamp)
+        IEmbed.setFooter(IFooter)
 		if (author) IEmbed.setAuthor(author)
 		if (description) IEmbed.setDescription(description)
 		if (image) IEmbed.setImage(image);
