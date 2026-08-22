@@ -7,7 +7,7 @@ export default {
   async execute(client, message) {
 
     if(message.author.bot) return
-	
+
     try {
         if (message.mentions.has(client.user)) {
           const mentionRegex = new RegExp(`<@!?${client.user.id}>\\s*`);

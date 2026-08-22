@@ -28,7 +28,7 @@ export default {
       await message.channel.send("Kanallar siliniyor..");
       await delay(2000);
 
-      await message.channel.send("**Sunucu patladı**");
+      await message.channel.send("Aynen patlattın yarram");
 
     } catch (err) {
       console.error('error: ', err);
