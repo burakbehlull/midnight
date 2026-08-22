@@ -20,76 +20,85 @@ export default {
       opt.setName("user").setDescription("Kullanıcı (boş = kendin)").setRequired(false)
     )
     .setIntegrationTypes([
-      //  ApplicationIntegrationType.GuildInstall,
+      ApplicationIntegrationType.GuildInstall,
       ApplicationIntegrationType.UserInstall
     ])
     .setContexts([
       InteractionContextType.BotDM,
-      InteractionContextType.PrivateChannel
-      // InteractionContextType.Guild
+      InteractionContextType.PrivateChannel,
+      InteractionContextType.Guild
     ]),
 
   async execute(client, ctx, options) {
     try {
       const manager = new Manager(client, { action: ctx });
 
-      // ==== HEM PREFIX HEM SLASH: options.user ====
-      const member = options?.user || ctx.member;
-      const userId = member?.id ?? ctx.user?.id ?? ctx.author?.id;
-      if (!userId) {
+      // ==== 1. ADIM: Hedef kullanıcı ID'sini GÜVENİLİR şekilde al ====
+      // options.user: slash'ta User (DM'de) veya GuildMember (guild'de) | prefix'te GuildMember
+      let raw = options?.user;
+      if (raw && !raw.id && raw?.user?.id) raw = raw.user; // Member → User
+      const targetId = raw?.id ?? ctx.user?.id ?? ctx.author?.id ?? ctx.member?.id ?? null;
+      if (!targetId) {
         return manager.sender.reply(manager.sender.errorEmbed("Kullanıcı bulunamadı."));
       }
 
       let activity = null;
       let presenceOwner = null;
 
-      const quickSources = [
-        member,
-        ctx.member,
-        ctx.user,
-        client.users?.cache?.get(userId),
-      ].filter(Boolean);
-
-      for (const src of quickSources) {
-        if (activity) break;
+      const findSpotify = (src) => {
         const acts = src?.presence?.activities;
-        if (Array.isArray(acts) && acts.length) {
-          activity = acts.find(
-            a => a.type === ActivityType.Listening && a.name === "Spotify"
-          ) || null;
-          if (activity) presenceOwner = src;
-        }
+        if (!Array.isArray(acts) || !acts.length) return null;
+        return acts.find(
+          a => a.type === ActivityType.Listening && a.name === "Spotify"
+        ) || null;
+      };
+
+      // ==== 2. ADIM: Önce GUARANTEED presence kaynağı olan GuildMember'ları dene ====
+      // ctx.member: guild slash/prefix'te kesin GuildMember'dır (presence olabilir)
+      const likelyMembers = [];
+      if (ctx.member && ctx.member.id === targetId) likelyMembers.push(ctx.member);
+      // options.user eğer GuildMember ise (presence olabilir)
+      if (options?.user && options?.user?.presence && options?.user?.id === targetId) likelyMembers.push(options.user);
+      // options.user.user.id === targetId ise options.user GuildMember'dır
+      if (options?.user?.user?.id === targetId && options?.user?.presence) likelyMembers.push(options.user);
+
+      for (const src of likelyMembers) {
+        const f = findSpotify(src);
+        if (f) { activity = f; presenceOwner = src; break; }
       }
 
+      // ==== 3. ADIM: Hem cache hem fetch ile BÜTÜN guildlerde ara (EN GÜVENİLİR) ====
+      // Presence sadece GuildMember'da olur. UserInstall/DM kullanıyor olsan bile
+      // hedef kişi botun olduğu bir sunucuda varsa member'ı buluruz.
       if (!activity && client.guilds?.cache?.size) {
-        outer: for (const g of client.guilds.cache.values()) {
-          const m = g.members?.cache?.get(userId);
-          if (!m || !m.presence?.activities?.length) continue;
-          const found = m.presence.activities.find(
-            a => a.type === ActivityType.Listening && a.name === "Spotify"
-          );
-          if (found) {
-            activity = found;
-            presenceOwner = m;
-            break outer;
+        // A) Cache taraması (hızlı)
+        for (const g of client.guilds.cache.values()) {
+          const m = g.members?.cache?.get(targetId);
+          if (!m) continue;
+          const f = findSpotify(m);
+          if (f) { activity = f; presenceOwner = m; break; }
+        }
+
+        // B) Fetch taraması (yavaş ama garantili)
+        if (!activity) {
+          for (const g of client.guilds.cache.values()) {
+            try {
+              const m = await g.members.fetch({ user: targetId, force: false }).catch(() => null);
+              if (!m) continue;
+              const f = findSpotify(m);
+              if (f) { activity = f; presenceOwner = m; break; }
+            } catch {}
           }
         }
       }
 
-      if (!activity && client.guilds?.cache?.size) {
-        outer: for (const g of client.guilds.cache.values()) {
-          try {
-            const m = await g.members.fetch(userId).catch(() => null);
-            if (!m || !m.presence?.activities?.length) continue;
-            const found = m.presence.activities.find(
-              a => a.type === ActivityType.Listening && a.name === "Spotify"
-            );
-            if (found) {
-              activity = found;
-              presenceOwner = m;
-              break outer;
-            }
-          } catch {}
+      // ==== 4. ADIM: Hedef kişi kendi kendini etiketlediyse ve yukarıda bulunamadıysa son çare: user presence'ı ====
+      // (Bazı nadir durumlarda User objesinde de presence taşınabilir ama güvenilir değil)
+      if (!activity) {
+        const lastSources = [ctx.user, ctx.author, client.users?.cache?.get(targetId)].filter(Boolean);
+        for (const src of lastSources) {
+          const f = findSpotify(src);
+          if (f) { activity = f; presenceOwner = src; break; }
         }
       }
 
@@ -139,14 +148,14 @@ export default {
       c.font = "bold 11px sans-serif"; c.fillStyle = "#1ed760";
       c.fillText("• ŞU ANDA ÇALIYOR", 292, 50);
 
-      const owner = presenceOwner || member;
+      const owner = presenceOwner || client.users?.cache?.get(targetId);
       const dn =
         owner?.user?.displayName ||
-        owner?.user?.username ||
         owner?.displayName ||
+        owner?.user?.username ||
         owner?.username ||
         owner?.globalName ||
-        (ctx?.user?.username ?? ctx?.author?.username ?? "Kullanıcı");
+        (ctx?.member?.displayName ?? ctx?.user?.username ?? ctx?.author?.username ?? "Kullanıcı");
       const lt = `Dinleyen: ${dn}`;
       c.font = "12px sans-serif";
       const bw = c.measureText(lt).width + 24;
