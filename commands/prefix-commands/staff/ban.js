@@ -1,4 +1,5 @@
 import Manager from '#managers';
+import { Punishment } from '#models';
 import { PermissionFlagsBits } from 'discord.js';
 
 export default {
@@ -60,6 +61,15 @@ export default {
       }
 
       await target.ban({ reason });
+
+      await Punishment.create({
+        userId: target.id,
+        guildId: message.guild.id,
+        staffId: message.author.id,
+        type: "ban",
+        duration: null,
+        reason
+      });
 
       return sender.reply(sender.embed({
         author: { name: message.guild.name, iconURL: message.guild.iconURL() },

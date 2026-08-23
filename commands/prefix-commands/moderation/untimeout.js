@@ -4,7 +4,7 @@ import Manager from '#managers';
 
 export default {
   name: 'untimeout',
-  aliases: ['susturmakaldir', 'unt'],
+  aliases: ['susturmakaldir', 'unto'],
   description: 'Belirtilen kullanıcının timeout (susturma) cezasını kaldırır.',
   usage: 'untimeout <@kullanıcı|ID> [sebep]',
   category: 'moderation',

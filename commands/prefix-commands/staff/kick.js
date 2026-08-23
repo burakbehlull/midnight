@@ -1,4 +1,5 @@
 import Manager from '#managers';
+import { Punishment } from '#models';
 import { PermissionFlagsBits } from 'discord.js';
 
 export default {
@@ -59,7 +60,7 @@ export default {
 
       await target.kick(reason);
 
-      return sender.reply(sender.embed({
+      sender.reply(sender.embed({
         author: { name: message.guild.name, iconURL: message.guild.iconURL() },
         title: "Kullanıcı Sunucudan Atıldı",
         fields: [
@@ -69,6 +70,17 @@ export default {
         ],
         thumbnail: target.user.displayAvatarURL(),
       }), true);
+
+      await Punishment.create({
+        userId: target.id,
+        guildId: message.guild.id,
+        staffId: message.author.id,
+        type: "kick",
+        reason
+      });
+
+      return
+
 
     } catch (error) {
       console.error('Kick komutu hatası:', error);

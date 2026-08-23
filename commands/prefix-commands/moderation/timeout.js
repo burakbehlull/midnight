@@ -1,6 +1,6 @@
 import ms from 'ms';
 import { PermissionFlagsBits } from 'discord.js';
-
+import { Punishment } from "#models";
 import Manager from '#managers';
 import { Button } from '#helpers';
 
@@ -85,6 +85,16 @@ export default {
           embeds: [manager.sender.classic(`${member} kullanıcısı **${timeString}** boyunca susturuldu.\n**Sebep:** ${reason}`)],
           components: []
         });
+
+        await Punishment.create({
+          userId: member.id,
+          guildId: message.guild.id,
+          staffId: message.author.id,
+          type: "timeout",
+          duration: timeString,
+          reason
+        });
+        
         collector.stop('success');
       } catch (err) {
         console.error('Timeout Buton Hatası:', err);

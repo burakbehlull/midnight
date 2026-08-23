@@ -1,4 +1,5 @@
 import Manager from '#managers';
+import { Punishment } from '#models';
 import { PermissionFlagsBits } from 'discord.js';
 
 export default {
@@ -37,6 +38,14 @@ export default {
             AddReactions: false,
             Speak: false
           });
+        });
+        
+        await Punishment.create({
+          userId: member.id,
+          guildId: message.guild.id,
+          staffId: message.author.id,
+          type: "mute",
+          reason
         });
       } catch (err) {
         console.error(err);

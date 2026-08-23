@@ -2,6 +2,7 @@ import ms from 'ms';
 
 import Manager from '#managers';
 import { PermissionFlagsBits } from 'discord.js';
+import { Punishment } from '#models';
 
 export default {
   name: 'vmute',
@@ -33,6 +34,15 @@ export default {
       await target.voice.setMute(true, sebep);
       await sender.reply(sender.classic(`🔇 ${target} kullanıcısı **${args[1]}** boyunca ses kanalında susturuldu.`), true);
 
+      await Punishment.create({
+        userId: target.id,
+        guildId: message.guild.id,
+        staffId: message.author.id,
+        type: "vmute",
+        duration: args[1] || null,
+        reason
+      });
+      
       setTimeout(async () => {
         if (target.voice.channel && target.voice.serverMute) {
           await target.voice.setMute(false, "Süre doldu");
