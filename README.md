@@ -109,6 +109,7 @@ Create ` config.json ` file and set permission settings:
 | **profile** | users profile | .. | stable |
 | **shop** | shop marketplace | .. | stable |
 | **komutpanel** | authority ones command systems | .. | stable |
+| **untimeout** | removes user timeout | user | stable |
 
 ### events:
 | feature | comment | set command |
