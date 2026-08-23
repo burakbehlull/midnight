@@ -7,6 +7,7 @@ import Manager from '#managers';
 export default {
   name: 'sesgir',
   description: 'Bot belirtilen ses kanalına katılır',
+  aliases: ['voice-join'],
   usage: 'sesgir <#channel / channelId>',
   category: 'server',
   permissions: {

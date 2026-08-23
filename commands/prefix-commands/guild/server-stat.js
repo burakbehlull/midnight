@@ -2,6 +2,7 @@ import { messageSender } from '#helpers';
 
 export default {
   name: 'say',
+  aliases: ['server-stat'],
   description: 'Sunucudaki istatistikleri gösterir.',
   usage: 'say',
   category: 'moderation',

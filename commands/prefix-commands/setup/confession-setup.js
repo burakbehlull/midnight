@@ -5,6 +5,7 @@ import { Settings } from '#models';
 
 export default {
   name: 'itiraf-setup',
+  aliases: ['confession-setup'],
   description: 'İtiraf sistemini kurar, sadece yöneticiler kullanabilir.',
   usage: 'itiraf-setup <#channel>',
   cooldown: 10,

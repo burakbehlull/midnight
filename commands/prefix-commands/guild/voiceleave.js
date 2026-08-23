@@ -6,6 +6,7 @@ import Manager from '#managers';
 
 export default {
   name: 'sescik',
+  aliases: ['voice-leave'],
   description: 'Bot ses kanalından çıkar',
   usage: 'ses gir <#channel / channelId>',
   category: 'server',
