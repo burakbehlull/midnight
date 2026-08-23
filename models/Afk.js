@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const afkSchema = new mongoose.Schema({
   userId: { type: String, required: true, unique: true },
-  reason: { type: String, default: 'AFK' },
+  reason: { type: String, default: null },
   timestamp: { type: Date, default: Date.now }
 });
 

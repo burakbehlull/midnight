@@ -7,16 +7,18 @@ export default async function afkHandler(message) {
   if (mentioned) {
     const afkData = await Afk.findOne({ userId: mentioned.id });
     if (afkData) {
+      const displayName = mentioned.globalName ?? mentioned.username;
+      const reasonText = afkData.reason ? `: ${afkData.reason}` : '';
       message.channel.send({
-        content: `**${mentioned.username}** şu anda AFK: ${afkData.reason}`
+        content: `**[AFK] ${displayName}** şu anda AFK${reasonText}`
       });
     }
   }
 
-  // Kullanıcı kendi AFK'sını bozuyor mu?
   const selfAfk = await Afk.findOne({ userId: message.author.id });
   if (selfAfk) {
     await Afk.deleteOne({ userId: message.author.id });
-    message.reply('Hoş geldin, artık AFK değilsin.');
+    const displayName = message.author.globalName ?? message.author.username;
+    message.reply(`Hoş geldin **${displayName}**, artık AFK değilsin.`);
   }
 }
