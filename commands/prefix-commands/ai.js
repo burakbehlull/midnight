@@ -15,7 +15,7 @@ export default {
   async execute(client, message, args) {
 
 
-  const manager = new Manager(client);
+    const manager = new Manager(client, { action: message });
 
     if(!manager.config.AI.ReplyCommand) return
 

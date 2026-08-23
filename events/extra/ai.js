@@ -8,7 +8,7 @@ export default {
   async execute(client, message) {
     if(message.author.bot) return
 
-    const manager = new Manager(client);
+    const manager = new Manager(client, { action: message });
 
 
     if(!manager.config.AI.ReplyWrapper) return
