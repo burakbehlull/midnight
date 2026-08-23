@@ -44,6 +44,7 @@ export default {
     }
 
     const username = user.username || user.user?.username || 'Kullanıcı';
+    const id = user.id || user.user?.id || 'Kullanıcı';
     const avatarUrl = user.displayAvatarURL?.({ size: 1024 }) || user.user?.displayAvatarURL?.({ size: 1024 }) || '';
     const hasAnimated = !!(user.avatar?.startsWith('a_') || user.user?.avatar?.startsWith('a_'));
 
@@ -52,7 +53,7 @@ export default {
     try {
       const embed = manager.sender.embed({
         title: `${username} - Avatar`,
-        footer: { text: username, iconURL: avatarUrl || undefined }
+        footer: { text: `${username} (${id})`, iconURL: avatarUrl || undefined }
       })
         .setDescription(
           `**[PNG](${getExt('png')}) | [JPG](${getExt('jpg')}) | [WEBP](${getExt('webp')})${hasAnimated ? ` | [GIF](${getExt('gif')})` : ''}**`

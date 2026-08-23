@@ -48,6 +48,8 @@ export default {
       const fetchedUser = await client.users.fetch(userId, { force: true });
       const bannerURL = fetchedUser.bannerURL({ size: 1024 });
 
+      const fetchUserId = fetchedUser.id;
+
       if (!bannerURL) {
         return manager.sender.reply(manager.sender.errorEmbed('❌ Kullanıcının bir bannerı yok.'));
       }
@@ -57,7 +59,7 @@ export default {
 
       const embed = manager.sender.embed({
         title: `${username} - Banner`,
-        footer: { text: username, iconURL: avatarUrl || undefined }
+        footer: { text: `${username} (${fetchUserId})`, iconURL: avatarUrl || undefined }
       })
         .setImage(bannerURL)
         .setDescription(

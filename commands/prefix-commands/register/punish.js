@@ -3,32 +3,34 @@ import Manager from "#managers";
 import { PermissionFlagsBits } from "discord.js";
 
 export default {
-  name: "uyarı",
-  aliases: ['uyari', 'warn'],
-  description: 'Belirtilen kullanıcıya uyarı verir',
-  usage: 'uyarı @user sebep',
+  name: "ceza",
+  aliases: ['punish'],
+  description: 'Belirtilen kullanıcıya ceza verir',
+  usage: 'ceza @user sebep',
   category: 'moderation',
 
   permissions: {
     authorities: [PermissionFlagsBits.ManageRoles, PermissionFlagsBits.Administrator],
   },
-  
+
   async execute(client, message, args) {
 	  const sender = new Manager(client, { action: message }).sender;
-
+	  
     const target = message.mentions.members.first() || message.guild.members.cache.get(args[0]);
     const reason = args.slice(1).join(" ") || "Sebep belirtilmedi";
 	
 	  if(!target) return sender.reply(sender.errorEmbed("Kullancı belirtin!"))
-		
+	
+
     await Punishment.create({
       userId: target.id,
       guildId: message.guild.id,
       staffId: message.author.id,
-      type: "warn",
+      type: "manual",
       reason
     });
-	
-	message.channel.send({ embeds: [sender.classic(`${target} uyarıldı.`)] });
+
+	  message.channel.send({ embeds: [sender.classic(`${target} adlı kullanıcı, \`${reason}\` sebebiyle ceza kaydı oluşturuldu.`)] });
+
   }
 };
