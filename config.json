@@ -1,5 +1,10 @@
 {
 	"BOT_OWNER_IDS": [],
 	"DEVELOPMENT_MODE": false,
-	"AUTO_SLASH_COMMAND_DEPLOY": false
+	"AUTO_SLASH_COMMAND_DEPLOY": false,
+
+	"AI": {
+		"ReplyCommand": true,
+		"ReplyWrapper": false
+	}
 }

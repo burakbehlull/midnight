@@ -1,8 +1,6 @@
-import { EmbedBuilder } from 'discord.js';
 import { splitMessage } from '#helpers'
 import { GeminiAI } from '#libs'
-
-
+import Manager from "#managers";
 
 export default {
   name: 'ai',
@@ -15,6 +13,11 @@ export default {
 	},
 
   async execute(client, message, args) {
+
+
+  const manager = new Manager(client);
+
+    if(!manager.config.AI.ReplyCommand) return
 
 	  const gemini = new GeminiAI()
     const userInput = args.join(' ');

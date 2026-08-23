@@ -1,12 +1,17 @@
 import { Events } from 'discord.js';
 import { splitMessage } from "#helpers";
 import { GeminiAI } from "#libs";
- 
+import Manager from "#managers";
+
 export default {
   name: Events.MessageCreate, 
   async execute(client, message) {
-
     if(message.author.bot) return
+
+    const manager = new Manager(client);
+
+
+    if(!manager.config.AI.ReplyWrapper) return
 
     try {
         if (message.mentions.has(client.user)) {
