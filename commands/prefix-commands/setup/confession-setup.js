@@ -1,7 +1,6 @@
-import { EmbedBuilder, ButtonStyle } from 'discord.js';
-
 import { Button } from '#helpers';
 import { Settings } from '#models';
+import Manager from '#managers';
 
 export default {
   name: 'itiraf-setup',
