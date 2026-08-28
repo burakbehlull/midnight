@@ -1,5 +1,4 @@
 import Manager from '#managers';
-import { PermissionsBitField } from 'discord.js';
 
 export default {
   name: 'ping',
@@ -13,9 +12,9 @@ export default {
     try {
       const manager = new Manager(client, { action: message });
 	
-      if(!manager.config.DEVELOPMENT_MODE) return await manager.sender.reply(manager.sender.errorEmbed('Geliştirme modunda değilim, bu komutu kullanamazsınız!'));
-      
-      await manager.sender.reply("Pong! 🏓");
+      const ping = client.ws.ping
+
+      await manager.sender.reply(`Ping: ${ping}ms`);
 
     } catch (err) {
       console.error('error: ', err);

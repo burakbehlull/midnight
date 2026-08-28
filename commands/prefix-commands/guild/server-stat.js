@@ -10,7 +10,7 @@ export default {
   permissions: {
     enabled: false
   },
-  async execute(client, message, args) {
+  async execute(client, message) {
     const { guild } = message;
 	  const manager = new Manager(client, { action: message });
 

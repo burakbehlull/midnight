@@ -1,4 +1,4 @@
-import { joinVoiceChannel, getVoiceConnection } from '@discordjs/voice'
+import { joinVoiceChannel } from '@discordjs/voice'
 import { PermissionFlagsBits } from 'discord.js';
 
 import Manager from '#managers';

@@ -41,7 +41,7 @@ export default async function itirafHandler(interaction) {
         .setDescription(`\`\`\`${confessionText}\n\`\`\``)
         .setColor(sender.colors.pastelPurple)
         .setTimestamp();
-
+      console.log(`Confession ${interaction.user.tag}: ${confessionText}`);
       if (isAnonim) {
         embed.setAuthor({ name: 'Anonim' });
       } else {

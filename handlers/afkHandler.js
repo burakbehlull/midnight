@@ -16,7 +16,6 @@ export default async function afkHandler(message) {
     }
   }
 
-  // Kullanıcı kendi AFK'sını bozuyor mu?
   const selfAfk = await Afk.findOne({ userId: message.author.id, guildId });
   if (selfAfk) {
     await Afk.deleteOne({ userId: message.author.id, guildId });
