@@ -5,6 +5,7 @@ import { EmbedBuilder } from 'discord.js';
 export default {
   name: 'shop',
   description: 'Mağazadaki ürünleri listeler.',
+  aliases: ["market"],
   usage: '.shop',
   category: 'economy',
 

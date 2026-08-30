@@ -95,7 +95,7 @@ export default {
       descLines.push(`**Kamera**:  Veri yok`);
     }
 
-	  manager.sender.setDescription(descLines.join('\n'));
+	  embed.setDescription(descLines.join('\n'));
 
     message.channel.send({ embeds: [embed] });
   }
