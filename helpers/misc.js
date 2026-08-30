@@ -112,6 +112,8 @@ const formatTopUsers = async (array, fieldName, guild) => {
     return formatted.join('\n');
 };
 
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export {
 	randomColor,
 	itentsMiddle,
@@ -123,5 +125,6 @@ export {
     formatNumber,
     applyText,
     xpForLevel,
-    formatTopUsers
+    formatTopUsers,
+    delay
 }

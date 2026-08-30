@@ -1,6 +1,7 @@
 import Manager from '#managers';
+import { misc } from '#helpers';
 
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const { delay } = misc;
 
 export default {
   name: 'patlat',
