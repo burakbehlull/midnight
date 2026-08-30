@@ -110,6 +110,10 @@ Create ` config.json ` file and set permission settings:
 | **shop** | shop marketplace | .. | stable |
 | **komutpanel** | authority ones command systems | .. | stable |
 | **untimeout** | removes user timeout | user | stable |
+| **server-avatar** | gets server avatar | .. | stable |
+| **server-banner** | gets server banner | .. | stable |
+| **slot** | game | bet amount | stable |
+| **rulet** | shows server rules  | user, bet amount | stable |
 
 ### events:
 | feature | comment | set command |

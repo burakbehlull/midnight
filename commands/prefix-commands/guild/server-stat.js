@@ -1,4 +1,4 @@
-import { messageSender } from '#helpers';
+import Manager from '#managers';
 
 export default {
   name: 'say',

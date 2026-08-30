@@ -215,7 +215,7 @@ async function startGame(manager, message, confirmMsg, challenger, targetUser, a
       const currentBtnId = `rr_shoot_${turnCount}`;
 
       const turnBtns = new Button();
-      turnBtns.add(currentBtnId, '🎯 Tetiğe Bas', turnBtns.style.Danger, '🔫', false);
+      turnBtns.add(currentBtnId, 'Tetiğe Bas', turnBtns.style.Danger, '🔫', false);
       const turnRow = turnBtns.build();
 
       const liveEmbed = manager.sender.embed({
@@ -264,7 +264,7 @@ async function startGame(manager, message, confirmMsg, challenger, targetUser, a
         const deadEmbed = manager.sender.embed({
           color: manager.sender.colors.liveRed,
           title: '💥 BANG! Kurşun Çıktı!',
-          description: `<@${dead.id}> **ÖLDÜ**! (${turnCount}. atış)\n\n🏆 Kazanan: <@${otherPlayer.id}>\n💰 **${pot} coin** kazananın hesabına yatırıldı.`,
+          description: `<@${dead.id}> **ÖLDÜ**! (${turnCount}. atış)\n\n🏆 Kazanan: <@${otherPlayer.id}>\n **${pot} coin** kazananın hesabına yatırıldı.`,
           fields: buildChambers(chamber, { icon: '💥', text: '**Kurşun!**' }),
           footer: { text: `${challenger.username} vs ${targetUser.username}` }
         });
@@ -274,7 +274,7 @@ async function startGame(manager, message, confirmMsg, challenger, targetUser, a
 
       const nextEmbed = manager.sender.embed({
         color: manager.sender.colors.blue,
-        title: `✅ ${turnCount}. Atış: Boş!`,
+        title: `${turnCount}. Atış: Boş!`,
         description: `Şanslısın, kurşun çıkmadı.\n\nSıra: <@${otherPlayer.id}>\nTetiğe basmak için butona tıkla! (30 saniye)`,
         fields: buildChambers(chamber, { icon: '✅', text: 'Boş!' }),
         footer: { text: `${challenger.username} vs ${targetUser.username}` }
