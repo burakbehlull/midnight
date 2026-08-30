@@ -179,24 +179,18 @@ async function startGame(manager, message, confirmMsg, challenger, targetUser, a
   let turnCount = 0;
   let dead = null;
 
-  const buildChambers = (markedIndex, status) => {
-    const chambers = [
-      { name: '1️⃣', value: '●', inline: true },
-      { name: '2️⃣', value: '●', inline: true },
-      { name: '3️⃣', value: '●', inline: true },
-      { name: '4️⃣', value: '●', inline: true },
-      { name: '5️⃣', value: '●', inline: true },
-      { name: '6️⃣', value: '●', inline: true }
-    ];
-    if (markedIndex !== null && markedIndex >= 0) {
-      chambers[markedIndex] = { name: status.icon, value: status.text, inline: true };
-    }
-    return chambers;
-  };
+  const chamberState = [
+    { name: '1️⃣', value: '●', inline: true },
+    { name: '2️⃣', value: '●', inline: true },
+    { name: '3️⃣', value: '●', inline: true },
+    { name: '4️⃣', value: '●', inline: true },
+    { name: '5️⃣', value: '●', inline: true },
+    { name: '6️⃣', value: '●', inline: true },
+  ];
 
-  const buildShootBtn = (disabled = false) => {
+  const buildShootBtn = (btnId, disabled = false) => {
     const b = new Button();
-    b.add('rr_shoot', 'Tetiğe Bas', b.style.Danger, '🔫', disabled);
+    b.add(btnId, 'Tetiğe Bas', b.style.Danger, '🔫', disabled);
     return b.build();
   };
 
@@ -204,30 +198,27 @@ async function startGame(manager, message, confirmMsg, challenger, targetUser, a
     color: manager.sender.colors.orange,
     title: '🔫 Rus Ruleti Başladı!',
     description: `**Bahis:** ${amount} coin\n**Havuz:** ${pot} coin\n\nSıra: <@${currentPlayer.id}>\nAşağıdaki butona basarak tetiği çek! (30 saniye)`,
-    fields: buildChambers(null, null),
+    fields: [...chamberState],
     footer: { text: `Oyuncular: ${challenger.username} vs ${targetUser.username}` }
   });
 
-  await confirmMsg.edit({ content: '', embeds: [startEmbed], components: [buildShootBtn()] }).catch(() => {});
+  const firstBtnId = `rr_shoot_0`;
+  await confirmMsg.edit({ content: '', embeds: [startEmbed], components: [buildShootBtn(firstBtnId)] }).catch(() => {});
 
   const runTurn = async () => {
     while (turnCount < 12 && !dead) {
       const currentBtnId = `rr_shoot_${turnCount}`;
 
-      const turnBtns = new Button();
-      turnBtns.add(currentBtnId, 'Tetiğe Bas', turnBtns.style.Danger, '🔫', false);
-      const turnRow = turnBtns.build();
-
       const liveEmbed = manager.sender.embed({
         color: manager.sender.colors.orange,
         title: `🔫 Tur ${turnCount + 1} - Sıra: ${currentPlayer.username}`,
         description: `**Bahis:** ${amount} coin\n**Havuz:** ${pot} coin\n\nSıra: <@${currentPlayer.id}>\nAşağıdaki butona basarak tetiği çek! (30 saniye)`,
-        fields: buildChambers(null, null),
+        fields: [...chamberState],
         footer: { text: `Oyuncular: ${challenger.username} vs ${targetUser.username}` }
       });
 
       try {
-        await confirmMsg.edit({ embeds: [liveEmbed], components: [turnRow] });
+        await confirmMsg.edit({ embeds: [liveEmbed], components: [buildShootBtn(currentBtnId)] });
       } catch (e) {
         break;
       }
@@ -247,7 +238,9 @@ async function startGame(manager, message, confirmMsg, challenger, targetUser, a
         const timeoutEmbed = manager.sender.embed({
           color: manager.sender.colors.liveRed,
           title: '⏰ Süre Bitti',
-          description: `<@${currentPlayer.id}> 30 saniye içinde tetiğe basmadığı için **OTOMATİK OLARAK KAYBETTİ**!\n\n🏆 Kazanan: <@${otherPlayer.id}>\n **${pot} coin** kazananın hesabına yatırıldı.`
+          description: `<@${currentPlayer.id}> 30 saniye içinde tetiğe basmadığı için **OTOMATİK OLARAK KAYBETTİ**!\n\n🏆 Kazanan: <@${otherPlayer.id}>\n💰 **${pot} coin** kazananın hesabına yatırıldı.`,
+          fields: [...chamberState],
+          footer: { text: `${challenger.username} vs ${targetUser.username}` }
         });
         try { await confirmMsg.edit({ embeds: [timeoutEmbed], components: [] }); } catch (_) {}
         break;
@@ -260,27 +253,31 @@ async function startGame(manager, message, confirmMsg, challenger, targetUser, a
 
       if (chamber === bulletPosition) {
         dead = currentPlayer;
+        chamberState[chamber] = { name: '💥', value: '**Kurşun!**', inline: true };
 
         const deadEmbed = manager.sender.embed({
           color: manager.sender.colors.liveRed,
           title: '💥 BANG! Kurşun Çıktı!',
-          description: `<@${dead.id}> **ÖLDÜ**! (${turnCount}. atış)\n\n🏆 Kazanan: <@${otherPlayer.id}>\n **${pot} coin** kazananın hesabına yatırıldı.`,
-          fields: buildChambers(chamber, { icon: '💥', text: '**Kurşun!**' }),
+          description: `<@${dead.id}> **ÖLDÜ**! (${turnCount}. atış)\n\n🏆 Kazanan: <@${otherPlayer.id}>\n💰 **${pot} coin** kazananın hesabına yatırıldı.`,
+          fields: [...chamberState],
           footer: { text: `${challenger.username} vs ${targetUser.username}` }
         });
         try { await confirmMsg.edit({ embeds: [deadEmbed], components: [] }); } catch (_) {}
         break;
       }
 
+      chamberState[chamber] = { name: '✅', value: 'Boş!', inline: true };
+
+      const nextBtnId = `rr_shoot_${turnCount}`;
       const nextEmbed = manager.sender.embed({
         color: manager.sender.colors.blue,
-        title: `${turnCount}. Atış: Boş!`,
+        title: `✅ ${turnCount}. Atış: Boş!`,
         description: `Şanslısın, kurşun çıkmadı.\n\nSıra: <@${otherPlayer.id}>\nTetiğe basmak için butona tıkla! (30 saniye)`,
-        fields: buildChambers(chamber, { icon: '✅', text: 'Boş!' }),
+        fields: [...chamberState],
         footer: { text: `${challenger.username} vs ${targetUser.username}` }
       });
 
-      try { await confirmMsg.edit({ embeds: [nextEmbed], components: [buildShootBtn()] }); } catch (_) {}
+      try { await confirmMsg.edit({ embeds: [nextEmbed], components: [buildShootBtn(nextBtnId)] }); } catch (_) {}
 
       const swap = currentPlayer;
       currentPlayer = otherPlayer;

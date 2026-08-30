@@ -238,7 +238,7 @@ export default {
 
     const resultEmbed = manager.sender.embed({
       color,
-      title: anyGain ? (allSame ? '🎉 KAZANDIN!' : '✨ KÜÇÜK KAZANÇ') : '💸 KAYBETTİN',
+      title: anyGain ? (allSame ? 'KAZANDIN!' : 'KÜÇÜK KAZANÇ') : 'KAYBETTİN',
       description:
         `\`\`\`\n` +
         `──── SLOTS ────\n` +
