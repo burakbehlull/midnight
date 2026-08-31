@@ -114,6 +114,8 @@ Create ` config.json ` file and set permission settings:
 | **server-banner** | gets server banner | .. | stable |
 | **slot** | game | bet amount | stable |
 | **rulet** | shows server rules  | user, bet amount | stable |
+| **xox** | shows server rules  | user, bet amount | stable |
+| **rich** | shows user rich list | server, global | stable |
 
 ### events:
 | feature | comment | set command |
