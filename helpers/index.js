@@ -10,6 +10,7 @@ import { getFilesRecursively } from "./operations.js"
 
 import * as Loaders from "./loaders.js"
 import Utils from "./utils.js"
+import * as marketHelper from "./marketHelper.js"
 
 import { checkCommandRestrictions, handleAutoDelete } from "./commandRestrictions.js"
 import {
@@ -28,6 +29,7 @@ export {
 	modLogger,
 	Loaders,
 	Utils,
+	marketHelper,
 	Button, Modal,
 	
 	fetchPartialNeed,

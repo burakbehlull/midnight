@@ -18,6 +18,8 @@ import Punishment from "./Punishment.js"
 import Economy from "./Economy.js"
 import Shop from "./Shop.js"
 import CommandSettings from "./CommandSettings.js"
+import MarketItem from "./MarketItem.js"
+import UserPortfolio from "./UserPortfolio.js"
 
 
 export {
@@ -37,5 +39,7 @@ export {
 	Punishment,
 	Staff,
 	Economy,
-	Shop
+	Shop,
+	MarketItem,
+	UserPortfolio
 }

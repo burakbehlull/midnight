@@ -62,7 +62,7 @@ export async function handleInteractionCreate(interaction) {
   try {
     if (interaction.isModalSubmit()) {
       const room = await Room.findOne({ ownerId: interaction.user.id });
-      if (!room) return await interaction.reply({ content: 'Odanız yok!', ephemeral: true });
+      if (!room) return;
 
       const c = await interaction.guild.channels.fetch(room.id);
 
