@@ -13,11 +13,11 @@ const TIER_EMOJIS = {
 };
 
 const TIER_MULTIPLIERS = {
-  tier1: 1.7,
-  tier2: 2.3,
-  tier3: 3.2,
-  tier4: 4.2,
-  tier5: 5.5,
+  tier1: 2.0,
+  tier2: 2.6,
+  tier3: 3.5,
+  tier4: 4.5,
+  tier5: 6.0,
 };
 
 const TIER_NAMES = {
@@ -29,20 +29,22 @@ const TIER_NAMES = {
 };
 
 const TIER_WEIGHTS = {
-  tier1: 32,
-  tier2: 32,
-  tier3: 22,
-  tier4: 11,
-  tier5: 3,
+  tier1: 18,
+  tier2: 30,
+  tier3: 30,
+  tier4: 17,
+  tier5: 5,
 };
 
 const PAIR_MULTIPLIERS = {
-  tier1: 0.7,
-  tier2: 1.0,
-  tier3: 1.4,
-  tier4: 1.8,
-  tier5: 2.3,
+  tier1: 0.9,
+  tier2: 1.2,
+  tier3: 1.6,
+  tier4: 2.0,
+  tier5: 2.6,
 };
+
+const NO_MATCH_REFUND_RATE = 0.4;
 
 const ALL_EMOJIS = [
   ...TIER_EMOJIS.tier1,
@@ -176,10 +178,12 @@ export default {
 
     const allSame = matchedCount === 3;
     const pairHit = matchedCount === 2;
+    const noMatch = matchedCount === 0;
     let winnings = 0;
     let net = -amount;
     let resultText = '';
     let color = manager.sender.colors.liveRed;
+    let noMatchRefund = false;
 
     if (allSame || pairHit) {
       const tier = EMOJI_TO_TIER[matchedEmoji] || 'tier1';
@@ -219,12 +223,37 @@ export default {
           `Çarpan: **x${mult}** (${tierName})\n` +
           `Toplam: **${winnings.toLocaleString('tr-TR')}** coin (${plus}${net.toLocaleString('tr-TR')} NET)`;
       }
-    } else {
-      resultText = `**Hiçbir eşleşme yok!** Kayıp: \`${amount.toLocaleString('tr-TR')}\` coin`;
+    } else if (noMatch) {
+      noMatchRefund = true;
+      const refund = Math.floor(amount * NO_MATCH_REFUND_RATE);
+      winnings = refund;
+      net = refund - amount;
+      try {
+        if (refund > 0) {
+          await Economy.findOneAndUpdate(
+            { userId },
+            { $inc: { money: refund } },
+            { new: true }
+          );
+        }
+      } catch (e) {
+        console.error('[slots] İade hatası:', e);
+      }
+      color = manager.sender.colors.orange;
+      resultText =
+        `😔 **Hiç eşleşmedi ama sana teselli olarak **%${Math.round(NO_MATCH_REFUND_RATE * 100)}** iade yaptık!\n` +
+        `💰 İade: **${refund.toLocaleString('tr-TR')}** coin (Net: ${net.toLocaleString('tr-TR')} NET)`;
     }
 
     const hasWin = allSame || pairHit;
     const anyGain = hasWin && net >= 0;
+
+    let titleText = 'KAYBETTİN';
+    if (noMatchRefund) {
+      titleText = '🎁 KISMİ İADE';
+    } else if (anyGain) {
+      titleText = allSame ? '🎉 KAZANDIN!' : '✨ KÜÇÜK KAZANÇ';
+    }
 
     let updatedMoney;
     try {
@@ -238,7 +267,7 @@ export default {
 
     const resultEmbed = manager.sender.embed({
       color,
-      title: anyGain ? (allSame ? 'KAZANDIN!' : 'KÜÇÜK KAZANÇ') : 'KAYBETTİN',
+      title: titleText,
       description:
         `\`\`\`\n` +
         `──── SLOTS ────\n` +
