@@ -77,7 +77,7 @@ export default {
 
     const confirmEmbed = manager.sender.embed({
       color: manager.sender.colors.gold,
-      title: '🎯 RUS ROULETTE - Teklif',
+      title: 'RUS RULETI - Teklif',
       description: `Hey <@${targetUser.id}>!\n\n**<@${challenger.id}>** sana **${amount} coin** değerinde Rus ruleti teklif etti!\n\n🔫 6 namlu, 1 kurşun\n💰 Toplam havuz: **${pot} coin**\n\nKabul ediyor musun? 30 saniyen var!`,
       footer: { text: 'Butonları sadece teklif alan kişi kullanabilir.' }
     });
@@ -258,7 +258,7 @@ async function startGame(manager, message, confirmMsg, challenger, targetUser, a
         const deadEmbed = manager.sender.embed({
           color: manager.sender.colors.liveRed,
           title: '💥 BANG! Kurşun Çıktı!',
-          description: `<@${dead.id}> **ÖLDÜ**! (${turnCount}. atış)\n\n🏆 Kazanan: <@${otherPlayer.id}>\n💰 **${pot} coin** kazananın hesabına yatırıldı.`,
+          description: `<@${dead.id}> **ÖLDÜ**! (${turnCount}. atış)\n\n🏆 Kazanan: <@${otherPlayer.id}>\n **${pot} coin** kazananın hesabına yatırıldı.`,
           fields: [...chamberState],
           footer: { text: `${challenger.username} vs ${targetUser.username}` }
         });
@@ -271,7 +271,7 @@ async function startGame(manager, message, confirmMsg, challenger, targetUser, a
       const nextBtnId = `rr_shoot_${turnCount}`;
       const nextEmbed = manager.sender.embed({
         color: manager.sender.colors.blue,
-        title: `✅ ${turnCount}. Atış: Boş!`,
+        title: `${turnCount}. Atış: Boş!`,
         description: `Şanslısın, kurşun çıkmadı.\n\nSıra: <@${otherPlayer.id}>\nTetiğe basmak için butona tıkla! (30 saniye)`,
         fields: [...chamberState],
         footer: { text: `${challenger.username} vs ${targetUser.username}` }

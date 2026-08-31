@@ -13,11 +13,11 @@ const TIER_EMOJIS = {
 };
 
 const TIER_MULTIPLIERS = {
-  tier1: 1.5,
-  tier2: 2,
-  tier3: 3,
-  tier4: 4,
-  tier5: 5,
+  tier1: 1.7,
+  tier2: 2.3,
+  tier3: 3.2,
+  tier4: 4.2,
+  tier5: 5.5,
 };
 
 const TIER_NAMES = {
@@ -29,19 +29,19 @@ const TIER_NAMES = {
 };
 
 const TIER_WEIGHTS = {
-  tier1: 45,
-  tier2: 30,
-  tier3: 15,
-  tier4: 8,
-  tier5: 2,
+  tier1: 32,
+  tier2: 32,
+  tier3: 22,
+  tier4: 11,
+  tier5: 3,
 };
 
 const PAIR_MULTIPLIERS = {
-  tier1: 0.5,
-  tier2: 0.8,
-  tier3: 1.2,
-  tier4: 1.5,
-  tier5: 2,
+  tier1: 0.7,
+  tier2: 1.0,
+  tier3: 1.4,
+  tier4: 1.8,
+  tier5: 2.3,
 };
 
 const ALL_EMOJIS = [

@@ -1,5 +1,5 @@
 import { Economy } from '#models';
-import { messageSender } from '#helpers';
+import Manager from '#managers';
 
 export default {
   name: 'heart',
@@ -24,7 +24,7 @@ export default {
 
     const authorData = await Economy.findOne({ userId: authorId }) || new Economy({ userId: authorId });
 
-    const cooldown = 1000 * 60 * 60 * 24; // 24 saat
+    const cooldown = 1000 * 60 * 60 * 24;
 
     const hasItem = (authorData.inventory.get('1') || 0) > 0;
     const lastUsed = new Date(authorData.cooldowns.heart);
