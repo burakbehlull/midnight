@@ -21,14 +21,15 @@ export default {
   aliases: ['kpanel', 'komutayar', 'commandpanel'],
   category: 'setup',
 
-  async execute(client, message, args) {
+  async execute(client, message) {
     
     const manager = new Manager(client, {
       action: message
     });
 
-    //const ctrl = await manager.authority.isGuildOwner();
-    //if (!ctrl) return message.reply({ content: '❌ Bu komutu kullanmak owner olmalısın.', ephemeral: true });
+    
+    const ctrl = await manager.authority.checkOwnerAndBotOwners();
+    if (!ctrl) return message.reply({ content: '❌ Bu komutu kullanmak owner olmalısın.', ephemeral: true });
 
 
     const commandsByCategory = new Map();
