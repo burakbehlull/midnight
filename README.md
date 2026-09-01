@@ -116,6 +116,7 @@ Create ` config.json ` file and set permission settings:
 | **rulet** | shows server rules  | user, bet amount | stable |
 | **xox** | shows server rules  | user, bet amount | stable |
 | **rich** | shows user rich list | server, global | stable |
+| **gofishing** | take fish | bet amount (1 userly), user and bet amount (userly) | stable |
 
 ### events:
 | feature | comment | set command |

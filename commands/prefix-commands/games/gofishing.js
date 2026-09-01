@@ -35,10 +35,10 @@ const FISH_BY_TIER = {
 };
 
 const TIER_WEIGHTS = {
-  tier1: 50,
-  tier2: 28,
-  tier3: 14,
-  tier4: 6,
+  tier1: 45,
+  tier2: 30,
+  tier3: 16,
+  tier4: 7,
   tier5: 2,
 };
 
@@ -117,7 +117,6 @@ export default {
   category: 'games',
   permissions: { enabled: false },
   async execute(client, message, args) {
-    console.log(`[balik-tut] KOMUT ÇALIŞTIRILDI ✅ | Kullanıcı: ${message.author.tag} | args:`, args);
     const manager = new Manager(client, { action: message });
 
     const challenger = message.author;
@@ -136,8 +135,6 @@ export default {
         betArg = args[1] || args[0];
       }
     }
-
-    console.log('[balik-tut] Target:', target?.tag || 'yok', '| betArg:', betArg);
 
     if (!betArg) {
       return message.reply({
@@ -215,7 +212,6 @@ export default {
         });
       }
       betAmount = Math.min(challengerBalance, MAX_BET);
-      console.log('[balik-tut] ALL modu → bahis:', betAmount);
     } else {
       const cleaned = String(raw).replace(/[^0-9]/g, '');
       const n = Number(cleaned);
@@ -271,7 +267,6 @@ export default {
 
 async function runSinglePlayer(client, message, manager, { challenger, betAmount }) {
   ACTIVE_SESSIONS.add(challenger.id);
-  console.log('[balik-tut] TEK KİŞİLİK başlıyor. Bahis:', betAmount);
   try {
     const dec = await Economy.findOneAndUpdate(
       { userId: challenger.id },
