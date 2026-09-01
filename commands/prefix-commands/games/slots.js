@@ -13,11 +13,11 @@ const TIER_EMOJIS = {
 };
 
 const TIER_MULTIPLIERS = {
-  tier1: 2.0,
-  tier2: 2.6,
-  tier3: 3.5,
-  tier4: 4.5,
-  tier5: 6.0,
+  tier1: 2.3,
+  tier2: 2.8,
+  tier3: 3.8,
+  tier4: 4.8,
+  tier5: 6.5,
 };
 
 const TIER_NAMES = {
@@ -29,22 +29,28 @@ const TIER_NAMES = {
 };
 
 const TIER_WEIGHTS = {
-  tier1: 18,
-  tier2: 30,
-  tier3: 30,
-  tier4: 17,
-  tier5: 5,
+  tier1: 12,
+  tier2: 28,
+  tier3: 33,
+  tier4: 20,
+  tier5: 7,
 };
 
 const PAIR_MULTIPLIERS = {
-  tier1: 0.9,
-  tier2: 1.2,
-  tier3: 1.6,
-  tier4: 2.0,
-  tier5: 2.6,
+  tier1: 1.15,
+  tier2: 1.5,
+  tier3: 2.1,
+  tier4: 2.7,
+  tier5: 3.3,
 };
 
-const NO_MATCH_REFUND_RATE = 0.4;
+const PAIR_NADIR_LABEL = {
+  tier1: 'Sıradan',
+  tier2: 'İyi',
+  tier3: '✨ NADİR',
+  tier4: '🌟 EFSANE',
+  tier5: '👑 JACKPOT SEVİYESİ',
+};
 
 const ALL_EMOJIS = [
   ...TIER_EMOJIS.tier1,
@@ -85,9 +91,9 @@ function spinReels() {
 export default {
   name: 'slots',
   category: 'fun',
-  aliases: ['slot', 's'],
-  usage: '.slots <bahisMiktarı>',
-  description: 'Slot makinesi çevir, hayvanlar eşleşirse kazanırsın!',
+  aliases: ['slot', 's', 'sl'],
+  usage: '.slots <bahisMiktarı|all>',
+  description: 'Slot makinesi çevir, hayvanlar eşleşirse kazanırsın! all = maksimum bahis.',
   permissions: {
     enabled: false
   },
@@ -95,19 +101,8 @@ export default {
     const manager = new Manager(client, { action: message });
     const userId = message.author.id;
 
-    const amount = parseInt(args[0]);
-
-    if (isNaN(amount) || amount <= 0) {
-      return manager.sender.reply(manager.sender.errorEmbed(`❌ Geçerli bir bahis miktarı belirt. Kullanım: \`.slots 500\``));
-    }
-
-    if (amount < MIN_BET) {
-      return manager.sender.reply(manager.sender.errorEmbed(`❌ Minimum bahis miktarı **${MIN_BET}** coin.`));
-    }
-
-    if (amount > MAX_BET) {
-      return manager.sender.reply(manager.sender.errorEmbed(`❌ Maksimum bahis miktarı **${MAX_BET.toLocaleString('tr-TR')}** coin.`));
-    }
+    const rawArg = (args[0] || '').toString().toLowerCase().trim();
+    const isAll = rawArg === 'all' || rawArg === 'max' || rawArg === 'tüm' || rawArg === 'hepsi';
 
     let userData = await Economy.findOne({ userId });
     if (!userData) {
@@ -115,8 +110,30 @@ export default {
       await userData.save().catch(() => {});
     }
 
+    let amount;
+    if (isAll) {
+      const balance = userData.money ?? 0;
+      if (balance < MIN_BET) {
+        return manager.sender.reply(manager.sender.errorEmbed(
+          `❌ All modu için bakiyen minimum **${MIN_BET.toLocaleString('tr-TR')}** coin olmalı. Mevcut: **${balance.toLocaleString('tr-TR')}** coin`
+        ));
+      }
+      amount = Math.min(balance, MAX_BET);
+    } else {
+      amount = parseInt(args[0]);
+      if (isNaN(amount) || amount <= 0) {
+        return manager.sender.reply(manager.sender.errorEmbed(`❌ Geçerli bir bahis miktarı belirt. Kullanım: \`.slots 500\` veya \`.slots all\``));
+      }
+      if (amount < MIN_BET) {
+        return manager.sender.reply(manager.sender.errorEmbed(`❌ Minimum bahis miktarı **${MIN_BET.toLocaleString('tr-TR')}** coin.`));
+      }
+      if (amount > MAX_BET) {
+        return manager.sender.reply(manager.sender.errorEmbed(`❌ Maksimum bahis miktarı **${MAX_BET.toLocaleString('tr-TR')}** coin.`));
+      }
+    }
+
     if ((userData.money ?? 0) < amount) {
-      return manager.sender.reply(manager.sender.errorEmbed(`❌ Yeterli coin yok. Gereken: **${amount}** coin.`));
+      return manager.sender.reply(manager.sender.errorEmbed(`❌ Yeterli coin yok. Gereken: **${amount.toLocaleString('tr-TR')}** coin. ${isAll ? '(all/max modu kullanıldı)' : ''}`));
     }
 
     try {
@@ -183,7 +200,6 @@ export default {
     let net = -amount;
     let resultText = '';
     let color = manager.sender.colors.liveRed;
-    let noMatchRefund = false;
 
     if (allSame || pairHit) {
       const tier = EMOJI_TO_TIER[matchedEmoji] || 'tier1';
@@ -208,7 +224,15 @@ export default {
       if (allSame) {
         color = tier === 'tier5' ? manager.sender.colors.gold : manager.sender.colors.green;
       } else {
-        color = net >= 0 ? manager.sender.colors.mintGreen : manager.sender.colors.orange;
+        if (tier === 'tier5') {
+          color = manager.sender.colors.gold;
+        } else if (tier === 'tier4') {
+          color = manager.sender.colors.purple;
+        } else if (tier === 'tier3') {
+          color = manager.sender.colors.blue;
+        } else {
+          color = net >= 0 ? manager.sender.colors.mintGreen : manager.sender.colors.orange;
+        }
       }
 
       const plus = net >= 0 ? '+' : '';
@@ -218,40 +242,27 @@ export default {
           `Çarpan: **x${mult}**\n` +
           `Toplam: **${winnings.toLocaleString('tr-TR')}** coin (${plus}${net.toLocaleString('tr-TR')} NET)`;
       } else {
+        const nadirlik = PAIR_NADIR_LABEL[tier] || tierName;
+        const nadirTag = tier === 'tier1' || tier === 'tier2'
+          ? ''
+          : ` **[${nadirlik}]**`;
         resultText =
-          `✨ **İkili eşleşme!** 2 tane **${matchedEmoji}** geldi.\n` +
-          `Çarpan: **x${mult}** (${tierName})\n` +
+          `✨ **İkili eşleşme${nadirTag}!** 2 tane **${matchedEmoji}${matchedEmoji}**${tier === 'tier5' || tier === 'tier4' ? ' 🔥' : ''} geldi.\n` +
+          `Çarpan: **x${mult}** (${tierName} / ${nadirlik})\n` +
           `Toplam: **${winnings.toLocaleString('tr-TR')}** coin (${plus}${net.toLocaleString('tr-TR')} NET)`;
       }
     } else if (noMatch) {
-      noMatchRefund = true;
-      const refund = Math.floor(amount * NO_MATCH_REFUND_RATE);
-      winnings = refund;
-      net = refund - amount;
-      try {
-        if (refund > 0) {
-          await Economy.findOneAndUpdate(
-            { userId },
-            { $inc: { money: refund } },
-            { new: true }
-          );
-        }
-      } catch (e) {
-        console.error('[slots] İade hatası:', e);
-      }
-      color = manager.sender.colors.orange;
+      color = manager.sender.colors.liveRed;
       resultText =
-        `😔 **Hiç eşleşmedi ama sana teselli olarak **%${Math.round(NO_MATCH_REFUND_RATE * 100)}** iade yaptık!\n` +
-        `💰 İade: **${refund.toLocaleString('tr-TR')}** coin (Net: ${net.toLocaleString('tr-TR')} NET)`;
+        `💸 **Hiç eşleşmedi!** Tüm bahisini kaybettin.\n` +
+        `Kayıp: **${net.toLocaleString('tr-TR')}** coin`;
     }
 
     const hasWin = allSame || pairHit;
     const anyGain = hasWin && net >= 0;
 
-    let titleText = 'KAYBETTİN';
-    if (noMatchRefund) {
-      titleText = '🎁 KISMİ İADE';
-    } else if (anyGain) {
+    let titleText = '💸 KAYBETTİN';
+    if (anyGain) {
       titleText = allSame ? '🎉 KAZANDIN!' : '✨ KÜÇÜK KAZANÇ';
     }
 
