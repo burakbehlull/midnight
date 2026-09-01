@@ -41,6 +41,14 @@ function formatPct(pct) {
   return pct > 0 ? `+${s}` : s;
 }
 
+function fmtQty(n) {
+  if (!Number.isFinite(n)) return '0';
+  const rounded = Math.round(Number(n) * 10000) / 10000;
+  const str = rounded.toString();
+  if (!str.includes('.')) return str;
+  return str.replace(/0+$/, '').replace(/\.$/, '');
+}
+
 function buildPriceRows(items) {
   const lines = [];
   for (const it of items) {
@@ -71,7 +79,7 @@ function buildHomeEmbed(client, manager, message, authorEconomy, market) {
     title: '💹 Kripto Para Piyasası',
     description:
       `Kripto para alım-satım yapın ve portföyünüzü yönetin!\n\n` +
-      `💵 **Bakiyeniz:** \`${fmt(authorEconomy?.money ?? 0)} coin\``,
+      `**Bakiyeniz:** \`${fmt(authorEconomy?.money ?? 0)} coin\``,
     fields,
     footer: { text: `Fiyatlar her 10 dakikada bir güncellenir | Menü 5 dakika aktif | ${market.items.length} varlık` }
   });
@@ -151,10 +159,10 @@ function buildBuyEmbed(manager, authorEconomy, market) {
   }
   return manager.sender.embed({
     color: manager.sender.colors.green,
-    title: '💰 Kripto Satın Al',
+    title: 'Kripto Satın Al',
     description:
       `Satın almak istediğiniz kripto parayı aşağıdaki menüden seçin, ardından miktarı girin.\n\n` +
-      `💵 **Bakiyeniz:** \`${fmt(authorEconomy?.money ?? 0)} coin\``,
+      `**Bakiyeniz:** \`${fmt(authorEconomy?.money ?? 0)} coin\``,
     fields,
     footer: { text: 'Aşamalı olarak: Coin seç → Miktar gir → Onayla' }
   });
@@ -170,7 +178,7 @@ function buildSellEmbed(manager, market, portfolio) {
     const rows = arr.map(it => {
       const h = getHolding(portfolio, it.symbol);
       const amt = h ? h.amount : 0;
-      return `  ${it.emoji} **${it.symbol}**: \`${fmt(it.price)} coin\` | Elinizde: **${Number(amt).toFixed(4)}**`;
+      return `  ${it.emoji} **${it.symbol}**: \`${fmt(it.price)} coin\` | Elinizde: **${fmtQty(amt)}**`;
     });
     fields.push({
       name: `${CATEGORY_NAMES[cat].icon} ${CATEGORY_NAMES[cat].title}`,
@@ -180,10 +188,10 @@ function buildSellEmbed(manager, market, portfolio) {
   }
   return manager.sender.embed({
     color: manager.sender.colors.liveRed,
-    title: '💸 Kripto Sat',
+    title: 'Kripto Sat',
     description:
       `Satmak istediğiniz kripto parayı seçin, ardından miktarı girin.\n\n` +
-      `💵 **Bakiyeniz:** \`${fmt(0)}\` (alt kısımda güncellenecektir)`,
+      `**Bakiyeniz:** \`${fmt(0)}\` (alt kısımda güncellenecektir)`,
     fields,
     footer: { text: 'Elinde olmayan coinleri satamazsın.' }
   });
@@ -207,7 +215,7 @@ function buildPortfolioEmbed(manager, market, portfolio, targetUserInfo, econBal
       const pl = currentValue - (h.amount * (h.avgBuyPrice || item.price));
       const plPct = h.avgBuyPrice > 0 ? ((item.price - h.avgBuyPrice) / h.avgBuyPrice) * 100 : 0;
       lines.push(
-        `${item.emoji} **${h.symbol}** — ${Number(h.amount).toFixed(4)} adet\n` +
+        `${item.emoji} **${h.symbol}** — ${fmtQty(h.amount)} adet\n` +
         `  Ort. Alış: \`${fmt(h.avgBuyPrice || item.price)} coin\` | Şimdiki: \`${fmt(item.price)} coin\` | ${plPct >= 0 ? '+' : ''}${formatPct(plPct)}%\n` +
         `  Değer: \`${fmt(currentValue)} coin\` ${pl >= 0 ? '📈' : '📉'} **${pl >= 0 ? '+' : ''}${fmt(pl)}**`
       );
@@ -256,20 +264,20 @@ function buildHistoryEmbed(manager, portfolio) {
       const sign = tx.type === 'BUY' ? '📥' : '📤';
       const type = tx.type === 'BUY' ? 'ALIM' : 'SATIM';
       lines.push(
-        `**${i + 1}.** ${sign} **${type}** ${tx.symbol} × ${Number(tx.amount).toFixed(4)}\n` +
+        `**${i + 1}.** ${sign} **${type}** ${tx.symbol} × ${fmtQty(tx.amount)}\n` +
         `   Birim: \`${fmt(tx.pricePerUnit)}\` | Toplam: \`${fmt(tx.total)} coin\`\n` +
         `   ⏰ ${time}`
       );
     }
     fields.push({
-      name: '📜 Son İşlemler (en yeni)',
+      name: 'Son İşlemler (en yeni)',
       value: lines.join('\n'),
       inline: false
     });
   }
   return manager.sender.embed({
     color: manager.sender.colors.blurple,
-    title: '📜 İşlem Geçmişi',
+    title: 'İşlem Geçmişi',
     description: `Son 15 alım/satım işlemi listeleniyor.`,
     fields,
     footer: { text: 'Ana ekrana dönmek için geri butonuna tıklayın.' }
@@ -597,7 +605,7 @@ export default {
           return;
         }
         await submit.reply({
-          content: `✅ **BAŞARILI!** ${result.emoji} **${result.symbol}** × ${Number(result.amount).toFixed(4)} adet\n` +
+          content: `${result.emoji} **${result.symbol}** × ${fmtQty(result.amount)} adet\n` +
             `Birim: ${fmt(result.unitPrice)} coin  |  Toplam: \`${fmt(result.total)} coin\`\n` +
             `Yeni bakiye: \`${fmt(authorEconomy?.money ?? 0)} coin\``,
           ephemeral: false
@@ -625,7 +633,7 @@ export default {
           return;
         }
         await submit.reply({
-          content: `✅ **SATILDI!** ${result.emoji} **${result.symbol}** × ${Number(result.amount).toFixed(4)} adet\n` +
+          content: `**SATILDI!** ${result.emoji} **${result.symbol}** × ${fmtQty(result.amount)} adet\n` +
             `Birim: ${fmt(result.unitPrice)} coin  |  Gelen: \`${fmt(result.total)} coin\`\n` +
             `Yeni bakiye: \`${fmt(authorEconomy?.money ?? 0)} coin\``,
           ephemeral: false
