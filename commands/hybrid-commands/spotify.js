@@ -33,79 +33,125 @@ export default {
     try {
       const manager = new Manager(client, { action: ctx });
 
-      // ==== 1. ADIM: Hedef kullanıcı ID'sini GÜVENİLİR şekilde al ====
-      // options.user: slash'ta User (DM'de) veya GuildMember (guild'de) | prefix'te GuildMember
-      let raw = options?.user;
-      if (raw && !raw.id && raw?.user?.id) raw = raw.user; // Member → User
-      const targetId = raw?.id ?? ctx.user?.id ?? ctx.author?.id ?? ctx.member?.id ?? null;
+      let rawU = options?.user;
+      let targetId = null;
+      let targetIsSelf = false;
+
+      if (rawU?.id) {
+        targetId = rawU.id;
+      } else if (rawU?.user?.id) {
+        targetId = rawU.user.id;
+      }
+      const selfId = ctx.user?.id ?? ctx.author?.id ?? ctx.member?.id ?? null;
+      if (!targetId) targetId = selfId;
+      targetIsSelf = !!targetId && !!selfId && targetId === selfId;
+
       if (!targetId) {
         return manager.sender.reply(manager.sender.errorEmbed("Kullanıcı bulunamadı."));
       }
 
       let activity = null;
       let presenceOwner = null;
+      let foundInGuild = false;
 
       const findSpotify = (src) => {
         const acts = src?.presence?.activities;
         if (!Array.isArray(acts) || !acts.length) return null;
-        return acts.find(
-          a => a.type === ActivityType.Listening && a.name === "Spotify"
-        ) || null;
+        for (const a of acts) {
+          const t = typeof a.type === "number" ? a.type : Number(a.type);
+          const nameOk = a.name && String(a.name).toLowerCase().includes("spotify");
+          const typeOk = t === ActivityType.Listening || t === 2;
+          const hasAssets = !!a.assets?.largeImage || !!a.syncId || !!a.assets?.largeText;
+          if (nameOk && (typeOk || hasAssets)) return a;
+        }
+        return null;
       };
 
-      // ==== 2. ADIM: Önce GUARANTEED presence kaynağı olan GuildMember'ları dene ====
-      // ctx.member: guild slash/prefix'te kesin GuildMember'dır (presence olabilir)
-      const likelyMembers = [];
-      if (ctx.member && ctx.member.id === targetId) likelyMembers.push(ctx.member);
-      // options.user eğer GuildMember ise (presence olabilir)
-      if (options?.user && options?.user?.presence && options?.user?.id === targetId) likelyMembers.push(options.user);
-      // options.user.user.id === targetId ise options.user GuildMember'dır
-      if (options?.user?.user?.id === targetId && options?.user?.presence) likelyMembers.push(options.user);
-
-      for (const src of likelyMembers) {
-        const f = findSpotify(src);
-        if (f) { activity = f; presenceOwner = src; break; }
+      // ==== 2. ADIM: Hızlı kontroller ====
+      if (ctx.member?.id === targetId && ctx.member?.presence) {
+        const f = findSpotify(ctx.member);
+        if (f) { activity = f; presenceOwner = ctx.member; }
+      }
+      if (!activity && rawU?.presence && (rawU.id === targetId || rawU.user?.id === targetId)) {
+        const f = findSpotify(rawU);
+        if (f) { activity = f; presenceOwner = rawU; }
+      }
+      // KENDİ İSE: ctx.user üzerinde presence olabilir (DM'de bile bazen gelir)
+      if (!activity && targetIsSelf) {
+        for (const s of [ctx.user, ctx.author, ctx.member].filter(Boolean)) {
+          const f = findSpotify(s);
+          if (f) { activity = f; presenceOwner = s; break; }
+        }
+        if (!activity && client.users?.cache?.has?.(targetId)) {
+          const cs = client.users.cache.get(targetId);
+          const f = findSpotify(cs);
+          if (f) { activity = f; presenceOwner = cs; }
+        }
       }
 
-      // ==== 3. ADIM: Hem cache hem fetch ile BÜTÜN guildlerde ara (EN GÜVENİLİR) ====
-      // Presence sadece GuildMember'da olur. UserInstall/DM kullanıyor olsan bile
-      // hedef kişi botun olduğu bir sunucuda varsa member'ı buluruz.
+      // ==== 3. ADIM: TÜM sunucularda GuildMember ara (en güvenilir yöntem) ====
+      // Presence YALNIZCA GuildMember üzerinde vardır. User objesinde YOKTUR.
       if (!activity && client.guilds?.cache?.size) {
-        // A) Cache taraması (hızlı)
-        for (const g of client.guilds.cache.values()) {
+        const guilds = Array.from(client.guilds.cache.values());
+
+        // 3A) Cache'te ara
+        for (const g of guilds) {
           const m = g.members?.cache?.get(targetId);
           if (!m) continue;
+          foundInGuild = true;
           const f = findSpotify(m);
           if (f) { activity = f; presenceOwner = m; break; }
         }
 
-        // B) Fetch taraması (yavaş ama garantili)
+        // 3B) Force: true ile tekil fetch
         if (!activity) {
-          for (const g of client.guilds.cache.values()) {
+          for (const g of guilds) {
             try {
-              const m = await g.members.fetch({ user: targetId, force: false }).catch(() => null);
+              const m = await g.members.fetch({ user: targetId, force: true }).catch(() => null);
               if (!m) continue;
+              foundInGuild = true;
               const f = findSpotify(m);
               if (f) { activity = f; presenceOwner = m; break; }
             } catch {}
           }
         }
+
+        // 3C) withPresences: true toplu fetch (EN GARANTİLİ - Discord presence'ı bununla gönderiyor)
+        if (!activity) {
+          for (const g of guilds) {
+            try {
+              const all = await g.members.fetch({ withPresences: true, force: true }).catch(() => null);
+              if (!all) continue;
+              const m = all.get(targetId);
+              if (!m) continue;
+              foundInGuild = true;
+              const f = findSpotify(m);
+              if (f) { activity = f; presenceOwner = m; break; }
+            } catch (e) {
+            }
+          }
+        }
       }
 
-      // ==== 4. ADIM: Hedef kişi kendi kendini etiketlediyse ve yukarıda bulunamadıysa son çare: user presence'ı ====
-      // (Bazı nadir durumlarda User objesinde de presence taşınabilir ama güvenilir değil)
+      // ==== 4. ADIM: Son çare User objeleri ====
       if (!activity) {
-        const lastSources = [ctx.user, ctx.author, client.users?.cache?.get(targetId)].filter(Boolean);
-        for (const src of lastSources) {
-          const f = findSpotify(src);
-          if (f) { activity = f; presenceOwner = src; break; }
+        const last = [ctx.user, ctx.author, client.users?.cache?.get(targetId)].filter(Boolean);
+        for (const s of last) {
+          const f = findSpotify(s);
+          if (f) { activity = f; presenceOwner = s; break; }
         }
       }
 
       if (!activity) {
-        return manager.sender.reply(
-          manager.sender.errorEmbed("🎧 Bu kullanıcı şu anda Spotify dinlemiyor.")
-        );
+        let msg = "🎧 Bu kullanıcı şu anda Spotify dinlemiyor.";
+        if (!targetIsSelf) {
+          if (client.guilds?.cache?.size && !foundInGuild) {
+            msg = "⚠️ **Bu kullanıcı ile ortak sunucum yok.** Presence (aktivite) bilgilerini görebilmem için kullanıcının botun bulunduğu EN AZ BİR sunucuda üye olması gerekir. Aksi takdirde Discord aktivite verisini paylaşmıyor.";
+          } else if (foundInGuild) {
+            msg = "🎧 Ortak sunucuda üyesi bulundu ama şu an Spotify aktivitesi görünmüyor. (Kullanıcı offline/invisible olabilir, Spotify açık olmayabilir ya da Discord henüz yaymamış olabilir.)";
+          }
+        }
+        return manager.sender.reply(manager.sender.errorEmbed(msg));
       }
 
       const width = 850, height = 290;
