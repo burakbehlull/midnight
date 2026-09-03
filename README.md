@@ -28,61 +28,66 @@ Create ` config.json ` file and set permission settings:
 {
     "BOT_OWNER_IDS": [], // safe bot owner ids
     "DEVELOPMENT_MODE": false,
-    "AUTO_SLASH_COMMAND_DEPLOY": false
+    "AUTO_SLASH_COMMAND_DEPLOY": false,
+
+    "AI": {
+		"ReplyCommand": true, // .ai Hello!
+		"ReplyWrapper": false // @reply Hello!
+	}
 }
 ```
 
-### contents:
+### contents: Bot Commands
 | command | comment | values | situation |
 | ------ | ------ | ------ | ------ |
-| **settings** | Adjusts bot settings | options, role, channel,  user, value | stable |
-| **authority** | Adjusts authorities settings | options, role, user, value | stable |
-| **modlog** | Adjusts modlog settings | options, role, value | stable |
 | **yaz** | This command allows you to write from the bot | text | stable |
-| **ban** |  Ban the user | user -ticket, id- | stable |
-| **unban** |  Unban the user | user id | stable |
-| **kick** |  Kick the user | user -ticket, id- | stable |
-| **snipe** |  Shows last deleted message | .. | stable |
-| **tag** | Sets the server tag | .. | stable |
-| **afk** | AFK mode | reason | stable |
-| **avatar** | Shows user avatar | user | stable |
-| **nuke** | Refreshes the channel | channel | stable |
-| **streamer** | Gives streamer role | user | stable |
-| **vip** | Gives vip role | user | stable |
-| **photo** | Gives photo role | user | stable |
-| **clear** | Deletes messages | amount | stable |
+
+### contents: General User
+| command | comment | values | situation |
+| ------ | ------ | ------ | ------ |
+| **help** | helps user | .. | un-stable |
+| **ai** | chat with ai | message | stable |
 | **pull** | Pulls the tagged user | user | stable |
 | **where** | Show your user | user | stable |
 | **go** | Goes to the user you were tagged in | user | stable |
-| **kayit** | Saves the user you tagged in | user, name, age | stable |
-| **kayitsiz** | Gives the user | user | stable |
+| **afk** | AFK mode | reason | stable |
+| **avatar** | Shows user avatar | user | stable |
+| **server-avatar** | gets server avatar | .. | stable |
+| **server-banner** | gets server banner | .. | stable |
+| **device** | Shows user device | user | stable |
+
+### contents: Mod
+| command | comment | values | situation |
+| ------ | ------ | ------ | ------ |
+| **ban** |  Ban the user | user -ticket, id- | stable |
+| **unban** |  Unban the user | user id | stable |
+| **kick** |  Kick the user | user -ticket, id- | stable |
 | **vmute** | Throws voice mute on tagged user | user, second -exp. 10m -, reason | stable |
 | **vunmute** | Unmute | user, reason | stable |
 | **mute** | Throws chat mute on tagged user | user, reason | stable |
 | **unmute** | user unmute for chat | user, reason | stable |
-| **removerole** | Takes the user | user, role | stable |
-| **giverole** | Gives the user | user, role | stable |
-| **say** | Guild information | ... | stable |
-| **kilit** | lock to Chat | aç | stable |
-| **sesgir** | Join voice channel | channelId | stable |
-| **sescik** | Leave voice channel | .. | stable |
-| **device** | Shows user device | user | stable |
+| **nuke** | Refreshes the channel | channel | stable |
+| **snipe** |  Shows last deleted message | .. | stable |
+| **lock** | lock to Chat | .. | stable |
 | **allvmute** | Mutes all user in channel | channel | stable |
 | **allvunmute** | Unmutes all user in channel | channel | stable |
-| **addemoji** | Add emoji to guilds | emoji or url, name | stable |
 | **timeout** | Add emoji to guilds | user, time | stable |
-| **spotify** | .. | .. | stable |
-| **ship** | ships | user | stable |
-| **level** | shows user level | user | stable |
-| **level-top** | shows server top level | .. | stable |
-| **stat** | shows user statics | user | stable |
-| **stat-top** | shows server users statics | .. | stable |
-| **invites** | shows invite statics | user | stable |
-| **invite-top** | shows server users invites statics | .. | stable |
-| **ticket-setup** | creates embed tickets | .. | stable |
-| **itiraf-setup** | people are open or anonymous confessors | channel | stable |
-| **help** | helps user | .. | un-stable |
-| **room-setup** | private room creater | .. | stable |
+| **untimeout** | removes user timeout | user | stable |
+| **addemoji** | Add emoji to guilds | emoji or url, name | stable |
+| **giverole** | Gives the user | user, role | stable |
+| **removerole** | Takes the user | user, role | stable |
+| **clear** | Deletes messages | amount | stable |
+| **streamer** | Gives streamer role | user | stable |
+| **vip** | Gives vip role | user | stable |
+| **photo** | Gives photo role | user | stable |
+| **tag** | Sets the server tag | .. | stable |
+| **sesgir** | Join voice channel | channelId | stable |
+| **sescik** | Leave voice channel | .. | stable |
+| **say** | Guild information | ... | stable |
+
+### contents: Staff
+| command | comment | values | situation |
+| ------ | ------ | ------ | ------ |
 | **tasks** | staff tasks | me, user | stable |
 | **yetkibaslat** | start staff  | me, user | stable |
 | **yetkililerim** | staffs of moderation user  | .. | stable |
@@ -91,7 +96,34 @@ Create ` config.json ` file and set permission settings:
 | **warn** | user gives warn  | user, reason | stable |
 | **jail** | user gives jail  | user, duration, reason | stable |
 | **record** | record of user | user | stable |
-| **ai** | chat with ai | message | stable |
+| **register** | Saves the user you tagged in | user, name, age | stable |
+| **unregistered** | Gives the user | user | stable |
+
+### contents: Stat and Level, Invite
+| command | comment | values | situation |
+| ------ | ------ | ------ | ------ |
+| **stat** | shows user statics | user | stable |
+| **stat-top** | shows server users statics | .. | stable |
+| **level** | shows user level | user | stable |
+| **level-top** | shows server top level | .. | stable |
+| **invites** | shows invite statics | user | stable |
+| **invite-top** | shows server users invites statics | .. | stable |
+
+### contents: Setting and Setup
+| command | comment | values | situation |
+| ------ | ------ | ------ | ------ |
+| **settings** | Adjusts bot settings | options, role, channel,  user, value | stable |
+| **authority** | Adjusts authorities settings | options, role, user, value | stable |
+| **modlog** | Adjusts modlog settings | options, role, value | stable |
+| **komutpanel** | authority ones command systems | .. | stable |
+| **ticket-setup** | creates embed tickets | .. | stable |
+| **room-setup** | private room creater | .. | stable |
+| **itiraf-setup** | people are open or anonymous confessors | channel | stable |
+
+### contents: Economy
+| command | comment | values | situation |
+| ------ | ------ | ------ | ------ |
+| **shop** | shop marketplace | .. | stable |
 | **cash** | users cash | .. | stable |
 | **cookie** | users give to cookie daily | user | stable |
 | **buy** | buy item | item id | stable |
@@ -107,15 +139,15 @@ Create ` config.json ` file and set permission settings:
 | **send** | users send money | user, money | stable |
 | **envanter** | users envanter | .. | stable |
 | **profile** | users profile | .. | stable |
-| **shop** | shop marketplace | .. | stable |
-| **komutpanel** | authority ones command systems | .. | stable |
-| **untimeout** | removes user timeout | user | stable |
-| **server-avatar** | gets server avatar | .. | stable |
-| **server-banner** | gets server banner | .. | stable |
+
+### contents: Fun and Game
+| command | comment | values | situation |
+| ------ | ------ | ------ | ------ |
+| **spotify** | .. | me, user | stable |
+| **ship** | ships | user | stable |
 | **slot** | game | bet amount | stable |
 | **rulet** | shows server rules  | user, bet amount | stable |
 | **xox** | shows server rules  | user, bet amount | stable |
-| **rich** | shows user rich list | server, global | stable |
 | **gofishing** | take fish | bet amount (1 userly), user and bet amount (userly) | stable |
 | **blackjack** | blackjack | bet amount | stable |
 
@@ -152,7 +184,7 @@ Create ` config.json ` file and set permission settings:
 
 
 ### Authority command inside object keys
-```js
+```json
 permissions: {
     enabled: true // default true
     authorities: [],
