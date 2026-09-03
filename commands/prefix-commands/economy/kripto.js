@@ -81,7 +81,7 @@ function buildHomeEmbed(client, manager, message, authorEconomy, market) {
       `Kripto para alım-satım yapın ve portföyünüzü yönetin!\n\n` +
       `**Bakiyeniz:** \`${fmt(authorEconomy?.money ?? 0)} coin\``,
     fields,
-    footer: { text: `Fiyatlar her 10 dakikada bir güncellenir | Menü 5 dakika aktif | ${market.items.length} varlık` }
+    footer: { text: `Fiyatlar her 12 saatte bir güncellenir | Menü 5 dakika aktif | ${market.items.length} varlık` }
   });
 }
 

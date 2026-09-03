@@ -14,17 +14,17 @@ export default {
             console.error('[Market] Piyasa kurulum hatası:', e.message);
         }
 
-        const TEN_MINUTES = 10 * 60 * 1000;
+        const TWELVE_HOURS = 12 * 60 * 60 * 1000;
         setInterval(async () => {
             try {
                 const updated = await updateMarketPrices();
                 if (updated) {
-                    console.log('[Market] Fiyatlar güncellendi. Toplam varlık:', updated.items?.length || 0);
+                    console.log('[Market] Fiyatlar güncellendi (12 saatlik periyot). Toplam varlık:', updated.items?.length || 0);
                 }
             } catch (e) {
                 console.error('[Market] Fiyat güncelleme hatası:', e.message);
             }
-        }, TEN_MINUTES);
+        }, TWELVE_HOURS);
         
     },
 };

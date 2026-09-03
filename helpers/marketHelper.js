@@ -1,11 +1,11 @@
 import { MarketItem, UserPortfolio, Economy } from '#models';
 
 const RISK_RANGES = {
-  1: { minPct: 0.003, maxPct: 0.018, label: 'Güvenli' },
-  2: { minPct: 0.008, maxPct: 0.04, label: 'Düşük' },
-  3: { minPct: 0.025, maxPct: 0.075, label: 'Orta' },
-  4: { minPct: 0.045, maxPct: 0.12, label: 'Yüksek' },
-  5: { minPct: 0.08, maxPct: 0.23, label: 'Aşırı' }
+  1: { minPct: 0.03, maxPct: 0.12, label: 'Güvenli' },
+  2: { minPct: 0.07, maxPct: 0.25, label: 'Düşük' },
+  3: { minPct: 0.15, maxPct: 0.40, label: 'Orta' },
+  4: { minPct: 0.25, maxPct: 0.55, label: 'Yüksek' },
+  5: { minPct: 0.40, maxPct: 0.80, label: 'Aşırı' }
 };
 
 const DEFAULT_ITEMS = [
@@ -176,18 +176,49 @@ export function calcChangePercent(current, previous) {
 }
 
 export function pickRandomSign() {
-  return Math.random() < 0.48 ? -1 : 1;
+  return Math.random() < 0.5 ? -1 : 1;
 }
 
 export async function updateMarketPrices() {
   const market = await MarketItem.findOne({ key: 'main' });
   if (!market) return null;
 
+  const marketSentiment = Math.random();
+  let globalTrend = 0;
+  let trendLabel = 'nötr';
+
+  if (marketSentiment < 0.18) {
+    globalTrend = -(0.08 + Math.random() * 0.18);
+    trendLabel = 'kriz (düşüş)';
+  } else if (marketSentiment < 0.36) {
+    globalTrend = -(0.02 + Math.random() * 0.08);
+    trendLabel = 'hafif düşüş';
+  } else if (marketSentiment < 0.64) {
+    globalTrend = 0;
+    trendLabel = 'nötr';
+  } else if (marketSentiment < 0.82) {
+    globalTrend = 0.02 + Math.random() * 0.08;
+    trendLabel = 'hafif yükseliş';
+  } else {
+    globalTrend = 0.08 + Math.random() * 0.18;
+    trendLabel = 'boom (yükseliş)';
+  }
+
   const updatedItems = market.items.map(item => {
     const range = RISK_RANGES[item.riskLevel];
     const magnitude = range.minPct + Math.random() * (range.maxPct - range.minPct);
     const sign = pickRandomSign();
-    const changePct = sign * magnitude;
+    let changePct = sign * magnitude;
+
+    changePct += globalTrend * (0.6 + (item.riskLevel / 5) * 0.8);
+
+    if (item.price > item.basePrice) {
+      const overshoot = (item.price - item.basePrice) / item.basePrice;
+      changePct -= Math.min(overshoot * 0.25, 0.15);
+    } else if (item.price < item.basePrice) {
+      const undershoot = (item.basePrice - item.price) / item.basePrice;
+      changePct += Math.min(undershoot * 0.25, 0.15);
+    }
 
     let newPrice = item.price * (1 + changePct);
     newPrice = Math.max(item.minPrice, Math.min(item.maxPrice, newPrice));
@@ -208,6 +239,7 @@ export async function updateMarketPrices() {
 
   market.items = updatedItems;
   const saved = await market.save();
+  console.log(`[Market] 12 saatlik yenileme tamamlandı. Piyasa havası: ${trendLabel} (genel etki: ${(globalTrend*100).toFixed(1)}%)`);
   return saved.toObject();
 }
 
