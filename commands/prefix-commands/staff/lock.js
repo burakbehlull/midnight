@@ -13,26 +13,25 @@ export default {
     async execute(client, message) {
         const channel = message.channel;
 		
-		const manager = new Manager(client, { action: message })
+		const manager = new Manager(client, { action: message });
 		
-		const permissions = channel.permissionOverwrites.cache.get(message.guild.roles.everyone.id);
-		
-		const isLock = permissions.deny.has(manager.flags.SendMessages);
-		
-		if(isLock){
-			if (!permissions.deny.has(manager.flags.SendMessages)) return manager.reply(manager.sender.errorEmbed('❌ Kanal kilitlenmemiş!'));
-			
-			await channel.permissionOverwrites.edit(message.guild.roles.everyone, {
-				SendMessages: true
-			})
-			let IEmbed = manager.sender.classic("Kanal kilidi açıldı!")
-			return message.channel.send({embeds: [IEmbed]});
+		const everyone = message.guild.roles.everyone;
+		const channelPerms = channel.permissionsFor(everyone);
+		const canSend = channelPerms ? channelPerms.has(PermissionFlagsBits.SendMessages) : true;
+		const isLocked = !canSend;
+
+		if (isLocked) {
+			await channel.permissionOverwrites.edit(everyone, {
+				SendMessages: null
+			});
+			const IEmbed = manager.sender.classic("🔓 Kanal kilidi açıldı!");
+			return message.channel.send({ embeds: [IEmbed] });
 		}
 		
-        await channel.permissionOverwrites.edit(message.guild.roles.everyone, {
+        await channel.permissionOverwrites.edit(everyone, {
             SendMessages: false
         });
-		let IEmbed = manager.sender.classic("🔒 Kanal kilitlendi!")
-        message.channel.send({embeds: [IEmbed]});
+		const IEmbed = manager.sender.classic("🔒 Kanal kilitlendi!");
+        return message.channel.send({ embeds: [IEmbed] });
     }
 };
