@@ -1,5 +1,6 @@
 import { Economy } from '#models';
-import { messageSender, Button } from '#helpers';
+import { Button } from '#helpers';
+import Manager from '#managers';
 
 export default {
   name: 'fosterdismiss',

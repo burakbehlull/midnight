@@ -9,7 +9,7 @@ export default {
 		client.user.setPresence({
 			activities: [
 				{
-					name: 'Midnight',
+					name: '@tatlim, @tuzak, /1090',
 					type: ActivityType.Watching
 				}
 			],
