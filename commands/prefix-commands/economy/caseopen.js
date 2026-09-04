@@ -266,9 +266,7 @@ export default {
             .setDescription(`**${username}** tekrar kasa açtı!`)
             .addFields(
               { name: 'Ödülün:', value: `${newApplied.emoji} **${newApplied.label}**`, inline: false },
-              { name: 'Detay:', value: newApplied.summary.join('\n'), inline: false },
-              { name: 'Kasa Ücreti:', value: `-${CASE_PRICE.toLocaleString('tr-TR')} Coin`, inline: true },
-              { name: 'Yeni Bakiye:', value: `**${finalMoney.toLocaleString('tr-TR')}** Coin`, inline: true }
+              { name: 'Detay:', value: newApplied.summary.join('\n'), inline: false }
             )
             .setTimestamp()
             .setFooter({ text: message.author.displayName || username, iconURL: message.author.avatarURL() });
