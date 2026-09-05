@@ -1,4 +1,5 @@
 import { InviteCacheSchema } from '#models';
+import { initVoiceTimestampsForGuild } from './voiceStateUpdate.js';
 
 export default {
   name: 'ready',
@@ -21,6 +22,12 @@ export default {
         }
       } catch (err) {
         console.error(`[${guild.name}] davetler alınamadı:`, err);
+      }
+
+      try {
+        await initVoiceTimestampsForGuild(guild);
+      } catch (err) {
+        console.error(`[${guild.name}] ses zaman damgaları başlatılamadı:`, err);
       }
     }
 	

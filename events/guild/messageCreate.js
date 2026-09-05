@@ -9,10 +9,11 @@ export default {
   name: Events.MessageCreate, 
   async execute(client, message) {
     let prefix = process.env.PREFIX;
+    let settings = null;
 
     if (message.guild) {
       try {
-        const settings = await Settings.findOne({ guildId: message.guild.id }).select('prefix').lean();
+        settings = await Settings.findOne({ guildId: message.guild.id }).lean();
         if (settings && settings.prefix) {
           prefix = settings.prefix;
         }
@@ -22,9 +23,16 @@ export default {
       }
 	
     if(message.author.bot) return
-    
-    await levelMessageHandler(message.author.id, message.guild?.id, message);
-    await statsUtilsHandler.updateMessageStats(message.author.id, message.guild?.id, message.channel.id);
+
+    if (message.guild) {
+      if (settings?.levelSystemStatus) {
+        await levelMessageHandler(message.author.id, message.guild.id, message);
+      }
+      if (settings?.statSystemStatus) {
+        await statsUtilsHandler.updateMessageStats(message.author.id, message.guild.id, message.channel.id);
+      }
+    }
+
     await afkHandler(message);
 
     if (!prefix || !message.content.startsWith(prefix)) return;
