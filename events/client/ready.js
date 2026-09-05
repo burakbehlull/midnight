@@ -1,4 +1,5 @@
-import { Events, ActivityType } from 'discord.js';
+import { Events } from 'discord.js';
+import config from '../config.json';
 
 export default {
 	name: Events.ClientReady,
@@ -9,11 +10,11 @@ export default {
 		client.user.setPresence({
 			activities: [
 				{
-					name: '@tatlim, @tuzak, /1090',
-					type: ActivityType.Watching
+					name: config.ACTIVITY_NAME,
+					type: config.ACTIVITY_TYPE,
 				}
 			],
-			status: "idle",
+			status: config.ACTIVITY_STATUS,
 		});
 		
 	},

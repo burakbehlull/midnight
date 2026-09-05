@@ -1,5 +1,10 @@
 {
 	"BOT_OWNER_IDS": [],
+
+	"ACTIVITY_NAME": "only Miguel",
+	"ACTIVITY_TYPE": 3,
+	"ACTIVITY_STATUS": "idle",
+
 	"DEVELOPMENT_MODE": false,
 	"AUTO_SLASH_COMMAND_DEPLOY": false,
 
