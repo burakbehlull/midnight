@@ -45,6 +45,6 @@ export default {
     await user.save();
 	  const name = message.author.globalName || message.author.username
 
-    manager.sender.reply(manager.sender.successEmbed(`**${name}**, bugünkü ödülün: **__${reward}__** para!`));
+    manager.sender.reply(manager.sender.classic(`**${name}**, bugünkü ödülün: **__${reward}__** para!`));
   }
 };

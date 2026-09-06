@@ -158,12 +158,22 @@ export default {
       const canvas = createCanvas(width, height);
       const c = canvas.getContext("2d");
 
+      const CARD_RADIUS = 96;
+      const COVER_RADIUS = 68;
+      const BADGE_RADIUS = 14;
+      const BAR_RADIUS = 4;
+
       let cover = null;
       try {
         const key = activity.assets?.largeImage ?? "";
         const url = `https://i.scdn.co/image/${key.startsWith("spotify:") ? key.slice(8) : key}`;
         cover = await loadImage(url);
       } catch {}
+
+      c.save();
+      c.beginPath();
+      c.roundRect(0, 0, width, height, CARD_RADIUS);
+      c.clip();
 
       if (cover) {
         c.save(); c.filter = "blur(35px) brightness(0.4)";
@@ -175,22 +185,24 @@ export default {
       const g = c.createLinearGradient(0, 0, width, height);
       g.addColorStop(0, "rgba(18,18,18,0.65)");
       g.addColorStop(1, "rgba(0,0,0,0.85)");
-      drawRoundedRect(c, 0, 0, width, height, 24, g);
-      drawRoundedRect(c, 1, 1, width - 2, height - 2, 24, null, "rgba(255,255,255,0.08)");
+      c.fillStyle = g; c.fillRect(0, 0, width, height);
+      c.restore();
+
+      drawRoundedRect(c, 0, 0, width, height, CARD_RADIUS, null, "rgba(255,255,255,0.1)", 1.5);
 
       const ix = 30, iy = 30, is = 230;
       if (cover) {
         c.save();
-        c.shadowColor = "rgba(0,0,0,0.6)"; c.shadowBlur = 25; c.shadowOffsetY = 10;
-        c.beginPath(); c.roundRect(ix, iy, is, is, 18); c.fill(); c.clip();
+        c.shadowColor = "rgba(0,0,0,0.5)"; c.shadowBlur = 22; c.shadowOffsetY = 8;
+        c.beginPath(); c.roundRect(ix, iy, is, is, COVER_RADIUS); c.fill(); c.clip();
         c.shadowColor = "transparent";
         c.drawImage(cover, ix, iy, is, is);
         c.restore();
       } else {
-        drawRoundedRect(c, ix, iy, is, is, 18, "#282828");
+        drawRoundedRect(c, ix, iy, is, is, COVER_RADIUS, "#282828", null, 1);
       }
 
-      drawRoundedRect(c, 280, 32, 140, 28, 14, "rgba(29,185,84,0.18)", "rgba(29,185,84,0.4)");
+      drawRoundedRect(c, 280, 32, 140, 28, BADGE_RADIUS, "rgba(29,185,84,0.18)", "rgba(29,185,84,0.45)", 1);
       c.font = "bold 11px sans-serif"; c.fillStyle = "#1ed760";
       c.fillText("• ŞU ANDA ÇALIYOR", 292, 50);
 
@@ -205,7 +217,7 @@ export default {
       const lt = `Dinleyen: ${dn}`;
       c.font = "12px sans-serif";
       const bw = c.measureText(lt).width + 24;
-      drawRoundedRect(c, width - bw - 30, 32, bw, 28, 14, "rgba(255,255,255,0.07)");
+      drawRoundedRect(c, width - bw - 30, 32, bw, 28, BADGE_RADIUS, "rgba(255,255,255,0.07)", "rgba(255,255,255,0.1)", 1);
       c.fillStyle = "#e1e1e1"; c.fillText(lt, width - bw - 18, 50);
 
       const tx = 280;
@@ -230,16 +242,16 @@ export default {
       const tot = Math.max(1, et - st);
       const p = Math.min(1, cur / tot);
 
-      const bx = 280, by = 190, bw2 = 530, bh = 6;
-      drawRoundedRect(c, bx, by, bw2, bh, 3, "rgba(255,255,255,0.15)");
+      const bx = 280, by = 190, bw2 = 530, bh = 8;
+      drawRoundedRect(c, bx, by, bw2, bh, BAR_RADIUS, "rgba(255,255,255,0.15)");
 
       const fw = Math.max(12, bw2 * p);
       if (p > 0) {
         c.save(); c.shadowColor = "#1DB954"; c.shadowBlur = 8;
-        drawRoundedRect(c, bx, by, fw, bh, 3, "#1DB954");
+        drawRoundedRect(c, bx, by, fw, bh, BAR_RADIUS, "#1DB954");
         c.restore();
         c.beginPath();
-        c.arc(bx + fw, by + bh / 2, 6, 0, Math.PI * 2);
+        c.arc(bx + fw, by + bh / 2, 7, 0, Math.PI * 2);
         c.fillStyle = "#fff"; c.fill();
       }
 

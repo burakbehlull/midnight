@@ -25,16 +25,24 @@ function calculateLevel(xp) {
 }
 
 function drawRoundedRect(ctx, x, y, width, height, radius, fillStyle, strokeStyle = null, lineWidth = 1) {
+    const r = Math.min(radius, width / 2, height / 2);
+    const inset = strokeStyle ? lineWidth / 2 : 0;
+    const fx = x + inset;
+    const fy = y + inset;
+    const fw = width - inset * 2;
+    const fh = height - inset * 2;
+    const fr = Math.max(0, r - inset);
+
     ctx.beginPath();
-    ctx.moveTo(x + radius, y);
-    ctx.lineTo(x + width - radius, y);
-    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-    ctx.lineTo(x + width, y + height - radius);
-    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-    ctx.lineTo(x + radius, y + height);
-    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-    ctx.lineTo(x, y + radius);
-    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.moveTo(fx + fr, fy);
+    ctx.lineTo(fx + fw - fr, fy);
+    ctx.quadraticCurveTo(fx + fw, fy, fx + fw, fy + fr);
+    ctx.lineTo(fx + fw, fy + fh - fr);
+    ctx.quadraticCurveTo(fx + fw, fy + fh, fx + fw - fr, fy + fh);
+    ctx.lineTo(fx + fr, fy + fh);
+    ctx.quadraticCurveTo(fx, fy + fh, fx, fy + fh - fr);
+    ctx.lineTo(fx, fy + fr);
+    ctx.quadraticCurveTo(fx, fy, fx + fr, fy);
     ctx.closePath();
 
     if (fillStyle) {
