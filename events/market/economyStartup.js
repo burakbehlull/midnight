@@ -8,23 +8,25 @@ export default {
 		
 		// economy
 		const shopItems = [
-			{ id: 1, name: 'Kalp', price: 200 },
-			{ id: 2, name: 'Gümüş Yüzük', price: 1000 },
-			{ id: 3, name: 'Altın Yüzük', price: 10000 },
-			{ id: 4, name: 'Elmas Yüzük', price: 100000 },
-			{ id: 5, name: 'Yılın Discord Kullanıcısı Kartı', price: 10000 },
-			{ id: 6, name: 'Alamet Kartı', price: 2000 },
-			{ id: 7, name: 'Midnight VIP', price: 500000 },
-			{ id: 8, name: 'Evlat Edinme Belgesi', price: 10000 },
+			{ id: 1, name: 'Kalp', price: 200, type: 'item', module: null, slug: null },
+			{ id: 2, name: 'Gümüş Yüzük', price: 1000, type: 'item', module: 'ring', slug: 'silver_ring' },
+			{ id: 3, name: 'Altın Yüzük', price: 10000, type: 'item', module: 'ring', slug: 'gold_ring' },
+			{ id: 4, name: 'Elmas Yüzük', price: 100000, type: 'item', module: 'ring', slug: 'diamond_ring' },
+			{ id: 5, name: 'Evlat Edinme Belgesi', price: 10000, type: 'item', module: 'certificate', slug: 'adoption_certificate' },
+			{ id: 6, name: 'Spotify Light Tema', price: 3000, type: 'theme', module: 'spotify', slug: 'light' }
 		];
 		
 		
 		for (const item of shopItems) {
 		  const existing = await Shop.findOne({ id: item.id });
-		  if(existing) return
-		  
 		  if (!existing) {
 			await Shop.create(item);
+		  } else if (existing.module !== item.module || existing.slug !== item.slug || existing.type !== item.type) {
+			existing.module = item.module;
+			existing.slug = item.slug;
+			existing.type = item.type;
+			existing.name = item.name;
+			await existing.save();
 		  }
 		}
 		// economy -/

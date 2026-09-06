@@ -14,8 +14,13 @@ const economySchema = new mongoose.Schema({
   fosterlings: { type: [String], default: [] },
   inventory: {
     type: Map,
-    of: Number, // itemId -> count
+    of: Number,
     default: {}
+  },
+  activeCosmetics: {
+    type: Map,
+    of: String,
+    default: () => new Map()
   },
   cooldowns: {
     daily: { type: Date, default: new Date(0) },

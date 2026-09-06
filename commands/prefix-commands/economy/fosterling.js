@@ -4,7 +4,7 @@ import Manager from '#managers';
 import { Economy } from '#models';
 
 
-const CERTIFICATE_ID = '8';
+const CERTIFICATE_ID = '5';
 
 export default {
   name: 'fosterling',
@@ -51,7 +51,7 @@ export default {
     const stock = parentData.inventory.get(CERTIFICATE_ID) || 0;
     if (stock < 1) {
       return manager.sender.reply(
-        manager.sender.errorEmbed('❌ Envanterinde **Evlat Edinme Belgesi** (ID: 8) yok. Satın almak için shop komutunu kullanabilirsin.')
+        manager.sender.errorEmbed('❌ Envanterinde **Evlat Edinme Belgesi** (ID: 5) yok. Satın almak için shop komutunu kullanabilirsin.')
       );
     }
 

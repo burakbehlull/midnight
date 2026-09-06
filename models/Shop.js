@@ -14,7 +14,24 @@ const shopSchema = new mongoose.Schema({
     type: Number,
     required: true,
     min: 0
+  },
+  module: {
+    type: String,
+    default: null,
+    index: true
+  },
+  slug: {
+    type: String,
+    default: null,
+    index: true
+  },
+  type: {
+    type: String,
+    default: 'item',
+    enum: ['item', 'theme', 'cosmetic']
   }
 });
+
+shopSchema.index({ module: 1, slug: 1 }, { unique: true, sparse: true });
 
 export default mongoose.model("Shop", shopSchema);

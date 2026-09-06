@@ -30,6 +30,11 @@ Create ` config.json ` file and set permission settings:
     "DEVELOPMENT_MODE": false,
     "AUTO_SLASH_COMMAND_DEPLOY": false,
 
+    "ACTIVITY_NAME": "only Miguel",
+	"ACTIVITY_TYPE": 3,
+	"ACTIVITY_STATUS": "idle",
+
+
     "AI": {
 		"ReplyCommand": true, // .ai Hello!
 		"ReplyWrapper": false // @reply Hello!
@@ -55,6 +60,7 @@ Create ` config.json ` file and set permission settings:
 | **server-avatar** | gets server avatar | .. | stable |
 | **server-banner** | gets server banner | .. | stable |
 | **device** | Shows user device | user | stable |
+| **use** | Spotify, etc.. theme change | spotify, item | stable |
 
 ### contents: Mod
 | command | comment | values | situation |
