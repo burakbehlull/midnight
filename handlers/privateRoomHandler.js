@@ -40,19 +40,23 @@ export async function handleVoiceRoomCreate(oldState, newState) {
       await newState.member.voice.setChannel(cloned.id);
     }
 
-    if (oldState.channel && oldState.channel.members.size === 0) {
+    if (newState.channel && newState.channelId !== createRoomChannelId) {
       const isRoom = await Room.findOne({
-        guildId: oldState.guild.id,
-        id: oldState.channelId
+        guildId: newState.guild.id,
+        id: newState.channelId
       });
       if (isRoom) {
-        await oldState.channel.delete();
-        await Room.deleteOne({
-          guildId: oldState.guild.id,
-          id: oldState.channelId
-        });
+        const member = newState.member;
+        if (member.id !== isRoom.ownerId) {
+          const channel = newState.channel;
+          const hasConnectPermission = channel.permissionsFor(member).has(PermissionsBitField.Flags.Connect);
+          if (!hasConnectPermission) {
+            await member.voice.setChannel(null);
+          }
+        }
       }
     }
+
   } catch (error) {
     console.error('VoiceRoomCreate handler error:', error);
   }
@@ -123,13 +127,26 @@ export async function handleInteractionCreate(interaction) {
         const room = await Room.findOne({ ownerId: interaction.user.id });
         if (!room) return await interaction.reply({ content: 'Odanız yok!', ephemeral: true });
         const c = await interaction.guild.channels.fetch(room.id);
-        await c.permissionOverwrites.edit(interaction.guild.roles.everyone, {
-          Speak: false,
-          Connect: false,
-          ManageChannels: false,
-          ManageRoles: false,
-        });
-        return await interaction.reply({content: `${c.name} adlı oda kitlendi!`, ephemeral: true});
+        const everyonePerms = c.permissionOverwrites.cache.get(interaction.guild.roles.everyone.id);
+        const isLocked = everyonePerms?.deny.has(PermissionsBitField.Flags.Connect);
+
+        if (isLocked) {
+          await c.permissionOverwrites.edit(interaction.guild.roles.everyone, {
+            Speak: true,
+            Connect: true,
+            ManageChannels: false,
+            ManageRoles: false,
+          });
+          return await interaction.reply({content: `${c.name} adlı odanın kilidi açıldı!`, ephemeral: true});
+        } else {
+          await c.permissionOverwrites.edit(interaction.guild.roles.everyone, {
+            Speak: false,
+            Connect: false,
+            ManageChannels: false,
+            ManageRoles: false,
+          });
+          return await interaction.reply({content: `${c.name} adlı oda kitlendi!`, ephemeral: true});
+        }
       }
 
       if (interaction.customId === 'adduserbtn') {
