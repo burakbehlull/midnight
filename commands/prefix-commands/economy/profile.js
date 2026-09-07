@@ -2,12 +2,12 @@ import { misc } from '#helpers';
 import { Economy } from '#models';
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 
-const { drawRoundedRect, formatNumber, applyText, xpForLevel } = misc;
+const { drawRoundedRect, formatNumber, applyText } = misc;
 
 export default {
   name: 'profile',
-  description: 'Kullanıcının profilini resim olarak gösterir veya alt yazı ayarlar.',
-  usage: '.profile [@kullanıcı] veya .profile subtitle <metin>',
+  description: 'Kullanıcının profilini resim olarak gösterir, alt yazı/about/arka plan ayarlar.',
+  usage: '.profile [@kullanıcı] veya .profile subtitle <metin> veya .profile about <metin> veya .profile bg <url>',
   aliases: ['profil', 'p'],
   category: 'economy',
 
@@ -18,7 +18,7 @@ export default {
   async execute(client, message, args) {
     if (args[0]?.toLowerCase() === 'subtitle') {
       const subtitleText = args.slice(1).join(' ');
-      
+
       if (!subtitleText) {
         return message.reply('❌ Lütfen bir alt yazı girin veya `clear` yazarak kaldırın.\n**Kullanım:** `.profile subtitle <metin>` veya `.profile subtitle clear`');
       }
@@ -44,28 +44,76 @@ export default {
       return message.reply(`Alt yazınız ayarlandı! **${subtitleText}**`);
     }
 
+    if (args[0]?.toLowerCase() === 'about' || args[0]?.toLowerCase() === 'hakkimda') {
+      const aboutText = args.slice(1).join(' ');
+
+      if (!aboutText) {
+        return message.reply('❌ Lütfen bir hakkımda metni girin veya `clear` yazarak kaldırın.\n**Kullanım:** `.profile about <metin>` veya `.profile about clear`');
+      }
+
+      const userData = await Economy.findOne({ userId: message.author.id }) || new Economy({ userId: message.author.id });
+
+      if (aboutText.toLowerCase() === 'clear' || aboutText.toLowerCase() === 'sil') {
+        userData.about = null;
+        await userData.save();
+        return message.reply('Hakkımda metni kaldırıldı!');
+      }
+
+      if (aboutText.length > 80) {
+        return message.reply('❌ Hakkımda metni en fazla 80 karakter olabilir!');
+      }
+
+      userData.about = aboutText;
+      await userData.save();
+
+      return message.reply(`Hakkımda metniniz ayarlandı! **${aboutText}**`);
+    }
+
+    if (args[0]?.toLowerCase() === 'bg' || args[0]?.toLowerCase() === 'background' || args[0]?.toLowerCase() === 'arkaplan') {
+      const bgInput = args.slice(1).join(' ');
+
+      if (!bgInput) {
+        return message.reply('❌ Lütfen bir resim URL\'si girin veya `clear` yazarak kaldırın.\n**Kullanım:** `.profile bg <resim-url>` veya `.profile bg clear`');
+      }
+
+      const userData = await Economy.findOne({ userId: message.author.id }) || new Economy({ userId: message.author.id });
+
+      if (bgInput.toLowerCase() === 'clear' || bgInput.toLowerCase() === 'sil') {
+        userData.background = null;
+        await userData.save();
+        return message.reply('Arka plan kaldırıldı!');
+      }
+
+      const urlMatch = bgInput.match(/^https?:\/\/.+\.(png|jpg|jpeg|gif|webp)(\?.*)?$/i);
+      const attachment = message.attachments.first();
+      let finalUrl = null;
+
+      if (attachment) {
+        finalUrl = attachment.url;
+      } else if (urlMatch) {
+        finalUrl = urlMatch[0];
+      } else {
+        return message.reply('❌ Geçerli bir resim URL\'si veya ek (png/jpg/jpeg/gif/webp) girin!');
+      }
+
+      userData.background = finalUrl;
+      await userData.save();
+
+      return message.reply('Arka plan resminiz ayarlandı!');
+    }
+
     const target = message.mentions.users.first() || client.users.cache.get(args[0]) || message.author;
     const member = message.mentions.members?.first() || message.guild.members.cache.get(target.id) || message.member;
 
     const userData = await Economy.findOne({ userId: target.id }) || new Economy({ userId: target.id });
 
-    const width = 900;
-    const height = 560;
+    const width = 1100;
+    const height = 620;
     const canvas = createCanvas(width, height);
     const ctx = canvas.getContext("2d");
 
-    const accentColors = [
-      ["#667eea", "#764ba2"],
-      ["#f093fb", "#f5576c"],
-      ["#4facfe", "#00f2fe"],
-      ["#43e97b", "#38f9d7"],
-      ["#fa709a", "#fee140"],
-      ["#30cfd0", "#330867"],
-      ["#8ec5fc", "#e0c3fc"],
-      ["#ff9a9e", "#fecfef"],
-    ];
-    const colorIdx = Math.floor(Math.random() * accentColors.length);
-    const [accent1, accent2] = accentColors[colorIdx];
+    const accent1 = "#7c3aed";
+    const accent2 = "#a855f7";
 
     let avatarImage;
     try {
@@ -75,245 +123,249 @@ export default {
       avatarImage = null;
     }
 
-    ctx.fillStyle = "#0a0a0f";
-    ctx.fillRect(0, 0, width, height);
+    let backgroundImage = null;
+    if (userData.background) {
+      try {
+        backgroundImage = await loadImage(userData.background);
+      } catch (e) {
+        backgroundImage = null;
+      }
+    }
 
-    const bgGrad1 = ctx.createRadialGradient(width * 0.15, height * 0.2, 20, width * 0.15, height * 0.2, 420);
-    bgGrad1.addColorStop(0, accent1 + "55");
-    bgGrad1.addColorStop(1, "rgba(10, 10, 15, 0)");
-    ctx.fillStyle = bgGrad1;
-    ctx.fillRect(0, 0, width, height);
-
-    const bgGrad2 = ctx.createRadialGradient(width * 0.92, height * 0.85, 20, width * 0.92, height * 0.85, 450);
-    bgGrad2.addColorStop(0, accent2 + "48");
-    bgGrad2.addColorStop(1, "rgba(10, 10, 15, 0)");
-    ctx.fillStyle = bgGrad2;
-    ctx.fillRect(0, 0, width, height);
-
-    drawRoundedRect(ctx, 20, 20, width - 40, height - 40, 28, "rgba(14, 14, 20, 0.82)", "rgba(255, 255, 255, 0.08)");
-    drawRoundedRect(ctx, 26, 26, width - 52, height - 52, 25, null, "rgba(255, 255, 255, 0.03)");
-
-    const avatarX = 65;
-    const avatarY = 72;
-    const avatarSize = 175;
+    const outerRadius = 42;
+    const cardInsetX = 20;
+    const cardInsetY = 20;
+    const cardW = width - cardInsetX * 2;
+    const cardH = height - cardInsetY * 2;
 
     ctx.save();
-    drawRoundedRect(ctx, avatarX, avatarY, avatarSize, avatarSize, 22, "#111", "rgba(255,255,255,0.1)");
     ctx.beginPath();
-    drawRoundedRect(ctx, avatarX, avatarY, avatarSize, avatarSize, 22);
+    drawRoundedRect(ctx, cardInsetX, cardInsetY, cardW, cardH, outerRadius);
+    ctx.clip();
+
+    if (backgroundImage) {
+      const imgRatio = backgroundImage.width / backgroundImage.height;
+      const boxRatio = cardW / cardH;
+      let sx = 0, sy = 0, sw = backgroundImage.width, sh = backgroundImage.height;
+      if (imgRatio > boxRatio) {
+        sw = backgroundImage.height * boxRatio;
+        sx = (backgroundImage.width - sw) / 2;
+      } else {
+        sh = backgroundImage.width / boxRatio;
+        sy = (backgroundImage.height - sh) / 2;
+      }
+      ctx.drawImage(backgroundImage, sx, sy, sw, sh, cardInsetX, cardInsetY, cardW, cardH);
+
+      const darkOverlay = ctx.createLinearGradient(cardInsetX, cardInsetY, cardInsetX, cardInsetY + cardH);
+      darkOverlay.addColorStop(0, "rgba(0, 0, 0, 0.35)");
+      darkOverlay.addColorStop(0.5, "rgba(0, 0, 0, 0.55)");
+      darkOverlay.addColorStop(1, "rgba(0, 0, 0, 0.72)");
+      ctx.fillStyle = darkOverlay;
+      ctx.fillRect(cardInsetX, cardInsetY, cardW, cardH);
+
+      const vignette = ctx.createRadialGradient(
+        cardInsetX + cardW / 2, cardInsetY + cardH / 2, cardW * 0.2,
+        cardInsetX + cardW / 2, cardInsetY + cardH / 2, cardW * 0.75
+      );
+      vignette.addColorStop(0, "rgba(0, 0, 0, 0)");
+      vignette.addColorStop(1, "rgba(0, 0, 0, 0.55)");
+      ctx.fillStyle = vignette;
+      ctx.fillRect(cardInsetX, cardInsetY, cardW, cardH);
+    } else {
+      const bgGrad = ctx.createLinearGradient(cardInsetX, cardInsetY, cardInsetX + cardW, cardInsetY + cardH);
+      bgGrad.addColorStop(0, "#1a0b2e");
+      bgGrad.addColorStop(0.5, "#2d1b4e");
+      bgGrad.addColorStop(1, "#3d1f5c");
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(cardInsetX, cardInsetY, cardW, cardH);
+
+      const radial1 = ctx.createRadialGradient(cardInsetX + cardW * 0.15, cardInsetY + cardH * 0.2, 20, cardInsetX + cardW * 0.15, cardInsetY + cardH * 0.2, 450);
+      radial1.addColorStop(0, accent1 + "55");
+      radial1.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.fillStyle = radial1;
+      ctx.fillRect(cardInsetX, cardInsetY, cardW, cardH);
+
+      const radial2 = ctx.createRadialGradient(cardInsetX + cardW * 0.9, cardInsetY + cardH * 0.8, 20, cardInsetX + cardW * 0.9, cardInsetY + cardH * 0.8, 420);
+      radial2.addColorStop(0, accent2 + "4a");
+      radial2.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.fillStyle = radial2;
+      ctx.fillRect(cardInsetX, cardInsetY, cardW, cardH);
+    }
+    ctx.restore();
+
+    ctx.save();
+    drawRoundedRect(ctx, cardInsetX, cardInsetY, cardW, cardH, outerRadius, null, "rgba(255, 255, 255, 0.1)", 1.5);
+    drawRoundedRect(ctx, cardInsetX + 3, cardInsetY + 3, cardW - 6, cardH - 6, outerRadius - 3, null, "rgba(255, 255, 255, 0.04)", 1);
+    ctx.restore();
+
+    const headerPadL = 56;
+    const headerPadR = 56;
+    const headerY = cardInsetY + 54;
+
+    const avatarX = headerPadL;
+    const avatarY = headerY;
+    const avatarSize = 156;
+
+    ctx.save();
+    drawRoundedRect(ctx, avatarX - 6, avatarY - 6, avatarSize + 12, avatarSize + 12, 36, "rgba(0, 0, 0, 0.4)", accent2 + "99", 3);
+    drawRoundedRect(ctx, avatarX, avatarY, avatarSize, avatarSize, 32, "#111", "rgba(255,255,255,0.12)", 1);
+    ctx.beginPath();
+    drawRoundedRect(ctx, avatarX, avatarY, avatarSize, avatarSize, 32);
     ctx.clip();
     if (avatarImage) {
       ctx.drawImage(avatarImage, avatarX, avatarY, avatarSize, avatarSize);
     }
     ctx.restore();
 
-    const nameX = avatarX + avatarSize + 38;
-    const nameY = avatarY - 10;  // 10px yukarı kaldırıldı
+    const nameX = avatarX + avatarSize + 36;
+    const nameY = headerY + 10;
 
-    const userBadgeText = `@${target.username}`;
-    ctx.font = "bold 14px sans-serif";
-    const userBadgeW = ctx.measureText(userBadgeText).width;
-    drawRoundedRect(ctx, width - 50 - userBadgeW - 28, nameY - 2, userBadgeW + 28, 34, 17, accent2 + "22", accent2 + "55");
-    ctx.fillStyle = accent2;
-    ctx.fillText(userBadgeText, width - 50 - userBadgeW - 14, nameY + 21);
-
-    ctx.font = "bold 46px sans-serif";
+    ctx.font = "bold 54px sans-serif";
     ctx.fillStyle = "#ffffff";
     const displayName = (member?.nickname || target.globalName || target.username);
-    ctx.font = applyText(canvas, displayName, 46, "sans-serif", 520);
-    ctx.fillText(displayName, nameX, nameY + 78);
+    ctx.font = applyText(canvas, displayName, 54, "sans-serif", 540);
+    ctx.save();
+    ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+    ctx.shadowBlur = 8;
+    ctx.fillText(displayName, nameX, nameY + 44);
+    ctx.restore();
 
     if (userData.subtitle) {
-      ctx.font = "20px sans-serif";
-      ctx.fillStyle = "rgba(200, 200, 215, 0.78)";
-      ctx.font = applyText(canvas, userData.subtitle, 20, "sans-serif", 520);
-      ctx.fillText(userData.subtitle, nameX, nameY + 112);
+      ctx.font = "italic 24px sans-serif";
+      ctx.fillStyle = "rgba(230, 230, 245, 0.88)";
+      ctx.font = applyText(canvas, userData.subtitle, 24, "sans-serif", 540);
+      ctx.save();
+      ctx.shadowColor = "rgba(0, 0, 0, 0.4)";
+      ctx.shadowBlur = 6;
+      ctx.fillText(userData.subtitle, nameX, nameY + 82);
+      ctx.restore();
     }
 
-    const statsBoxY = nameY + 148;  // 20px aşağı (128 + 20)
-    const statsBoxX = nameX;
-    const statsBoxW = width - statsBoxX - 50;
-    const statsBoxH = 180;
-    drawRoundedRect(ctx, statsBoxX, statsBoxY, statsBoxW, statsBoxH, 20, "rgba(22, 22, 30, 0.9)", "rgba(255,255,255,0.06)");
+    const userTagY = nameY + 114;
+    const tagText = `@${target.username}`;
+    ctx.font = "bold 14px sans-serif";
+    const tagW = ctx.measureText(tagText).width;
+    drawRoundedRect(ctx, nameX, userTagY, tagW + 28, 34, 17, "rgba(0, 0, 0, 0.35)", "rgba(255, 255, 255, 0.14)", 1);
+    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+    ctx.fillText(tagText, nameX + 14, userTagY + 22);
 
+    const levelBadgeX = nameX + tagW + 44;
+    const levelText = `Lv. ${userData.level || 1}`;
+    ctx.font = "bold 14px sans-serif";
+    const levelBadgeW = ctx.measureText(levelText).width + 32;
     ctx.save();
-    ctx.shadowColor = accent1 + "aa";
-    ctx.shadowBlur = 16;
-    const levelTextGrad = ctx.createLinearGradient(statsBoxX + 22, statsBoxY + 10, statsBoxX + 22, statsBoxY + 82);
-    levelTextGrad.addColorStop(0, accent1);
-    levelTextGrad.addColorStop(1, accent2);
-    ctx.fillStyle = levelTextGrad;
-    ctx.font = "bold 50px sans-serif";
-    ctx.fillText(String(userData.level || 1), statsBoxX + 22, statsBoxY + 64);
+    ctx.shadowColor = accent1 + "88";
+    ctx.shadowBlur = 14;
+    const levelBadgeGrad = ctx.createLinearGradient(levelBadgeX, userTagY, levelBadgeX + levelBadgeW, userTagY);
+    levelBadgeGrad.addColorStop(0, accent1);
+    levelBadgeGrad.addColorStop(1, accent2);
+    drawRoundedRect(ctx, levelBadgeX, userTagY, levelBadgeW, 34, 17, levelBadgeGrad, "rgba(255,255,255,0.22)", 1.5);
     ctx.restore();
-
-    ctx.font = "bold 11px sans-serif";
-    ctx.fillStyle = "rgba(190,190,205,0.65)";
-    ctx.fillText("LEVEL", statsBoxX + 22, statsBoxY + 24);
-
-    const rankX = statsBoxX + 120;
-    ctx.font = "bold 11px sans-serif";
-    ctx.fillStyle = "rgba(190,190,205,0.65)";
-    ctx.fillText("RANK", rankX, statsBoxY + 24);
-    ctx.font = "bold 23px sans-serif";
+    ctx.font = "bold 14px sans-serif";
     ctx.fillStyle = "#ffffff";
-    const rankStr = userData.rank ? `#${formatNumber(userData.rank)}` : "#—";
-    ctx.fillText(rankStr, rankX, statsBoxY + 54);
+    ctx.fillText(levelText, levelBadgeX + 16, userTagY + 22);
 
-    const xpBoxX = statsBoxX + 230;
-    ctx.font = "bold 11px sans-serif";
-    ctx.fillStyle = "rgba(190,190,205,0.65)";
-    ctx.fillText("XP", xpBoxX, statsBoxY + 24);
+    const currencyY = cardInsetY + 240;
+    const statsPadX = 44;
+    const leftColX = cardInsetX + statsPadX;
+    const mainStatsW = cardW - statsPadX * 2;
 
-    const currentXP = userData.xp || 0;
-    const currentLevel = userData.level || 1;
-    const nextLevelXP = xpForLevel(currentLevel + 1);
-    const prevLevelXP = xpForLevel(currentLevel);
-    const xpInLevel = Math.max(0, currentXP - prevLevelXP);
-    const neededForNext = Math.max(1, nextLevelXP - prevLevelXP);
-    const progress = Math.min(1, xpInLevel / neededForNext);
+    const heartsW = 230;
+    const heartsH = 100;
+    drawRoundedRect(ctx, leftColX, currencyY, heartsW, heartsH, 24, "rgba(15, 15, 25, 0.42)", "rgba(244, 63, 94, 0.22)", 1);
+    drawRoundedRect(ctx, leftColX + 3, currencyY + 3, heartsW - 6, heartsH - 6, 22, null, "rgba(255, 255, 255, 0.04)", 1);
 
-    ctx.font = "bold 18px sans-serif";
-    ctx.fillStyle = "#ffffff";
-    const xpLabel = `${formatNumber(xpInLevel)} / ${formatNumber(neededForNext)}`;
-    const xpLabelW = ctx.measureText(xpLabel).width;
-    ctx.fillText(xpLabel, statsBoxX + statsBoxW - 26 - xpLabelW, statsBoxY + 54);
-
-    const barX = xpBoxX;
-    const barY = statsBoxY + 68;
-    const barW = statsBoxX + statsBoxW - 26 - barX;
-    const barH = 9;
-
-    drawRoundedRect(ctx, barX, barY, barW, barH, 4, "rgba(255,255,255,0.07)");
-
-    const filledW = Math.max(9, barW * progress);
-    ctx.save();
-    ctx.shadowColor = accent1;
-    ctx.shadowBlur = 8;
-    const xpGrad = ctx.createLinearGradient(barX, barY, barX + filledW, barY);
-    xpGrad.addColorStop(0, accent1);
-    xpGrad.addColorStop(1, accent2);
-    drawRoundedRect(ctx, barX, barY, filledW, barH, 4, xpGrad);
-    ctx.restore();
-
-    ctx.beginPath();
-    ctx.arc(barX + filledW, barY + barH / 2, 5, 0, Math.PI * 2);
-    ctx.fillStyle = "#ffffff";
-    ctx.shadowColor = "#ffffff";
-    ctx.shadowBlur = 8;
-    ctx.fill();
-    ctx.shadowBlur = 0;
-
-    const currencyY = statsBoxY + 95;
-    
-    const heartBadgeGrad = ctx.createLinearGradient(statsBoxX + 22, currencyY, statsBoxX + 22 + 120, currencyY + 30);
-    heartBadgeGrad.addColorStop(0, "#f43f5e");
-    heartBadgeGrad.addColorStop(1, "#fb7185");
-    drawRoundedRect(ctx, statsBoxX + 22, currencyY, 120, 30, 15, "rgba(244, 63, 94, 0.12)", heartBadgeGrad + "55");
-    
-    ctx.font = "20px sans-serif";
-    ctx.fillStyle = "#f43f5e";
-    ctx.fillText("", statsBoxX + 37, currencyY + 22);
-    
     ctx.font = "bold 13px sans-serif";
     ctx.fillStyle = "#f43f5e";
-    ctx.fillText("HEARTS", statsBoxX + 62, currencyY + 20);
-
-    const heartValGrad = ctx.createLinearGradient(statsBoxX + 22, currencyY + 35, statsBoxX + 22, currencyY + 75);
-    heartValGrad.addColorStop(0, "#f43f5e");
-    heartValGrad.addColorStop(1, "#fb7185");
-    ctx.fillStyle = heartValGrad;
-    ctx.font = "bold 34px sans-serif";
+    ctx.fillText("HEARTS", leftColX + 26, currencyY + 32);
+    ctx.font = "bold 40px sans-serif";
+    ctx.fillStyle = "#ffffff";
     ctx.save();
-    ctx.shadowColor = "#f43f5e66";
+    ctx.shadowColor = "#f43f5e88";
     ctx.shadowBlur = 14;
-    ctx.fillText(formatNumber(userData.hearts || 0), statsBoxX + 22, currencyY + 65);
+    ctx.fillText(formatNumber(userData.hearts || 0), leftColX + 26, currencyY + 78);
     ctx.restore();
 
-    const cookieBadgeGrad = ctx.createLinearGradient(statsBoxX + 180, currencyY, statsBoxX + 180 + 130, currencyY + 30);
-    cookieBadgeGrad.addColorStop(0, "#d97706");
-    cookieBadgeGrad.addColorStop(1, "#f59e0b");
-    drawRoundedRect(ctx, statsBoxX + 180, currencyY, 140, 30, 15, "rgba(217, 119, 6, 0.12)", cookieBadgeGrad + "55");
-    
-    ctx.font = "20px sans-serif";
-    ctx.fillStyle = "#d97706";
-    ctx.fillText("", statsBoxX + 195, currencyY + 22);
-    
-    ctx.font = "bold 13px sans-serif";
-    ctx.fillStyle = "#d97706";
-    ctx.fillText("COOKIES", statsBoxX + 220, currencyY + 20);
+    const cookiesX = leftColX + heartsW + 22;
+    const cookiesW = 250;
+    drawRoundedRect(ctx, cookiesX, currencyY, cookiesW, heartsH, 24, "rgba(15, 15, 25, 0.42)", "rgba(217, 119, 6, 0.22)", 1);
+    drawRoundedRect(ctx, cookiesX + 3, currencyY + 3, cookiesW - 6, heartsH - 6, 22, null, "rgba(255, 255, 255, 0.04)", 1);
 
-    const cookieValGrad = ctx.createLinearGradient(statsBoxX + 180, currencyY + 35, statsBoxX + 180, currencyY + 75);
-    cookieValGrad.addColorStop(0, "#d97706");
-    cookieValGrad.addColorStop(1, "#f59e0b");
-    ctx.fillStyle = cookieValGrad;
-    ctx.font = "bold 34px sans-serif";
+    ctx.font = "bold 13px sans-serif";
+    ctx.fillStyle = "#f59e0b";
+    ctx.fillText("COOKIES", cookiesX + 26, currencyY + 32);
+    ctx.font = "bold 40px sans-serif";
+    ctx.fillStyle = "#ffffff";
     ctx.save();
-    ctx.shadowColor = "#d9770666";
+    ctx.shadowColor = "#d9770688";
     ctx.shadowBlur = 14;
-    ctx.fillText(formatNumber(userData.cookies || 0), statsBoxX + 180, currencyY + 65);
+    ctx.fillText(formatNumber(userData.cookies || 0), cookiesX + 26, currencyY + 78);
     ctx.restore();
 
-    const statsY = statsBoxY + statsBoxH + 20;
+    const relX = cookiesX + cookiesW + 22;
+    const relW = mainStatsW - (heartsW + 22 + cookiesW + 22);
 
-    const familyY = statsY;
-    const familyX = width - 480;
-    const familyW = 430;
-    
-    drawRoundedRect(ctx, familyX, familyY, familyW, 100, 20, "rgba(22, 22, 30, 0.9)", "rgba(255,255,255,0.06)");
+    drawRoundedRect(ctx, relX, currencyY, relW, heartsH, 24, "rgba(15, 15, 25, 0.42)", "rgba(236, 72, 153, 0.22)", 1);
+    drawRoundedRect(ctx, relX + 3, currencyY + 3, relW - 6, heartsH - 6, 22, null, "rgba(255, 255, 255, 0.04)", 1);
 
-    const marrBadgeGrad = ctx.createLinearGradient(familyX + 20, familyY + 10, familyX + 20 + 170, familyY + 30);
-    marrBadgeGrad.addColorStop(0, "#ec4899");
-    marrBadgeGrad.addColorStop(1, "#f43f5e");
-    drawRoundedRect(ctx, familyX + 20, familyY + 14, 180, 30, 15, "rgba(236, 72, 153, 0.12)", marrBadgeGrad + "55");
-    
-    ctx.font = "16px sans-serif";
-    ctx.fillStyle = "#ec4899";
-    ctx.fillText("", familyX + 35, familyY + 33);
-    
     ctx.font = "bold 13px sans-serif";
     ctx.fillStyle = "#ec4899";
-    ctx.fillText("RELATIONSHIP", familyX + 58, familyY + 34);
+    ctx.fillText("RELATIONSHIP", relX + 26, currencyY + 32);
 
     if (userData.marriedTo) {
       const partner = client.users.cache.get(userData.marriedTo);
       const partnerName = partner ? (partner.globalName || partner.username) : `<@${userData.marriedTo}>`;
-      
+      let dayText = "0 days together";
       if (userData.marriageSince) {
         const marrDate = new Date(userData.marriageSince);
         const diffDays = Math.max(0, Math.floor((Date.now() - marrDate.getTime()) / (1000 * 60 * 60 * 24)));
-        
-        ctx.font = "bold 18px sans-serif";
-        ctx.fillStyle = "#ffffff";
-        ctx.fillText(`${diffDays} days`, familyX + 20, familyY + 68);
-      } else {
-        ctx.font = "bold 18px sans-serif";
-        ctx.fillStyle = "#ffffff";
-        ctx.fillText("0 days", familyX + 20, familyY + 68);
+        dayText = `${diffDays} days together`;
       }
-      
-      ctx.font = "bold 36px sans-serif";
+      ctx.font = "13px sans-serif";
+      ctx.fillStyle = "rgba(210, 210, 225, 0.75)";
+      ctx.fillText(dayText, relX + 26, currencyY + 60);
+
+      ctx.font = "bold 32px sans-serif";
       ctx.fillStyle = "#ffffff";
-      ctx.font = applyText(canvas, partnerName, 36, "sans-serif", 240);
-      const nameWidth = ctx.measureText(partnerName).width;
-      const rightBoxX = familyX + 220;
-      const rightBoxW = familyW - 220;
-      const centerX = rightBoxX + (rightBoxW - nameWidth) / 2;
-      ctx.fillText(partnerName, centerX, familyY + 73);
-      
+      ctx.font = applyText(canvas, partnerName, 32, "sans-serif", relW - 180);
+      const partW = ctx.measureText(partnerName).width;
+      const centerX = relX + relW - 28 - partW / 2;
+      ctx.save();
+      ctx.shadowColor = "rgba(236, 72, 153, 0.5)";
+      ctx.shadowBlur = 10;
+      ctx.fillText(partnerName, centerX - partW / 2, currencyY + 86);
+      ctx.restore();
+
     } else {
-      ctx.font = "bold 18px sans-serif";
-      ctx.fillStyle = "rgba(160,160,180,0.7)";
-      ctx.fillText("Yok", familyX + 20, familyY + 68);
-      
-      ctx.font = "bold 36px sans-serif";
-      ctx.fillStyle = "rgba(160,160,180,0.5)";
-      const bekarWidth = ctx.measureText("Bekar").width;
-      const rightBoxX = familyX + 220;
-      const rightBoxW = familyW - 220;
-      const centerX = rightBoxX + (rightBoxW - bekarWidth) / 2;
-      ctx.fillText("Bekar", centerX, familyY + 73);
+      ctx.font = "13px sans-serif";
+      ctx.fillStyle = "rgba(160, 160, 180, 0.6)";
+      ctx.fillText("Yok", relX + 26, currencyY + 60);
+
+      ctx.font = "bold 32px sans-serif";
+      ctx.fillStyle = "rgba(170, 170, 190, 0.55)";
+      const bekarW = ctx.measureText("Bekar").width;
+      const centerX = relX + relW - 28 - bekarW / 2;
+      ctx.fillText("Bekar", centerX - bekarW / 2, currencyY + 86);
     }
+
+    const aboutY = currencyY + heartsH + 22;
+    const aboutW = cardW - statsPadX * 2;
+    const aboutH = 128;
+
+    drawRoundedRect(ctx, leftColX, aboutY, aboutW, aboutH, 24, "rgba(15, 15, 25, 0.42)", "rgba(255, 255, 255, 0.10)", 1);
+    drawRoundedRect(ctx, leftColX + 3, aboutY + 3, aboutW - 6, aboutH - 6, 22, null, "rgba(255, 255, 255, 0.04)", 1);
+
+    const aboutLabelGrad = ctx.createLinearGradient(leftColX + 26, aboutY + 16, leftColX + 200, aboutY + 16);
+    aboutLabelGrad.addColorStop(0, accent1);
+    aboutLabelGrad.addColorStop(1, accent2);
+    ctx.font = "bold 24px sans-serif";
+    ctx.fillStyle = aboutLabelGrad;
+    ctx.fillText("About me", leftColX + 26, aboutY + 46);
+
+    const aboutText = userData.about ? userData.about : " ";
+    ctx.fillStyle = userData.about ? "rgba(240, 240, 255, 0.94)" : "rgba(180, 180, 200, 0.65)";
+    ctx.font = applyText(canvas, aboutText, 24, "sans-serif", aboutW - 60);
+    ctx.fillText(aboutText, leftColX + 26, aboutY + 90);
 
     const imageBuffer = await canvas.encode("png");
 

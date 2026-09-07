@@ -6,11 +6,13 @@ const economySchema = new mongoose.Schema({
   cookies: { type: Number, default: 0 },
   hearts: { type: Number, default: 0 },
   subtitle: { type: String, default: null },
+  about: { type: String, default: null },
   rank: { type: Number, default: 0 },
   level: { type: Number, default: 1 },
   xp: { type: Number, default: 0 },
   marriedTo: { type: String, default: null },
   marriageSince: { type: Date, default: null },
+  background: { type: String, default: null },
   fosterlings: { type: [String], default: [] },
   inventory: {
     type: Map,
