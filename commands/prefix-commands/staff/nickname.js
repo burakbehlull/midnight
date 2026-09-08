@@ -40,11 +40,12 @@ export default {
   category: 'staff',
 
   permissions: {
-    authorities: [PermissionFlagsBits.ManageNicknames, PermissionFlagsBits.Administrator]
+    enabled: false
   },
 
   async execute(client, message, args) {
-    const sender = new Manager(client, { action: message }).sender;
+    const manager = new Manager(client, { action: message });
+    const sender = manager.sender;
 
     const member = message.mentions.members.first();
     
@@ -54,6 +55,11 @@ export default {
       
       if (!rawNameArgs || rawNameArgs.length === 0) {
         return sender.reply(sender.errorEmbed("❌ Lütfen bir isim belirtin veya bir kullanıcı etiketleyin.\n**Kullanım:** `.isim <isim>` veya `.isim @user <isim>`"));
+      }
+
+      const ctrl = await manager.authority.control(PermissionFlagsBits.ChangeNickname, PermissionFlagsBits.ManageNicknames, PermissionFlagsBits.Administrator);
+      if (!ctrl) {
+        return sender.reply(sender.errorEmbed("❌ Kendi sunucu ismini değiştirebilmek için **İsmi Değiştir** yetkisine sahip olmalısın."));
       }
 
       const settings = await Settings.findOne({ guildId: message.guild.id });
@@ -80,6 +86,11 @@ export default {
       await saveNicknameHistory(selfMember.id, message.guild.id, oldNick, newNick, message.author.id);
 
       return sender.reply(sender.classic(`İsminiz başarıyla **${newNick}** olarak değiştirildi.`));
+    }
+
+    const ctrl = await manager.authority.control(PermissionFlagsBits.ManageNicknames, PermissionFlagsBits.Administrator);
+    if (!ctrl) {
+      return sender.reply(sender.errorEmbed("❌ Başkasının ismini değiştirebilmek için **Nickleri Yönet** veya **Yönetici** yetkisine sahip olmalısın."));
     }
 
     if (member.id === message.guild.ownerId && message.author.id !== message.guild.ownerId) {
