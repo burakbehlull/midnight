@@ -90,6 +90,7 @@ Create ` config.json ` file and set permission settings:
 | **sesgir** | Join voice channel | channelId | stable |
 | **sescik** | Leave voice channel | .. | stable |
 | **say** | Guild information | ... | stable |
+| **nick** | Change user, user nick name history | user, name | stable |
 
 ### contents: Staff
 | command | comment | values | situation |
