@@ -401,10 +401,6 @@ export default {
         drawRoundedRect(c, ix, iy, is, is, R.cover, t.coverFallbackBg, null, 1);
       }
 
-      drawRoundedRect(c, offsetX + 240, offsetY + 28, 140, 28, R.badge, t.nowPlaying.bg, t.nowPlaying.stroke, 1);
-      c.font = "bold 11px sans-serif"; c.fillStyle = t.nowPlaying.text;
-      c.fillText("• ŞU ANDA ÇALIYOR", offsetX + 252, offsetY + 46);
-
       const owner = presenceOwner || client.users?.cache?.get(targetId);
       const dn =
         owner?.user?.displayName ||
