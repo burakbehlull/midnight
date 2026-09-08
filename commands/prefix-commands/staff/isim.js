@@ -90,6 +90,7 @@ export default {
     btn.add("normal_btn", "Normal", btn.style.Primary, "👤");
     btn.add("age_btn", "İsim Yaş", btn.style.Success, "📅");
     btn.add("history_btn", "Geçmiş", btn.style.Secondary, "📜");
+    btn.add("reset_btn", "Sıfırla", btn.style.Danger, "♻️");
     const row = btn.build();
 
     const msg = await message.channel.send({
@@ -157,6 +158,33 @@ export default {
           ],
           ephemeral: false
         });
+      }
+
+      if (i.customId === "reset_btn") {
+        const oldNick = member.nickname || null;
+        if (!oldNick) {
+          return i.reply({
+            embeds: [sender.errorEmbed("❌ Bu kullanıcının zaten özel bir sunucu ismi yok.")],
+            ephemeral: false
+          });
+        }
+        try {
+          await member.setNickname(null);
+        } catch (err) {
+          return i.reply({
+            embeds: [sender.errorEmbed("❌ İsmi sıfırlarken bir hata oluştu. Botun yetkisi yetersiz olabilir.")],
+            ephemeral: true
+          });
+        }
+        await saveNicknameHistory(member.id, message.guild.id, oldNick, null, i.user.id);
+
+        const defaultName = member.globalName || member.username;
+        await i.reply({
+          embeds: [sender.classic(`${member} kullanıcısının sunucu ismi sıfırlandı. Artık varsayılan adı olan **${defaultName}** gösteriliyor.`)],
+          ephemeral: false
+        });
+        await msg.edit({ components: [] });
+        collector.stop("reset_handled");
       }
 
       if (i.customId === "normal_btn") {
@@ -305,7 +333,7 @@ export default {
     });
 
     collector.on("end", async (_, reason) => {
-      if (reason === "modal_handled") return;
+      if (reason === "modal_handled" || reason === "reset_handled") return;
       try {
         await msg.edit({
           embeds: [sender.embed({
