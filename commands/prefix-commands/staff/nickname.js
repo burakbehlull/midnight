@@ -36,18 +36,51 @@ export default {
   name: 'isim',
   aliases: ["nickname", "nick", "ad", "name"],
   description: "Kullanıcının sunucudaki ismini değiştirir.",
-  usage: ".isim @user <isim> veya .isim @user",
+  usage: ".isim <isim> (kendi adını değiştir) veya .isim @user <isim> (başkasının adını değiştir)",
   category: 'staff',
 
   permissions: {
-    authorities: [PermissionFlagsBits.ManageNicknames, PermissionFlagsBits.Administrator],
+    authorities: [PermissionFlagsBits.ManageNicknames, PermissionFlagsBits.Administrator]
   },
 
   async execute(client, message, args) {
     const sender = new Manager(client, { action: message }).sender;
 
     const member = message.mentions.members.first();
-    if (!member) return sender.reply(sender.errorEmbed("❌ Lütfen bir kullanıcı etiketleyin.\n**Kullanım:** `.isim @user <isim>` veya `.isim @user`"));
+    
+    if (!member) {
+      const selfMember = message.member;
+      const rawNameArgs = args.join(" ").trim();
+      
+      if (!rawNameArgs || rawNameArgs.length === 0) {
+        return sender.reply(sender.errorEmbed("❌ Lütfen bir isim belirtin veya bir kullanıcı etiketleyin.\n**Kullanım:** `.isim <isim>` veya `.isim @user <isim>`"));
+      }
+
+      const settings = await Settings.findOne({ guildId: message.guild.id });
+      const tag = settings?.tag || null;
+
+      let newNick;
+      if (tag) {
+        newNick = `${tag} ${rawNameArgs}`;
+      } else {
+        newNick = rawNameArgs;
+      }
+
+      if (newNick.length > 32) {
+        return sender.reply(sender.errorEmbed(`❌ İsim 32 karakterden uzun olamaz (${newNick.length}/32).`));
+      }
+
+      const oldNick = selfMember.nickname || null;
+      try {
+        await selfMember.setNickname(newNick);
+      } catch (err) {
+        return sender.reply(sender.errorEmbed("❌ İsmi değiştirirken bir hata oluştu. Botun yetkisi yetersiz olabilir veya sunucu sahibisiniz."));
+      }
+
+      await saveNicknameHistory(selfMember.id, message.guild.id, oldNick, newNick, message.author.id);
+
+      return sender.reply(sender.classic(`İsminiz başarıyla **${newNick}** olarak değiştirildi.`));
+    }
 
     if (member.id === message.guild.ownerId && message.author.id !== message.guild.ownerId) {
       return sender.reply(sender.errorEmbed("❌ Sunucu sahibinin ismini değiştiremezsin."));
