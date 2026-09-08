@@ -6,15 +6,28 @@ const { delay } = misc;
 
 const activeGames = new Set();
 
+// 4x4 kazanma kombinasyonları
 const WINNING_COMBOS = [
-  [0, 1, 2], [3, 4, 5], [6, 7, 8],
-  [0, 3, 6], [1, 4, 7], [2, 5, 8],
-  [0, 4, 8], [2, 4, 6],
+  // Yatay satırlar
+  [0, 1, 2, 3],
+  [4, 5, 6, 7],
+  [8, 9, 10, 11],
+  [12, 13, 14, 15],
+  
+  // Dikey sütunlar
+  [0, 4, 8, 12],
+  [1, 5, 9, 13],
+  [2, 6, 10, 14],
+  [3, 7, 11, 15],
+  
+  // Çaprazlar
+  [0, 5, 10, 15],
+  [3, 6, 9, 12],
 ];
 
 function checkWinner(board) {
-  for (const [a, b, c] of WINNING_COMBOS) {
-    if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+  for (const [a, b, c, d] of WINNING_COMBOS) {
+    if (board[a] && board[a] === board[b] && board[a] === board[c] && board[a] === board[d]) {
       return board[a];
     }
   }
@@ -27,10 +40,10 @@ function isBoardFull(board) {
 
 function buildGridButtons(board, disabled, btnPrefix, turnMark) {
   const rows = [];
-  for (let r = 0; r < 3; r++) {
+  for (let r = 0; r < 4; r++) {
     const row = new Button();
-    for (let c = 0; c < 3; c++) {
-      const idx = r * 3 + c;
+    for (let c = 0; c < 4; c++) {
+      const idx = r * 4 + c;
       const cell = board[idx];
       let label = '\u200b';
       let style = row.style.Secondary;
@@ -187,7 +200,7 @@ export default {
     const pot = amount * 2;
     const players = { X: challenger, O: targetUser };
     const marks = { [challenger.id]: 'X', [targetUser.id]: 'O' };
-    const board = Array(9).fill(null);
+    const board = Array(16).fill(null);
     let currentMark = 'X';
     let currentPlayer = players[currentMark];
     let winner = null;
@@ -229,7 +242,7 @@ export default {
             if (i.user.id !== currentPlayer.id) return false;
             const parts = i.customId.split('_');
             const idx = parseInt(parts[parts.length - 1]);
-            return !isNaN(idx) && idx >= 0 && idx < 9 && board[idx] === null;
+            return !isNaN(idx) && idx >= 0 && idx < 16 && board[idx] === null;
           };
           const interaction = await confirmMsg.awaitMessageComponent({
             filter: moveFilter,
@@ -244,7 +257,7 @@ export default {
 
           const parts = interaction.customId.split('_');
           const idx = parseInt(parts[parts.length - 1]);
-          if (isNaN(idx) || idx < 0 || idx > 8 || board[idx] !== null) continue;
+          if (isNaN(idx) || idx < 0 || idx > 15 || board[idx] !== null) continue;
           chosen = idx;
         } catch (e) {
           resigned = currentPlayer;
