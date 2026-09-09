@@ -109,12 +109,10 @@ Create ` config.json ` file and set permission settings:
 ### contents: Stat and Level, Invite
 | command | comment | values | situation |
 | ------ | ------ | ------ | ------ |
+| **top** | shows server top stats, levels, invites | .. | stable |
 | **stat** | shows user statics | user | stable |
-| **stat-top** | shows server users statics | .. | stable |
 | **level** | shows user level | user | stable |
-| **level-top** | shows server top level | .. | stable |
 | **invites** | shows invite statics | user | stable |
-| **invite-top** | shows server users invites statics | .. | stable |
 
 ### contents: Setting and Setup
 | command | comment | values | situation |

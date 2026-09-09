@@ -65,22 +65,32 @@ async function getUserStats(userId, guildId) {
 
   const now = dayjs();
   const last7 = Array.from({ length: 7 }, (_, i) => now.subtract(i, 'day').format('YYYY-MM-DD'));
+  const last30 = Array.from({ length: 30 }, (_, i) => now.subtract(i, 'day').format('YYYY-MM-DD'));
   const today = now.format('YYYY-MM-DD');
 
   const weeklyMessages = last7.reduce((acc, d) => acc + (Number(stats.messagePerDay.get(d)) || 0), 0);
+  const monthlyMessages = last30.reduce((acc, d) => acc + (Number(stats.messagePerDay.get(d)) || 0), 0);
   const dailyMessages = Number(stats.messagePerDay.get(today)) || 0;
 
   const weeklyVoice = last7.reduce((acc, d) => acc + (Number(stats.voicePerDay.get(d)) || 0), 0);
+  const monthlyVoice = last30.reduce((acc, d) => acc + (Number(stats.voicePerDay.get(d)) || 0), 0);
   const dailyVoice = Number(stats.voicePerDay.get(today)) || 0;
 
   return {
     days: Object.keys(stats.messagePerDay || {}).length,
     totalMessages: stats.totalMessages,
     weeklyMessages,
+    monthlyMessages,
     dailyMessages,
     totalVoice: formatDuration(stats.totalVoice),
     weeklyVoice: formatDuration(weeklyVoice),
+    monthlyVoice: formatDuration(monthlyVoice),
     dailyVoice: formatDuration(dailyVoice),
+    // Raw values for canvas
+    totalVoiceMs: stats.totalVoice,
+    weeklyVoiceMs: weeklyVoice,
+    monthlyVoiceMs: monthlyVoice,
+    dailyVoiceMs: dailyVoice,
     topMessageChannels: stats.messageChannels
       .sort((a, b) => b.count - a.count)
       .slice(0, 5),
