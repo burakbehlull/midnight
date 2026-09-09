@@ -42,6 +42,11 @@ export default {
 					label: 'İstatistiklerim',
 					description: 'Mesaj, ses ve kanal istatistiklerim',
 					value: 'my_stats'
+				},
+				{
+					label: 'Detaylı İstatistikler',
+					description: 'En aktif olduğum kanallar',
+					value: 'detailed_stats'
 				}
 			]);
 
@@ -84,6 +89,9 @@ export default {
 				if (selected === 'my_stats') {
 					buffer = await generateMyStatsCanvas(client, member, message.guild);
 					filename = 'my-stats.png';
+				} else if (selected === 'detailed_stats') {
+					buffer = await generateDetailedStatsCanvas(client, member, message.guild);
+					filename = 'detailed-stats.png';
 				}
 
 				if (!buffer) {
@@ -349,4 +357,155 @@ async function generateMyStatsCanvas(client, member, guild) {
 
 	return await canvas.encode('png');
 }
+
+async function generateDetailedStatsCanvas(client, member, guild) {
+	const stats = await statsUtilsHandler.getUserStats(member.id, guild.id);
+	
+	if (!stats) return null;
+
+	const width = 1400;
+	const height = 720;
+	const canvas = createCanvas(width, height);
+	const ctx = canvas.getContext('2d');
+
+	ctx.fillStyle = '#0f0f0f';
+	ctx.fillRect(0, 0, width, height);
+
+	const profileY = 70;
+	
+	try {
+		const avatarURL = member.user.displayAvatarURL({ extension: 'png', size: 128 });
+		const avatar = await loadImage(avatarURL);
+		
+		ctx.save();
+		ctx.beginPath();
+		ctx.arc(90, profileY, 50, 0, Math.PI * 2);
+		ctx.closePath();
+		ctx.clip();
+		ctx.drawImage(avatar, 40, profileY - 50, 100, 100);
+		ctx.restore();
+	} catch {}
+
+	ctx.font = 'bold 28px sans-serif';
+	ctx.fillStyle = '#ffffff';
+	ctx.textAlign = 'left';
+	ctx.fillText(member.user.displayName || member.user.username, 160, profileY - 5);
+
+	ctx.font = '18px sans-serif';
+	ctx.fillStyle = '#888888';
+	ctx.fillText(`${stats?.days || 0} günlük veri`, 160, profileY + 20);
+
+	ctx.font = 'bold 32px sans-serif';
+	ctx.fillStyle = '#ffffff';
+	ctx.textAlign = 'center';
+	ctx.fillText('Detaylı İstatistikler', width / 2, profileY - 5);
+
+	ctx.font = 'bold 18px sans-serif';
+	ctx.fillStyle = '#888888';
+	ctx.fillText(guild.name, width / 2, profileY + 20);
+
+	const categoryWidth = 620;
+	const gapX = 30;
+	const totalGridWidth = (categoryWidth * 2) + gapX;
+	const startX = (width - totalGridWidth) / 2;
+	const marginY = 165;
+
+	const topMessageChannels = stats?.topMessageChannels?.slice(0, 6) || [];
+	const x1 = startX;
+	const y = marginY;
+
+	ctx.font = 'bold 20px sans-serif';
+	ctx.fillStyle = '#ffffff';
+	ctx.textAlign = 'left';
+	ctx.fillText('EN AKTIF OLDUGU MESAJ KANALLARI', x1, y);
+
+	for (let j = 0; j < 6; j++) {
+		const itemY = y + 30 + (j * 77);
+		const channelData = topMessageChannels[j];
+
+		drawRoundedRect(ctx, x1, itemY, categoryWidth, 62, 10, '#2a2a2a');
+
+		if (channelData) {
+			const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32', '#FF8C00', '#A9A9A9', '#D2691E'];
+			
+			const channel = guild.channels.cache.get(channelData.channelId);
+			let channelName = channel ? `#${channel.name}` : 'Bilinmeyen Kanal';
+			
+			if (channelName.length > 30) {
+				channelName = channelName.substring(0, 27) + '...';
+			}
+
+			ctx.font = 'bold 22px sans-serif';
+			ctx.fillStyle = '#ffffff';
+			ctx.textAlign = 'left';
+			ctx.fillText(channelName, x1 + 20, itemY + 26);
+			
+			const valueText = `${channelData.count.toLocaleString('tr-TR')} mesaj`;
+
+			ctx.font = '17px sans-serif';
+			ctx.fillStyle = '#888888';
+			ctx.fillText(valueText, x1 + 20, itemY + 47);
+			
+			ctx.font = 'bold 40px sans-serif';
+			ctx.fillStyle = rankColors[j];
+			ctx.textAlign = 'right';
+			ctx.fillText(`#${j + 1}`, x1 + categoryWidth - 20, itemY + 40);
+		} else {
+			ctx.font = '18px sans-serif';
+			ctx.fillStyle = '#555555';
+			ctx.textAlign = 'center';
+			ctx.fillText('Veri yok', x1 + categoryWidth / 2, itemY + 32);
+		}
+	}
+
+	const topVoiceChannels = stats?.topVoiceChannels?.slice(0, 6) || [];
+	const x2 = startX + categoryWidth + gapX;
+
+	ctx.font = 'bold 20px sans-serif';
+	ctx.fillStyle = '#ffffff';
+	ctx.textAlign = 'left';
+	ctx.fillText('EN AKTIF OLDUGU SES KANALLARI', x2, y);
+
+	for (let j = 0; j < 6; j++) {
+		const itemY = y + 30 + (j * 77);
+		const channelData = topVoiceChannels[j];
+
+		drawRoundedRect(ctx, x2, itemY, categoryWidth, 62, 10, '#2a2a2a');
+
+		if (channelData) {
+			const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32', '#FF8C00', '#A9A9A9', '#D2691E'];
+			
+			const channel = guild.channels.cache.get(channelData.id);
+			let channelName = channel ? channel.name : 'Bilinmeyen Kanal';
+			
+			if (channelName.length > 30) {
+				channelName = channelName.substring(0, 27) + '...';
+			}
+
+			ctx.font = 'bold 22px sans-serif';
+			ctx.fillStyle = '#ffffff';
+			ctx.textAlign = 'left';
+			ctx.fillText(channelName, x2 + 20, itemY + 26);
+			
+			const valueText = channelData.duration;
+
+			ctx.font = '17px sans-serif';
+			ctx.fillStyle = '#888888';
+			ctx.fillText(valueText, x2 + 20, itemY + 47);
+			
+			ctx.font = 'bold 40px sans-serif';
+			ctx.fillStyle = rankColors[j];
+			ctx.textAlign = 'right';
+			ctx.fillText(`#${j + 1}`, x2 + categoryWidth - 20, itemY + 40);
+		} else {
+			ctx.font = '18px sans-serif';
+			ctx.fillStyle = '#555555';
+			ctx.textAlign = 'center';
+			ctx.fillText('Veri yok', x2 + categoryWidth / 2, itemY + 32);
+		}
+	}
+
+	return await canvas.encode('png');
+}
+
 
