@@ -3,7 +3,7 @@ import { ComponentType, StringSelectMenuBuilder, ActionRowBuilder } from 'discor
 
 import Manager from '#managers';
 import { statsUtilsHandler } from '#handlers';
-import { Level, InviteModel } from '#models';
+import { Level, InviteModel, UserStats } from '#models';
 
 function drawRoundedRect(ctx, x, y, width, height, radius, fill, stroke, strokeWidth) {
 	ctx.beginPath();
@@ -152,8 +152,8 @@ async function generateStatTopCanvas(client, guild) {
 }
 
 async function generateLevelTopCanvas(client, guild) {
-	const topMessageLevel = await Level.find({ guildId: guild.id }).sort({ messageLevel: -1 }).limit(3);
-	const topVoiceLevel = await Level.find({ guildId: guild.id }).sort({ voiceLevel: -1 }).limit(3);
+	const topMessageXP = await Level.find({ guildId: guild.id }).sort({ messageXP: -1 }).limit(6);
+	const topVoiceXP = await Level.find({ guildId: guild.id }).sort({ voiceXP: -1 }).limit(6);
 
 	const width = 1400;
 	const height = 720;
@@ -173,15 +173,14 @@ async function generateLevelTopCanvas(client, guild) {
 	ctx.fillText(guild.name, width / 2, 85);
 
 	const categoryWidth = 620;
-	const categoryHeight = 260;
 	const gapX = 30;
 	const totalGridWidth = (categoryWidth * 2) + gapX;
 	const startX = (width - totalGridWidth) / 2;
 	const marginY = 120;
 
 	const categories = [
-		{ title: 'MESAJ SEVİYE SIRALAMASI', data: topMessageLevel, type: 'messageLevel' },
-		{ title: 'SES SEVİYE SIRALAMASI', data: topVoiceLevel, type: 'voiceLevel' }
+		{ title: 'MESAJ XP SIRALAMASI', data: topMessageXP, type: 'messageXP' },
+		{ title: 'SES XP SIRALAMASI', data: topVoiceXP, type: 'voiceXP' }
 	];
 
 	for (let i = 0; i < 2; i++) {
@@ -195,14 +194,14 @@ async function generateLevelTopCanvas(client, guild) {
 		ctx.textAlign = 'left';
 		ctx.fillText(category.title, x, y);
 
-		for (let j = 0; j < 3; j++) {
+		for (let j = 0; j < 6; j++) {
 			const itemY = y + 30 + (j * 77);
 			const user = category.data[j];
 
 			drawRoundedRect(ctx, x, itemY, categoryWidth, 62, 10, '#2a2a2a');
 
 			if (user) {
-				const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+				const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32', '#FF8C00', '#A9A9A9', '#D2691E'];
 				
 				try {
 					const discordUser = await client.users.fetch(user.userId).catch(() => null);
@@ -239,9 +238,9 @@ async function generateLevelTopCanvas(client, guild) {
 					ctx.fillText(username, x + 75, itemY + 26);
 					
 					let valueText = '';
-					if (category.type === 'messageLevel') {
+					if (category.type === 'messageXP') {
 						valueText = `Seviye ${user.messageLevel} - ${user.messageXP.toLocaleString('tr-TR')} XP`;
-					} else if (category.type === 'voiceLevel') {
+					} else if (category.type === 'voiceXP') {
 						valueText = `Seviye ${user.voiceLevel} - ${user.voiceXP.toLocaleString('tr-TR')} XP`;
 					}
 
@@ -465,11 +464,13 @@ export default {
 					filename = 'invite-top.png';
 				}
 
-				await interaction.followUp({
+				await reply.edit({
+					embeds: [],
 					files: [{
 						attachment: buffer,
 						name: filename
-					}]
+					}],
+					components: [row]
 				});
 			} catch (error) {
 				console.error('Canvas generation error:', error);
