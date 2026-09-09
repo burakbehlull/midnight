@@ -3,7 +3,7 @@ import { ComponentType, StringSelectMenuBuilder, ActionRowBuilder } from 'discor
 
 import Manager from '#managers';
 import { statsUtilsHandler } from '#handlers';
-import { Level } from '#models';
+import { Level, InviteModel } from '#models';
 
 function drawRoundedRect(ctx, x, y, width, height, radius, fill, stroke, strokeWidth) {
 	ctx.beginPath();
@@ -47,6 +47,11 @@ export default {
 					label: 'Detaylı İstatistikler',
 					description: 'En aktif olduğum kanallar',
 					value: 'detailed_stats'
+				},
+				{
+					label: 'Level & Davet İstatistikleri',
+					description: 'XP, level ve davet bilgilerim',
+					value: 'level_invite_stats'
 				}
 			]);
 
@@ -92,6 +97,9 @@ export default {
 				} else if (selected === 'detailed_stats') {
 					buffer = await generateDetailedStatsCanvas(client, member, message.guild);
 					filename = 'detailed-stats.png';
+				} else if (selected === 'level_invite_stats') {
+					buffer = await generateLevelInviteStatsCanvas(client, member, message.guild);
+					filename = 'level-invite-stats.png';
 				}
 
 				if (!buffer) {
@@ -509,3 +517,140 @@ async function generateDetailedStatsCanvas(client, member, guild) {
 }
 
 
+
+
+async function generateLevelInviteStatsCanvas(client, member, guild) {
+	const levelData = await Level.findOne({ userId: member.id, guildId: guild.id });
+	const inviteData = await InviteModel.findOne({ userId: member.id, guildId: guild.id });
+	
+	if (!levelData && !inviteData) return null;
+
+	const width = 1400;
+	const height = 720;
+	const canvas = createCanvas(width, height);
+	const ctx = canvas.getContext('2d');
+
+	ctx.fillStyle = '#0f0f0f';
+	ctx.fillRect(0, 0, width, height);
+
+	const profileY = 70;
+	
+	try {
+		const avatarURL = member.user.displayAvatarURL({ extension: 'png', size: 128 });
+		const avatar = await loadImage(avatarURL);
+		
+		ctx.save();
+		ctx.beginPath();
+		ctx.arc(90, profileY, 50, 0, Math.PI * 2);
+		ctx.closePath();
+		ctx.clip();
+		ctx.drawImage(avatar, 40, profileY - 50, 100, 100);
+		ctx.restore();
+	} catch {}
+
+	ctx.font = 'bold 28px sans-serif';
+	ctx.fillStyle = '#ffffff';
+	ctx.textAlign = 'left';
+	ctx.fillText(member.user.displayName || member.user.username, 160, profileY - 5);
+
+	ctx.font = 'bold 32px sans-serif';
+	ctx.fillStyle = '#ffffff';
+	ctx.textAlign = 'center';
+	ctx.fillText('Level & Davet İstatistikleri', width / 2, profileY - 5);
+
+	ctx.font = 'bold 18px sans-serif';
+	ctx.fillStyle = '#888888';
+	ctx.fillText(guild.name, width / 2, profileY + 20);
+
+	const categoryWidth = 620;
+	const gapX = 30;
+	const totalGridWidth = (categoryWidth * 2) + gapX;
+	const startX = (width - totalGridWidth) / 2;
+	const marginY = 165;
+
+	const x1 = startX;
+	const y = marginY;
+
+	ctx.font = 'bold 20px sans-serif';
+	ctx.fillStyle = '#ffffff';
+	ctx.textAlign = 'left';
+	ctx.fillText('LEVEL BILGILERI', x1, y);
+
+	const levelStats = [
+		{ label: 'Mesaj XP', value: `${levelData?.messageXP?.toLocaleString('tr-TR') || 0} XP` },
+		{ label: 'Mesaj Level', value: `Seviye ${levelData?.messageLevel || 0}` },
+		{ label: 'Ses XP', value: `${levelData?.voiceXP?.toLocaleString('tr-TR') || 0} XP` },
+		{ label: 'Ses Level', value: `Seviye ${levelData?.voiceLevel || 0}` },
+		{ label: 'Yayın Sayısı', value: `${levelData?.totalStreams?.toLocaleString('tr-TR') || 0} yayın` },
+		{ label: 'Kamera Açma', value: `${levelData?.totalCameraOpens?.toLocaleString('tr-TR') || 0} kamera` }
+	];
+
+	levelStats.forEach((item, i) => {
+		const itemY = y + 30 + (i * 77);
+		drawRoundedRect(ctx, x1, itemY, categoryWidth, 62, 10, '#2a2a2a');
+		
+		ctx.font = 'bold 22px sans-serif';
+		ctx.fillStyle = '#ffffff';
+		ctx.textAlign = 'left';
+		ctx.fillText(item.label, x1 + 20, itemY + 26);
+		
+		ctx.font = '17px sans-serif';
+		ctx.fillStyle = '#888888';
+		ctx.fillText(item.value, x1 + 20, itemY + 47);
+	});
+
+	const x2 = startX + categoryWidth + gapX;
+
+	ctx.font = 'bold 20px sans-serif';
+	ctx.fillStyle = '#ffffff';
+	ctx.textAlign = 'left';
+	ctx.fillText('DAVET BILGILERI', x2, y);
+
+	const allInvites = await InviteModel.find({ guildId: guild.id }).sort({ invitesCount: -1 });
+	const inviteRank = allInvites.findIndex(u => u.userId === member.id) + 1;
+
+	const inviteStats = [
+		{ label: 'Davet Sırası', value: inviteRank > 0 ? `#${inviteRank}` : 'Sıralama Yok', isRank: true },
+		{ label: 'Toplam Davet', value: `${inviteData?.invitesCount?.toLocaleString('tr-TR') || 0} davet`, isRank: false }
+	];
+
+	inviteStats.forEach((item, i) => {
+		const itemY = y + 30 + (i * 77);
+		drawRoundedRect(ctx, x2, itemY, categoryWidth, 62, 10, '#2a2a2a');
+		
+		ctx.font = 'bold 22px sans-serif';
+		ctx.fillStyle = '#ffffff';
+		ctx.textAlign = 'left';
+		ctx.fillText(item.label, x2 + 20, itemY + 26);
+		
+		if (item.isRank && inviteRank > 0) {
+			let rankColor = '#888888';
+			if (inviteRank === 1) rankColor = '#FFD700';
+			else if (inviteRank === 2) rankColor = '#C0C0C0';
+			else if (inviteRank === 3) rankColor = '#CD7F32';
+			else if (inviteRank === 4) rankColor = '#FF8C00';
+			else if (inviteRank === 5) rankColor = '#A9A9A9';
+			else if (inviteRank === 6) rankColor = '#D2691E';
+			
+			ctx.font = 'bold 24px sans-serif';
+			ctx.fillStyle = rankColor;
+		} else {
+			ctx.font = '17px sans-serif';
+			ctx.fillStyle = '#888888';
+		}
+		
+		ctx.fillText(item.value, x2 + 20, itemY + 47);
+	});
+
+	for (let i = 2; i < 6; i++) {
+		const itemY = y + 30 + (i * 77);
+		drawRoundedRect(ctx, x2, itemY, categoryWidth, 62, 10, '#2a2a2a');
+		
+		ctx.font = '18px sans-serif';
+		ctx.fillStyle = '#555555';
+		ctx.textAlign = 'center';
+		ctx.fillText('', x2 + categoryWidth / 2, itemY + 32);
+	}
+
+	return await canvas.encode('png');
+}

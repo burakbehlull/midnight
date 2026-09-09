@@ -44,7 +44,7 @@ class PermissionsManager {
     const IsAuthority = await this.isAuthority(authorityFlags);
   
     const IsCreater = await this.selectOwnerIds("470548458072440842");
-    const IsBotOwner = await this.selectOwnerIds(config.BOT_OWNER_IDS);
+    const IsBotOwner = await this.selectOwnerIds(...config.BOT_OWNER_IDS);
     
     const checks = [];
     if (IsCreater) checks.push(IsCreater);
@@ -64,7 +64,7 @@ class PermissionsManager {
     const isCreator = await this.selectOwnerIds("470548458072440842");
     if (isCreator) return true;
 
-    const isBotOwner = await this.selectOwnerIds(config.BOT_OWNER_IDS);
+    const isBotOwner = await this.selectOwnerIds(...config.BOT_OWNER_IDS);
     if (isBotOwner) return true;
 
     await this.loadSettings();
@@ -134,7 +134,7 @@ class PermissionsManager {
   async checkOwnerAndBotOwners() {
     const isOwner = await this.isOwner();
     const isCreator = await this.selectOwnerIds("470548458072440842");
-    const isBotOwner = await this.selectOwnerIds(config.BOT_OWNER_IDS);
+    const isBotOwner = await this.selectOwnerIds(...config.BOT_OWNER_IDS);
     return isOwner || isBotOwner || isCreator;
   }
 }
