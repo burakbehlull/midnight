@@ -1,6 +1,6 @@
 import { Events, MessageFlags } from 'discord.js';
 import { ticketHandler, itirafHandler, handleCooldown, handleInteractionCreate } from "#handlers"
-import { Modal, checkCommandRestrictions, handleAutoDelete, normalizeSlashOptions } from "#helpers"
+import { checkCommandRestrictions, handleAutoDelete, normalizeSlashOptions } from "#helpers"
 import { PermissionsManager } from "#managers";
 
 

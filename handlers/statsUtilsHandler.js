@@ -1,4 +1,4 @@
-import { UserStats } from '#models';
+import { UserStats, Level } from '#models';
 import dayjs from 'dayjs';
 
 function formatDuration(ms) {
@@ -109,11 +109,31 @@ async function getTopVoiceUsers(guildId) {
   .limit(5);
 }
 
+async function getTopCameraUsers(guildId) {
+  return await Level.find({
+    guildId,
+    totalCameraOpens: { $gt: 0 }
+  })
+  .sort({ totalCameraOpens: -1 })
+  .limit(5);
+}
+
+async function getTopStreamUsers(guildId) {
+  return await Level.find({
+    guildId,
+    totalStreams: { $gt: 0 }
+  })
+  .sort({ totalStreams: -1 })
+  .limit(5);
+}
+
 export {
   formatDuration,
   updateMessageStats,
   updateVoiceStats,
   getUserStats,
   getTopMessageUsers,
-  getTopVoiceUsers
+  getTopVoiceUsers,
+  getTopCameraUsers,
+  getTopStreamUsers
 };
