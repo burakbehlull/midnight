@@ -18,7 +18,7 @@ export default {
       const manager = new Manager(client, { action: message });
 
       const ctrl = await manager.authority.checkIsBotOwners();
-      if (!ctrl) return message.reply({ content: '❌ Bu komutu kullanmak owner olmalısın.', ephemeral: true });
+      if (!ctrl) return message.reply({ content: '❌ Bu komutu kullanmak bot sahibi olmalısın.', ephemeral: true });
 
 
       const subCommand = args[0]?.toLowerCase();
