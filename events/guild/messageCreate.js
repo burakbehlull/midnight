@@ -1,9 +1,12 @@
 import { Events } from 'discord.js';
 import { afkHandler, levelMessageHandler, statsUtilsHandler, handleCooldown } from "#handlers"
+import { relationsHandler } from "#handlers";
 import { Settings } from "#models";
 import { checkCommandRestrictions, handleAutoDelete, normalizePrefixArgs } from "#helpers";
 import Manager from "#managers";
 import "dotenv/config"
+
+const recentMessages = new Map(); // channelId -> [{ userId, userName, timestamp }]
 
 export default {
   name: Events.MessageCreate, 
@@ -30,6 +33,44 @@ export default {
       }
       if (settings?.statSystemStatus) {
         await statsUtilsHandler.updateMessageStats(message.author.id, message.guild.id, message.channel.id, message.channel.name);
+      }
+      
+      // Arkadaşlık sistemi
+      if (settings?.statSystemStatus) {
+        const channelId = message.channel.id;
+        const now = Date.now();
+        const twoMinutesAgo = now - (2 * 60 * 1000);
+        
+        if (!recentMessages.has(channelId)) {
+          recentMessages.set(channelId, []);
+        }
+        
+        const channelMessages = recentMessages.get(channelId);
+        
+        const filtered = channelMessages.filter(m => m.timestamp > twoMinutesAgo && m.userId !== message.author.id);
+        
+        if (filtered.length > 0) {
+          const lastPerson = filtered[filtered.length - 1];
+          
+          await relationsHandler.updateMessageFriendship(
+            message.author.id,
+            message.guild.id,
+            message.author.displayName,
+            [lastPerson] 
+          );
+        }
+        
+        filtered.push({
+          userId: message.author.id,
+          userName: message.author.displayName,
+          timestamp: now
+        });
+        
+        if (filtered.length > 20) {
+          filtered.shift();
+        }
+        
+        recentMessages.set(channelId, filtered);
       }
     }
 

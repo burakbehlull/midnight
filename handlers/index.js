@@ -6,6 +6,7 @@ import levelMessageHandler from "./levelMessageHandler.js"
 import * as levelVoiceHandler from "./levelVoiceHandler.js"
 
 import * as statsUtilsHandler from "./statsUtilsHandler.js"
+import * as relationsHandler from "./relationsHandler.js"
 
 import inviteHandler from "./inviteHandler.js"
 import ticketHandler from "./ticketHandler.js"
@@ -26,6 +27,7 @@ export {
 	levelVoiceHandler,
 	
 	statsUtilsHandler,
+	relationsHandler,
 	
 	inviteHandler,
 	ticketHandler,

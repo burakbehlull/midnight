@@ -1,5 +1,5 @@
 import { Events } from 'discord.js';
-import { levelVoiceHandler, statsUtilsHandler, handleVoiceRoomCreate } from '#handlers';
+import { levelVoiceHandler, statsUtilsHandler, handleVoiceRoomCreate, relationsHandler } from '#handlers';
 import { Settings } from "#models";
 
 // level system
@@ -146,6 +146,30 @@ export default {
               const channel = guild.channels.cache.get(data.channelId);
               const channelName = channel ? channel.name : '';
 			  await statsUtilsHandler.updateVoiceStats(userId, guildId, data.channelId, duration, channelName);
+			  
+			  if (channel && channel.isVoiceBased()) {
+			    for (const [otherId, otherMember] of channel.members) {
+			      if (otherMember.user.bot || otherId === userId) continue;
+			      
+			      await relationsHandler.updateVoiceFriendship(
+			        userId,
+			        guildId,
+			        member.user.displayName,
+			        otherId,
+			        otherMember.user.displayName,
+			        duration
+			      );
+			      
+			      await relationsHandler.updateVoiceFriendship(
+			        otherId,
+			        guildId,
+			        otherMember.user.displayName,
+			        userId,
+			        member.user.displayName,
+			        duration
+			      );
+			    }
+			  }
             }
 			voiceJoinTimestamps.delete(key);
 		  }

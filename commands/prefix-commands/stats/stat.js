@@ -2,7 +2,7 @@ import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { ComponentType, StringSelectMenuBuilder, ActionRowBuilder } from 'discord.js';
 
 import Manager from '#managers';
-import { statsUtilsHandler } from '#handlers';
+import { statsUtilsHandler, relationsHandler } from '#handlers';
 import { Level, InviteModel } from '#models';
 
 function drawRoundedRect(ctx, x, y, width, height, radius, fill, stroke, strokeWidth) {
@@ -69,6 +69,11 @@ export default {
 					label: 'Level & Davet İstatistikleri',
 					description: 'XP, level ve davet bilgilerim',
 					value: 'level_invite_stats'
+				},
+				{
+					label: 'Arkadaşlarım',
+					description: 'Ses ve mesaj arkadaşlarım',
+					value: 'friends_stats'
 				}
 			]);
 
@@ -114,6 +119,9 @@ export default {
 				} else if (selected === 'level_invite_stats') {
 					buffer = await generateLevelInviteStatsCanvas(client, targetMember, message.guild);
 					filename = 'level-invite-stats.png';
+				} else if (selected === 'friends_stats') {
+					buffer = await generateFriendsStatsCanvas(client, targetMember, message.guild);
+					filename = 'friends-stats.png';
 				}
 
 				if (!buffer) {
@@ -664,6 +672,214 @@ async function generateLevelInviteStatsCanvas(client, member, guild) {
 		ctx.fillStyle = '#555555';
 		ctx.textAlign = 'center';
 		ctx.fillText('', x2 + categoryWidth / 2, itemY + 32);
+	}
+
+	return await canvas.encode('png');
+}
+
+
+async function generateFriendsStatsCanvas(client, member, guild) {
+	const friends = await relationsHandler.getUserFriends(member.id, guild.id);
+	
+	if (friends.voiceFriends.length === 0 && friends.messageFriends.length === 0) return null;
+
+	const width = 1400;
+	const height = 720;
+	const canvas = createCanvas(width, height);
+	const ctx = canvas.getContext('2d');
+
+	// Background
+	ctx.fillStyle = '#0f0f0f';
+	ctx.fillRect(0, 0, width, height);
+
+	// Profil resmi ve isim (sol üst)
+	const profileY = 70;
+	
+	try {
+		const avatarURL = member.user.displayAvatarURL({ extension: 'png', size: 128 });
+		const avatar = await loadImage(avatarURL);
+		
+		ctx.save();
+		ctx.beginPath();
+		ctx.arc(90, profileY, 50, 0, Math.PI * 2);
+		ctx.closePath();
+		ctx.clip();
+		ctx.drawImage(avatar, 40, profileY - 50, 100, 100);
+		ctx.restore();
+	} catch {}
+
+	ctx.font = 'bold 28px sans-serif';
+	ctx.fillStyle = '#ffffff';
+	ctx.textAlign = 'left';
+	ctx.fillText(member.user.displayName || member.user.username, 160, profileY - 5);
+
+	// Title (orta)
+	ctx.font = 'bold 32px sans-serif';
+	ctx.fillStyle = '#ffffff';
+	ctx.textAlign = 'center';
+	ctx.fillText('Arkadaşlarım', width / 2, profileY - 5);
+
+	ctx.font = 'bold 18px sans-serif';
+	ctx.fillStyle = '#888888';
+	ctx.fillText(guild.name, width / 2, profileY + 20);
+
+	const categoryWidth = 620;
+	const gapX = 30;
+	const totalGridWidth = (categoryWidth * 2) + gapX;
+	const startX = (width - totalGridWidth) / 2;
+	const marginY = 165;
+
+	// SES ARKADAŞLARI (Sol)
+	const x1 = startX;
+	const y = marginY;
+
+	ctx.font = 'bold 20px sans-serif';
+	ctx.fillStyle = '#ffffff';
+	ctx.textAlign = 'left';
+	ctx.fillText('EN ÇOK SES ARKADAŞLARIM', x1, y);
+
+	for (let j = 0; j < 6; j++) {
+		const itemY = y + 30 + (j * 77);
+		const friendData = friends.voiceFriends[j];
+
+		drawRoundedRect(ctx, x1, itemY, categoryWidth, 62, 10, '#2a2a2a');
+
+		if (friendData) {
+			const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32', '#FF8C00', '#A9A9A9', '#D2691E'];
+			
+			try {
+				const friendUser = await client.users.fetch(friendData.friendId).catch(() => null);
+				
+				if (friendUser) {
+					try {
+						const avatarURL = friendUser.displayAvatarURL({ extension: 'png', size: 128 });
+						const avatar = await loadImage(avatarURL);
+						
+						ctx.save();
+						ctx.beginPath();
+						ctx.arc(x1 + 38, itemY + 31, 24, 0, Math.PI * 2);
+						ctx.closePath();
+						ctx.clip();
+						ctx.drawImage(avatar, x1 + 14, itemY + 7, 48, 48);
+						ctx.restore();
+					} catch {
+						ctx.beginPath();
+						ctx.arc(x1 + 38, itemY + 31, 24, 0, Math.PI * 2);
+						ctx.fillStyle = '#444444';
+						ctx.fill();
+					}
+				}
+				
+				let friendName = friendUser ? friendUser.username : (friendData.friendName || 'Bilinmeyen');
+				
+				if (friendName.length > 18) {
+					friendName = friendName.substring(0, 15) + '...';
+				}
+
+				ctx.font = 'bold 22px sans-serif';
+				ctx.fillStyle = '#ffffff';
+				ctx.textAlign = 'left';
+				ctx.fillText(friendName, x1 + 75, itemY + 26);
+				
+				const valueText = relationsHandler.formatDuration(friendData.totalTimeMs);
+
+				ctx.font = '17px sans-serif';
+				ctx.fillStyle = '#888888';
+				ctx.fillText(valueText, x1 + 75, itemY + 47);
+				
+			} catch {
+				ctx.font = 'bold 22px sans-serif';
+				ctx.fillStyle = '#ffffff';
+				ctx.textAlign = 'left';
+				ctx.fillText('Kullanıcı', x1 + 75, itemY + 34);
+			}
+			
+			ctx.font = 'bold 40px sans-serif';
+			ctx.fillStyle = rankColors[j];
+			ctx.textAlign = 'right';
+			ctx.fillText(`#${j + 1}`, x1 + categoryWidth - 20, itemY + 40);
+		} else {
+			ctx.font = '18px sans-serif';
+			ctx.fillStyle = '#555555';
+			ctx.textAlign = 'center';
+			ctx.fillText('Veri yok', x1 + categoryWidth / 2, itemY + 32);
+		}
+	}
+
+	// MESAJ ARKADAŞLARI (Sağ)
+	const x2 = startX + categoryWidth + gapX;
+
+	ctx.font = 'bold 20px sans-serif';
+	ctx.fillStyle = '#ffffff';
+	ctx.textAlign = 'left';
+	ctx.fillText('EN ÇOK MESAJ ARKADAŞLARIM', x2, y);
+
+	for (let j = 0; j < 6; j++) {
+		const itemY = y + 30 + (j * 77);
+		const friendData = friends.messageFriends[j];
+
+		drawRoundedRect(ctx, x2, itemY, categoryWidth, 62, 10, '#2a2a2a');
+
+		if (friendData) {
+			const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32', '#FF8C00', '#A9A9A9', '#D2691E'];
+			
+			try {
+				const friendUser = await client.users.fetch(friendData.friendId).catch(() => null);
+				
+				if (friendUser) {
+					try {
+						const avatarURL = friendUser.displayAvatarURL({ extension: 'png', size: 128 });
+						const avatar = await loadImage(avatarURL);
+						
+						ctx.save();
+						ctx.beginPath();
+						ctx.arc(x2 + 38, itemY + 31, 24, 0, Math.PI * 2);
+						ctx.closePath();
+						ctx.clip();
+						ctx.drawImage(avatar, x2 + 14, itemY + 7, 48, 48);
+						ctx.restore();
+					} catch {
+						ctx.beginPath();
+						ctx.arc(x2 + 38, itemY + 31, 24, 0, Math.PI * 2);
+						ctx.fillStyle = '#444444';
+						ctx.fill();
+					}
+				}
+				
+				let friendName = friendUser ? friendUser.username : (friendData.friendName || 'Bilinmeyen');
+				
+				if (friendName.length > 18) {
+					friendName = friendName.substring(0, 15) + '...';
+				}
+
+				ctx.font = 'bold 22px sans-serif';
+				ctx.fillStyle = '#ffffff';
+				ctx.textAlign = 'left';
+				ctx.fillText(friendName, x2 + 75, itemY + 26);
+				
+				const valueText = `${friendData.interactions.toLocaleString('tr-TR')} etkileşim`;
+
+				ctx.font = '17px sans-serif';
+				ctx.fillStyle = '#888888';
+				ctx.fillText(valueText, x2 + 75, itemY + 47);
+				
+			} catch {
+				ctx.font = 'bold 22px sans-serif';
+				ctx.fillStyle = '#ffffff';
+				ctx.textAlign = 'left';
+				ctx.fillText('Kullanıcı', x2 + 75, itemY + 34);
+			}
+			
+			ctx.font = 'bold 40px sans-serif';
+			ctx.fillStyle = rankColors[j];
+			ctx.textAlign = 'right';
+			ctx.fillText(`#${j + 1}`, x2 + categoryWidth - 20, itemY + 40);
+		} else {
+			ctx.font = '18px sans-serif';
+			ctx.fillStyle = '#555555';
+			ctx.textAlign = 'center';
+			ctx.fillText('Veri yok', x2 + categoryWidth / 2, itemY + 32);
+		}
 	}
 
 	return await canvas.encode('png');

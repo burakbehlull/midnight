@@ -3,6 +3,7 @@ import DeletedMessage from "./DeletedMessage.js"
 
 import Level from "./Level.js"
 import UserStats from "./UserStats.js"
+import UserRelations from "./UserRelations.js"
 import InviteModel from "./InviteModel.js"
 import InviteCacheSchema from "./InviteCacheSchema.js"
 
@@ -29,6 +30,7 @@ export {
 	Settings,
 	Level,
 	UserStats,
+	UserRelations,
 	InviteModel,
 	InviteCacheSchema,
 	GuildPermission,
