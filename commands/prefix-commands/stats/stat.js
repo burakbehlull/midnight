@@ -60,9 +60,6 @@ export default {
 		const embed = manager.sender.embed({
 			title: 'İstatistiklerim',
 			description: 'Aşağıdaki menüden görmek istediğiniz istatistiği seçin:',
-			fields: [
-				{ name: 'İstatistiklerim', value: 'Mesaj, ses, sıralama ve en aktif kanallarınız', inline: false }
-			],
 			color: 0x5865f2
 		});
 
@@ -308,7 +305,8 @@ async function generateMyStatsCanvas(client, member, guild) {
 		topMessageChannels.forEach((ch, i) => {
 			const itemY = channelY + 65 + (i * 65);
 			const channel = guild.channels.cache.get(ch.channelId);
-			const channelName = channel ? `#${channel.name}` : 'Bilinmeyen Kanal';
+			// Önce Discord'dan al, yoksa veritabanından
+			const channelName = channel ? `#${channel.name}` : (ch.channelName ? `#${ch.channelName}` : 'Bilinmeyen Kanal');
 			
 			drawRoundedRect(ctx, 70, itemY, channelBoxWidth - 40, 55, 8, '#2a2a2a');
 			
@@ -341,7 +339,8 @@ async function generateMyStatsCanvas(client, member, guild) {
 		topVoiceChannels.forEach((ch, i) => {
 			const itemY = channelY + 65 + (i * 65);
 			const channel = guild.channels.cache.get(ch.id);
-			const channelName = channel ? channel.name : 'Bilinmeyen Kanal';
+			// Önce Discord'dan al, yoksa veritabanından
+			const channelName = channel ? channel.name : (ch.channelName ? ch.channelName : 'Bilinmeyen Kanal');
 			
 			drawRoundedRect(ctx, 70 + channelBoxWidth + gapX, itemY, channelBoxWidth - 40, 55, 8, '#2a2a2a');
 			
@@ -437,7 +436,8 @@ async function generateDetailedStatsCanvas(client, member, guild) {
 			const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32', '#FF8C00', '#A9A9A9', '#D2691E'];
 			
 			const channel = guild.channels.cache.get(channelData.channelId);
-			let channelName = channel ? `#${channel.name}` : 'Bilinmeyen Kanal';
+			// Önce Discord'dan al, yoksa veritabanından
+			let channelName = channel ? `#${channel.name}` : (channelData.channelName ? `#${channelData.channelName}` : 'Bilinmeyen Kanal');
 			
 			if (channelName.length > 30) {
 				channelName = channelName.substring(0, 27) + '...';
@@ -484,7 +484,8 @@ async function generateDetailedStatsCanvas(client, member, guild) {
 			const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32', '#FF8C00', '#A9A9A9', '#D2691E'];
 			
 			const channel = guild.channels.cache.get(channelData.id);
-			let channelName = channel ? channel.name : 'Bilinmeyen Kanal';
+			// Önce Discord'dan al, yoksa veritabanından
+			let channelName = channel ? channel.name : (channelData.channelName ? channelData.channelName : 'Bilinmeyen Kanal');
 			
 			if (channelName.length > 30) {
 				channelName = channelName.substring(0, 27) + '...';

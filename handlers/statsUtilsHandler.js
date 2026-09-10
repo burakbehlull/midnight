@@ -9,7 +9,7 @@ function formatDuration(ms) {
   return `${h} saat, ${m} dakika, ${s} saniye`;
 }
 
-async function updateMessageStats(userId, guildId, channelId) {
+async function updateMessageStats(userId, guildId, channelId, channelName = '') {
   const today = dayjs().format('YYYY-MM-DD');
 
   const stats = await UserStats.findOneAndUpdate(
@@ -26,15 +26,19 @@ async function updateMessageStats(userId, guildId, channelId) {
   let channel = stats.messageChannels.find(c => c.channelId === channelId);
   if (channel) {
     channel.count += 1;
+    // Kanal adı boşsa ve yeni ad varsa güncelle
+    if (!channel.channelName && channelName) {
+      channel.channelName = channelName;
+    }
   } else {
-    stats.messageChannels.push({ channelId, count: 1 });
+    stats.messageChannels.push({ channelId, channelName, count: 1 });
   }
 
   await stats.save();
 }
 
 
-async function updateVoiceStats(userId, guildId, channelId, durationMs) {
+async function updateVoiceStats(userId, guildId, channelId, durationMs, channelName = '') {
   const today = dayjs().format('YYYY-MM-DD');
 
   const stats = await UserStats.findOneAndUpdate(
@@ -51,8 +55,12 @@ async function updateVoiceStats(userId, guildId, channelId, durationMs) {
   let channel = stats.voiceChannels.find(c => c.channelId === channelId);
   if (channel) {
     channel.duration += durationMs;
+    // Kanal adı boşsa ve yeni ad varsa güncelle
+    if (!channel.channelName && channelName) {
+      channel.channelName = channelName;
+    }
   } else {
-    stats.voiceChannels.push({ channelId, duration: durationMs });
+    stats.voiceChannels.push({ channelId, channelName, duration: durationMs });
   }
 
   await stats.save();
@@ -93,11 +101,12 @@ async function getUserStats(userId, guildId) {
     dailyVoiceMs: dailyVoice,
     topMessageChannels: stats.messageChannels
       .sort((a, b) => b.count - a.count)
-      .slice(0, 5),
+      .slice(0, 5)
+      .map(c => ({ channelId: c.channelId, channelName: c.channelName, count: c.count })),
     topVoiceChannels: stats.voiceChannels
       .sort((a, b) => b.duration - a.duration)
       .slice(0, 5)
-      .map(c => ({ id: c.channelId, duration: formatDuration(c.duration) }))
+      .map(c => ({ id: c.channelId, channelName: c.channelName, duration: formatDuration(c.duration) }))
   };
 }
 

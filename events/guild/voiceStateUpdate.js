@@ -130,7 +130,9 @@ export default {
           if (prevData) {
             const duration = Date.now() - prevData.time;
             if (duration > 0) {
-              await statsUtilsHandler.updateVoiceStats(userId, guildId, prevData.channelId, duration);
+              const prevChannel = guild.channels.cache.get(prevData.channelId);
+              const prevChannelName = prevChannel ? prevChannel.name : '';
+              await statsUtilsHandler.updateVoiceStats(userId, guildId, prevData.channelId, duration, prevChannelName);
             }
           }
           voiceJoinTimestamps.set(key, { time: Date.now(), channelId: newChannelId });
@@ -141,7 +143,9 @@ export default {
 		  if (data) {
 			const duration = Date.now() - data.time;
             if (duration > 0) {
-			  await statsUtilsHandler.updateVoiceStats(userId, guildId, data.channelId, duration);
+              const channel = guild.channels.cache.get(data.channelId);
+              const channelName = channel ? channel.name : '';
+			  await statsUtilsHandler.updateVoiceStats(userId, guildId, data.channelId, duration, channelName);
             }
 			voiceJoinTimestamps.delete(key);
 		  }

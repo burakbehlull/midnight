@@ -110,9 +110,7 @@ Create ` config.json ` file and set permission settings:
 | command | comment | values | situation |
 | ------ | ------ | ------ | ------ |
 | **top** | shows server top stats, levels, invites | .. | stable |
-| **stat** | shows user statics | user | stable |
-| **level** | shows user level | user | stable |
-| **invites** | shows invite statics | user | stable |
+| **stat** | shows user statics, level, invites | .. | stable |
 
 ### contents: Setting and Setup
 | command | comment | values | situation |
@@ -123,7 +121,7 @@ Create ` config.json ` file and set permission settings:
 | **komutpanel** | authority ones command systems | .. | stable |
 | **ticket-setup** | creates embed tickets | .. | stable |
 | **room-setup** | private room creater | .. | stable |
-| **itiraf-setup** | people are open or anonymous confessors | channel | stable |
+| **confession-setup** | people are open or anonymous confessors | channel | stable |
 
 ### contents: Economy
 | command | comment | values | situation |

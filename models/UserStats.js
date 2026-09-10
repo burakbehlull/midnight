@@ -2,11 +2,13 @@ import mongoose from 'mongoose';
 
 const messageChannelSchema = new mongoose.Schema({
   channelId: { type: String, required: true },
+  channelName: { type: String, default: '' },
   count: { type: Number, default: 0 }
 });
 
 const voiceChannelSchema = new mongoose.Schema({
   channelId: { type: String, required: true },
+  channelName: { type: String, default: '' },
   duration: { type: Number, default: 0 }
 });
 

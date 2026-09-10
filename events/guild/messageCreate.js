@@ -29,7 +29,7 @@ export default {
         await levelMessageHandler(message.author.id, message.guild.id, message);
       }
       if (settings?.statSystemStatus) {
-        await statsUtilsHandler.updateMessageStats(message.author.id, message.guild.id, message.channel.id);
+        await statsUtilsHandler.updateMessageStats(message.author.id, message.guild.id, message.channel.id, message.channel.name);
       }
     }
 
