@@ -22,17 +22,34 @@ function drawRoundedRect(ctx, x, y, width, height, radius, fill, stroke, strokeW
 export default {
 	name: 'stat',
 	aliases: ['istatistiklerim', 'stats'],
-	description: 'Kendi istatistiklerini gösterir',
-	usage: 'stat',
+	description: 'Kendi veya başka bir kullanıcının istatistiklerini gösterir',
+	usage: 'stat [@kullanıcı/ID]',
 	category: 'stats',
 
 	permissions: {
 		enabled: false
 	},
 
-	async execute(client, message) {
+	async execute(client, message, args) {
 		const manager = new Manager(client, { action: message });
-		const member = message.member;
+		
+		let targetMember = message.member;
+		
+		if (args[0]) {
+			const mentionedUser = message.mentions.members.first();
+			if (mentionedUser) {
+				targetMember = mentionedUser;
+			} else {
+				try {
+					const fetchedMember = await message.guild.members.fetch(args[0]);
+					if (fetchedMember) {
+						targetMember = fetchedMember;
+					}
+				} catch {
+					return message.reply('Kullanıcı bulunamadı. Lütfen geçerli bir kullanıcı etiketleyin veya ID girin.');
+				}
+			}
+		}
 
 		const selectMenu = new StringSelectMenuBuilder()
 			.setCustomId('me_menu')
@@ -58,7 +75,7 @@ export default {
 		const row = new ActionRowBuilder().addComponents(selectMenu);
 
 		const embed = manager.sender.embed({
-			title: 'İstatistiklerim',
+			title: targetMember.id === message.author.id ? 'İstatistiklerim' : `${targetMember.user.displayName} - İstatistikler`,
 			description: 'Aşağıdaki menüden görmek istediğiniz istatistiği seçin:',
 			color: 0x5865f2
 		});
@@ -89,13 +106,13 @@ export default {
 				let filename;
 
 				if (selected === 'my_stats') {
-					buffer = await generateMyStatsCanvas(client, member, message.guild);
+					buffer = await generateMyStatsCanvas(client, targetMember, message.guild);
 					filename = 'my-stats.png';
 				} else if (selected === 'detailed_stats') {
-					buffer = await generateDetailedStatsCanvas(client, member, message.guild);
+					buffer = await generateDetailedStatsCanvas(client, targetMember, message.guild);
 					filename = 'detailed-stats.png';
 				} else if (selected === 'level_invite_stats') {
-					buffer = await generateLevelInviteStatsCanvas(client, member, message.guild);
+					buffer = await generateLevelInviteStatsCanvas(client, targetMember, message.guild);
 					filename = 'level-invite-stats.png';
 				}
 
@@ -305,7 +322,6 @@ async function generateMyStatsCanvas(client, member, guild) {
 		topMessageChannels.forEach((ch, i) => {
 			const itemY = channelY + 65 + (i * 65);
 			const channel = guild.channels.cache.get(ch.channelId);
-			// Önce Discord'dan al, yoksa veritabanından
 			const channelName = channel ? `#${channel.name}` : (ch.channelName ? `#${ch.channelName}` : 'Bilinmeyen Kanal');
 			
 			drawRoundedRect(ctx, 70, itemY, channelBoxWidth - 40, 55, 8, '#2a2a2a');
@@ -339,7 +355,6 @@ async function generateMyStatsCanvas(client, member, guild) {
 		topVoiceChannels.forEach((ch, i) => {
 			const itemY = channelY + 65 + (i * 65);
 			const channel = guild.channels.cache.get(ch.id);
-			// Önce Discord'dan al, yoksa veritabanından
 			const channelName = channel ? channel.name : (ch.channelName ? ch.channelName : 'Bilinmeyen Kanal');
 			
 			drawRoundedRect(ctx, 70 + channelBoxWidth + gapX, itemY, channelBoxWidth - 40, 55, 8, '#2a2a2a');
@@ -436,7 +451,6 @@ async function generateDetailedStatsCanvas(client, member, guild) {
 			const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32', '#FF8C00', '#A9A9A9', '#D2691E'];
 			
 			const channel = guild.channels.cache.get(channelData.channelId);
-			// Önce Discord'dan al, yoksa veritabanından
 			let channelName = channel ? `#${channel.name}` : (channelData.channelName ? `#${channelData.channelName}` : 'Bilinmeyen Kanal');
 			
 			if (channelName.length > 30) {
@@ -484,7 +498,6 @@ async function generateDetailedStatsCanvas(client, member, guild) {
 			const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32', '#FF8C00', '#A9A9A9', '#D2691E'];
 			
 			const channel = guild.channels.cache.get(channelData.id);
-			// Önce Discord'dan al, yoksa veritabanından
 			let channelName = channel ? channel.name : (channelData.channelName ? channelData.channelName : 'Bilinmeyen Kanal');
 			
 			if (channelName.length > 30) {

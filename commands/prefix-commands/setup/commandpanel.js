@@ -919,8 +919,6 @@ async function handleResetSettings(interaction, guild, commandsByCategory) {
   await interaction.message.edit({ embeds: [embed], components });
 }
 
-// ============ YARDIMCI FONKSİYONLAR ============
-
 function chunkArray(arr, size) {
   if (!arr) return [];
   const chunks = [];
@@ -929,8 +927,6 @@ function chunkArray(arr, size) {
   }
   return chunks;
 }
-
-// ============ KALDIRMA İŞLEMLERİ (Remove Mode) ============
 
 async function openChannelRemove(interaction, guild, commandsByCategory) {
   const commandName = interaction.message.embeds[0].title.split('— ')[1]?.trim();

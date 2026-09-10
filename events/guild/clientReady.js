@@ -5,9 +5,7 @@ export default {
 	name: 'ready',
 	async execute(client) {
 		
-		// invites of user
 		for (const [guildId, guild] of client.guilds.cache) {
-			// Invite tracking sadece aktif olan sunucularda çalışsın
 			try {
 				const settings = await Settings.findOne({ guildId });
 				

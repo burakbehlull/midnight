@@ -26,7 +26,6 @@ async function updateMessageStats(userId, guildId, channelId, channelName = '') 
   let channel = stats.messageChannels.find(c => c.channelId === channelId);
   if (channel) {
     channel.count += 1;
-    // Kanal adı boşsa ve yeni ad varsa güncelle
     if (!channel.channelName && channelName) {
       channel.channelName = channelName;
     }
@@ -55,7 +54,6 @@ async function updateVoiceStats(userId, guildId, channelId, durationMs, channelN
   let channel = stats.voiceChannels.find(c => c.channelId === channelId);
   if (channel) {
     channel.duration += durationMs;
-    // Kanal adı boşsa ve yeni ad varsa güncelle
     if (!channel.channelName && channelName) {
       channel.channelName = channelName;
     }

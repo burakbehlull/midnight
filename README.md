@@ -110,7 +110,7 @@ Create ` config.json ` file and set permission settings:
 | command | comment | values | situation |
 | ------ | ------ | ------ | ------ |
 | **top** | shows server top stats, levels, invites | .. | stable |
-| **stat** | shows user statics, level, invites | .. | stable |
+| **stat** | shows user statics, level, invites | self, user | stable |
 
 ### contents: Setting and Setup
 | command | comment | values | situation |
