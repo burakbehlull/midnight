@@ -22,6 +22,7 @@ import CommandSettings from "./CommandSettings.js"
 import MarketItem from "./MarketItem.js"
 import UserPortfolio from "./UserPortfolio.js"
 import NicknameHistory from "./NicknameHistory.js"
+import BoosterRole from "./BoosterRole.js"
 
 
 export {
@@ -45,5 +46,6 @@ export {
 	Shop,
 	MarketItem,
 	UserPortfolio,
-	NicknameHistory
+	NicknameHistory,
+	BoosterRole
 }

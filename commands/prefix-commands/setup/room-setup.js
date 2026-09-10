@@ -8,11 +8,13 @@ export default {
   category: "extra",
   cooldown: 10,
 
-  async execute(client, message, args) {
+  async execute(client, message) {
     const manager = new Manager(client, {
       action: message
     });
 
+    const ctrl = await manager.authority.checkOwnerAndBotOwners();
+    if (!ctrl) return message.reply({ content: '❌ Bu komutu kullanmak owner olmalısın.', ephemeral: true });
 
     const category = await message.guild.channels.create({
       name: 'Özel Odalar',

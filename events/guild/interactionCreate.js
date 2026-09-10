@@ -2,6 +2,7 @@ import { Events, MessageFlags } from 'discord.js';
 import { ticketHandler, itirafHandler, handleCooldown, handleInteractionCreate } from "#handlers"
 import { checkCommandRestrictions, handleAutoDelete, normalizeSlashOptions } from "#helpers"
 import { PermissionsManager } from "#managers";
+import { handleBoosterInteraction } from "../../events/booster/boosterInteraction.js";
 
 
 export default {
@@ -12,6 +13,7 @@ export default {
     }
     await itirafHandler(interaction);
 	  await handleInteractionCreate(interaction)
+    await handleBoosterInteraction(interaction)
 	
     if (!interaction.isChatInputCommand()) return;
 

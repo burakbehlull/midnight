@@ -6,11 +6,15 @@ export default {
   description: 'Ticket sistemi kurar',
   cooldown: 10,
   category: 'server',
-  async execute(client, message, args) {
+  async execute(client, message) {
 
     const manager = new Manager(client, {
       action: message
     });
+
+    const ctrl = await manager.authority.checkOwnerAndBotOwners();
+    if (!ctrl) return message.reply({ content: '❌ Bu komutu kullanmak owner olmalısın.', ephemeral: true });
+
 
     const btn = new Button();
     btn.add('ticket:create', '🎫 Ticket Aç', btn.style.Primary);

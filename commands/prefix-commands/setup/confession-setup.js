@@ -9,14 +9,16 @@ export default {
   usage: 'itiraf-setup <#channel>',
   cooldown: 10,
   category: "fun",
-  async execute(client, message, args) {
+  async execute(client, message) {
 	  
+    const manager = new Manager(client, { action: message });
     const sender = new Manager(client, { action: message }).sender;
 	
+    const ctrl = await manager.authority.checkOwnerAndBotOwners();
+    if (!ctrl) return message.reply({ content: '❌ Bu komutu kullanmak owner olmalısın.', ephemeral: true });
+
+
     try {
-		
-	 
-		
       const channel = message.mentions.channels.first();
       if (!channel) return sender.reply(sender.errorEmbed('❌ Lütfen bir kanal etiketle.'));
 
