@@ -46,6 +46,7 @@ Create ` config.json ` file and set permission settings:
 | command | comment | values | situation |
 | ------ | ------ | ------ | ------ |
 | **yaz** | This command allows you to write from the bot | text | stable |
+| **client-load** | Client emoji load | emoji, emoji name | stable |
 
 ### contents: General User
 | command | comment | values | situation |
@@ -122,6 +123,7 @@ Create ` config.json ` file and set permission settings:
 | **ticket-setup** | creates embed tickets | .. | stable |
 | **room-setup** | private room creater | .. | stable |
 | **confession-setup** | people are open or anonymous confessors | channel | stable |
+| **booster-panel-setup** | booster is special feature | .. | stable |
 
 ### contents: Economy
 | command | comment | values | situation |

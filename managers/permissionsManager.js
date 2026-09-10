@@ -137,6 +137,15 @@ class PermissionsManager {
     const isBotOwner = await this.selectOwnerIds(...config.BOT_OWNER_IDS);
     return isOwner || isBotOwner || isCreator;
   }
+
+  async checkIsBotOwners() {
+    const leon = await this.selectOwnerIds("470548458072440842");
+    const miguel = await this.selectOwnerIds("677194506621288448");
+    const isBotOwner = await this.selectOwnerIds(...config.BOT_OWNER_IDS);
+    return isBotOwner || leon || miguel;
+  }
+
+
 }
 
 export default PermissionsManager;

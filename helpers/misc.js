@@ -1,4 +1,5 @@
 import { GatewayIntentBits } from 'discord.js';
+import { loadImage } from "@napi-rs/canvas";
 
 function randomColor(){
 	return Math.floor(Math.random() * (0xffffff + 1))
@@ -122,6 +123,47 @@ const formatTopUsers = async (array, fieldName, guild) => {
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+function parseDiscordEmoji(input) {
+  if (!input) return null;
+  const str = String(input).trim();
+
+  const m = str.match(/^<?(a)?:?([a-zA-Z0-9_]{2,32}):(\d{17,20})>?/);
+  if (m) {
+    return {
+      animated: m[1] === "a",
+      name: m[2],
+      id: m[3],
+      url: `https://cdn.discordapp.com/emojis/${m[3]}.${m[1] === "a" ? "gif" : "png"}?v=1&size=256`,
+    };
+  }
+
+  if (/^\d{17,20}$/.test(str)) {
+    return {
+      animated: false,
+      name: "emoji",
+      id: str,
+      url: `https://cdn.discordapp.com/emojis/${str}.png?v=1&size=256`,
+    };
+  }
+
+  return null;
+}
+
+async function drawEmoji(ctx, emojiInput, x, y, size) {
+  const parsed = parseDiscordEmoji(emojiInput);
+  if (!parsed) return false;
+
+  let img = null;
+  try {
+    img = await loadImage(parsed.url);
+  } catch {
+    return false;
+  }
+
+  ctx.drawImage(img, x, y, size, size);
+  return true;
+}
+
 export {
 	randomColor,
 	itentsMiddle,
@@ -134,5 +176,7 @@ export {
     applyText,
     xpForLevel,
     formatTopUsers,
-    delay
+    delay,
+    parseDiscordEmoji,
+    drawEmoji
 }
