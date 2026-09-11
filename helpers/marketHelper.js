@@ -118,7 +118,19 @@ const DEFAULT_ITEMS = [
     basePrice: 88,
     minPrice: 30,
     maxPrice: 260
-  }
+  },
+  {
+    symbol: 'OREO COIN',
+    name: 'OreoBiskuvi',
+    emoji: '<:oreo:1547976579945201736>',
+    color: '#222120',
+    category: 'custom',
+    riskLevel: 5,
+    basePrice: 69,
+    minPrice: 31,
+    maxPrice: 62
+  },
+  
 ];
 
 function buildInitialItems() {

@@ -128,11 +128,28 @@ function buildBackRow(disabled = false) {
 function buildCoinSelect(items, customIdPrefix, placeHolder, withAmountHint = true) {
   const options = items.map(it => {
     const risk = `Risk: ${it.riskLabel} ${'⭐'.repeat(it.riskLevel)}`;
+    
+    let emojiObj = undefined;
+    if (it.emoji) {
+      if (it.emoji.match(/\p{Extended_Pictographic}/u)) {
+        emojiObj = it.emoji;
+      } else {
+        const customEmojiMatch = it.emoji.match(/<a?:(\w+):(\d+)>/);
+        if (customEmojiMatch) {
+          emojiObj = {
+            id: customEmojiMatch[2],
+            name: customEmojiMatch[1],
+            animated: it.emoji.startsWith('<a:')
+          };
+        }
+      }
+    }
+    
     return {
       label: `${it.symbol} - ${fmt(it.price)} coin`,
       description: risk,
       value: it.symbol,
-      emoji: it.emoji?.match(/\p{Extended_Pictographic}/u) ? it.emoji : undefined
+      emoji: emojiObj
     };
   });
   const menu = new StringSelectMenuBuilder()
