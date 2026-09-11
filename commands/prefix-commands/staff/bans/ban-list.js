@@ -161,6 +161,7 @@ export default {
 
         const desc =
           `**Toplam:** ${banEntries.length} ban kaydı\n` +
+          `🟣 **GOD BAN:** ${godBanCount} adet\n` +
           `🚨 **Force Ban:** ${forceBanCount} adet\n\n` +
           lines.join('\n\n');
 

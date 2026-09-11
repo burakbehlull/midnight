@@ -4,7 +4,7 @@ import { Punishment } from '#models';
 
 export default {
   name: 'godban',
-  aliases: ['globalban', 'gban', 'tüm-sunuculardan-ban', 'all-ban'],
+  aliases: ['god-ban', 'gban'],
   description: 'Kullanıcıyı botun bulunduğu tüm sunuculardan (ban yetkisi varsa) tek seferde banlar.',
   usage: 'godban @kullanıcı [sebep]',
   cooldown: 60,

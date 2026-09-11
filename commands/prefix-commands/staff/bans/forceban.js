@@ -4,8 +4,8 @@ import { PermissionFlagsBits } from 'discord.js';
 
 export default {
   name: 'forceban',
-  description: 'Kullanıcıyı sunucudan force ban (sert ban) atar. Normal bana göre: son 7 gün mesaj siler, DM bildirir, forceban olarak kaydedilir. Discord bot API\'sinde gerçek IP ban yoktur, bu en yakın uygulamasıdır.',
-  aliases: ['force-ban', 'fban', 'ipban', 'ip-ban', 'sertban', 'kalıcıban'],
+  description: 'Kullanıcıyı sunucudan force ban atar. Normal bana göre: son 7 gün mesaj siler, DM bildirir.',
+  aliases: ['force-ban', 'fban'],
   usage: 'forceban <@user / userID> [sebep]',
   cooldown: 15,
   category: 'moderation',
@@ -120,7 +120,7 @@ export default {
             `**Banlayan:** ${message.author.tag}\n\n` +
             `**Sebep:** ${reason}\n\n` +
             `Son ${deleteMessageDays} güne ait tüm mesajların da sunucudan silindi.\n` +
-            `Bu işlem Discord botu tarafından uygulanan sert (force) bir ban'dır.\n` +
+            `Bu işlem Discord botu tarafından uygulanan force bir ban'dır.\n` +
             `İtiraz etmek istiyorsan sunucu yetkilileriyle iletişime geçmelisin.`
         }).catch(() => {});
       } catch {}
@@ -138,8 +138,8 @@ export default {
         `  • 🗃️ Kayıtlara **forceban** tipiyle işlendi\n\n`;
 
       const embed = sender.embed({
-        author: { name: `${statusEmoji} Force Ban Uygulandı`, iconURL: message.guild.iconURL() },
-        title: `${message.guild.name} - Sert Ban`,
+        author: { name: `Force Ban Uygulandı`, iconURL: message.guild.iconURL() },
+        title: `${message.guild.name} - Force Ban`,
         description,
         thumbnail: user.displayAvatarURL({ dynamic: true, size: 256 }),
         footer: { text: `${message.author.tag}`, iconURL: message.author.displayAvatarURL() },

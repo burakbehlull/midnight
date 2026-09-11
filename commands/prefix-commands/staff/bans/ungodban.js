@@ -4,7 +4,7 @@ import { Punishment } from '#models';
 
 export default {
   name: 'ungodban',
-  aliases: ['unglobalban', 'ugban', 'global-unban', 'tum-sunuculardan-unban'],
+  aliases: ['ungodban', 'ugban'],
   description: 'Kullanıcının botun bulunduğu tüm sunuculardaki (unban yetkisi varsa) banını kaldırır.',
   usage: 'ungodban <user id> [sebep]',
   cooldown: 60,

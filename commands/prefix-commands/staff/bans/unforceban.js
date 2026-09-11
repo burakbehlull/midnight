@@ -5,7 +5,7 @@ import { PermissionFlagsBits } from 'discord.js';
 export default {
   name: 'unforceban',
   description: 'Force banlanmış kullanıcının banını kaldırır. Normal unban ile aynı API\'yi kullanır ama kayıtlara unforceban olarak işler ve DM atar.',
-  aliases: ['unforce-ban', 'ufban', 'unipban', 'unip-ban', 'unsertban', 'unkalıcıban', 'forceunban'],
+  aliases: ['unforce-ban', 'ufban'],
   usage: 'unforceban <userID> [açıklama/sebep]',
   cooldown: 10,
   category: 'moderation',
