@@ -6,7 +6,6 @@ export default {
 	once: true,
 	async execute(client) {
 		console.log(`${client.user.tag} is here for you!`);
-		
 		client.user.setPresence({
 			activities: [
 				{
@@ -16,6 +15,5 @@ export default {
 			],
 			status: config.ACTIVITY_STATUS,
 		});
-		
 	},
 };

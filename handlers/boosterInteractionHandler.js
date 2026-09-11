@@ -6,7 +6,7 @@ async function checkIfBooster(member) {
   return member.roles.cache.some(role => role.tags && role.tags.premiumSubscriberRole);
 }
 
-async function handleBoosterInteraction(interaction) {
+async function boosterInteractionHandler(interaction) {
   try {
     const isBoosterButton = interaction.isButton() && interaction.customId.startsWith('booster_');
     const isBoosterModal = interaction.isModalSubmit() && interaction.customId.startsWith('booster_');
@@ -227,8 +227,8 @@ async function handleBoosterInteraction(interaction) {
 export default {
   name: Events.InteractionCreate,
   async execute(client, interaction) {
-    await handleBoosterInteraction(interaction);
+    await boosterInteractionHandler(interaction);
   }
 };
 
-export { handleBoosterInteraction };
+export { boosterInteractionHandler };

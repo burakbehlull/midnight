@@ -42,8 +42,16 @@ export default {
 
       try {
         const emojiManager = client.application.emojis;
-        const emojiCache = emojiManager.cache;
-        const emojis = Array.from(emojiCache.values());
+
+        let fetchedCollection = null;
+        try {
+          fetchedCollection = await emojiManager.fetch();
+        } catch (fetchErr) {
+          console.warn('[client-list] emoji fetch başarısız, cache kullanılıyor:', fetchErr?.message || fetchErr);
+        }
+
+        const source = fetchedCollection && fetchedCollection.size > 0 ? fetchedCollection : emojiManager.cache;
+        const emojis = Array.from(source.values());
 
         if (emojis.length === 0) {
           if (loadingMsg && loadingMsg.edit) {

@@ -17,6 +17,8 @@ import handleCooldown from "./handleCooldown.js"
 
 import { handleVoiceRoomCreate, handleInteractionCreate } from "./privateRoomHandler.js"
 
+import { boosterInteractionHandler } from "./boosterInteractionHandler.js"
+
 export {
 	handleCooldown,
 	
@@ -36,5 +38,6 @@ export {
 	itirafHandler,
 	
 	handleVoiceRoomCreate, 
-	handleInteractionCreate
+	handleInteractionCreate,
+	boosterInteractionHandler
 }
