@@ -75,6 +75,7 @@ Create ` config.json ` file and set permission settings:
 | **ungodban** | Unbanning from shared servers | user or user id | stable |
 | **ban-list** | Ban list | user id | stable |
 | **kick** | Kick the user | user -ticket, id- | stable |
+| **mass-ban** | Mass ban users | users | stable |
 | **vmute** | Throws voice mute on tagged user | user, second -exp. 10m -, reason | stable |
 | **vunmute** | Unmute | user, reason | stable |
 | **mute** | Throws chat mute on tagged user | user, reason | stable |
