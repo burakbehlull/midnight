@@ -65,9 +65,12 @@ export default {
       const settings = await Settings.findOne({ guildId: message.guild.id });
       const tag = settings?.tag || null;
 
+      const yasMatch = rawNameArgs.match(/^(.+?)\s*[|│Iİi̇]\s*(\d{1,3})\s*$/);
       let newNick;
-      if (tag) {
-        newNick = `${tag} ${rawNameArgs}`;
+      if (yasMatch && tag) {
+        const isim = yasMatch[1].trim();
+        const yas = yasMatch[2].trim();
+        newNick = `${tag} ${isim} I ${yas}`;
       } else {
         newNick = rawNameArgs;
       }
@@ -88,16 +91,14 @@ export default {
       return sender.reply(sender.classic(`İsminiz başarıyla **${newNick}** olarak değiştirildi.`));
     }
 
-    const ctrl = await manager.authority.control(PermissionFlagsBits.ManageNicknames, PermissionFlagsBits.Administrator);
-    if (!ctrl) {
-      return sender.reply(sender.errorEmbed("❌ Başkasının ismini değiştirebilmek için **Nickleri Yönet** veya **Yönetici** yetkisine sahip olmalısın."));
-    }
+    const isSelf = member.id === message.member.id;
+    const canManageOthers = await manager.authority.control(PermissionFlagsBits.ManageNicknames, PermissionFlagsBits.Administrator);
 
     if (member.id === message.guild.ownerId && message.author.id !== message.guild.ownerId) {
       return sender.reply(sender.errorEmbed("❌ Sunucu sahibinin ismini değiştiremezsin."));
     }
 
-    if (member.roles.highest.position >= message.member.roles.highest.position && message.author.id !== message.guild.ownerId) {
+    if (!isSelf && member.roles.highest.position >= message.member.roles.highest.position && message.author.id !== message.guild.ownerId) {
       return sender.reply(sender.errorEmbed("❌ Bu kullanıcının rolü senin rolünden yüksek veya eşit."));
     }
 
@@ -107,9 +108,23 @@ export default {
     const rawNameArgs = args.slice(1).join(" ").trim();
 
     if (rawNameArgs && rawNameArgs.length > 0) {
+      if (isSelf) {
+        const selfCtrl = await manager.authority.control(PermissionFlagsBits.ChangeNickname, PermissionFlagsBits.ManageNicknames, PermissionFlagsBits.Administrator);
+        if (!selfCtrl) {
+          return sender.reply(sender.errorEmbed("❌ Kendi sunucu ismini değiştirebilmek için **İsmi Değiştir** yetkisine sahip olmalısın."));
+        }
+      } else {
+        if (!canManageOthers) {
+          return sender.reply(sender.errorEmbed("❌ Başkasının ismini değiştirebilmek için **Nickleri Yönet** veya **Yönetici** yetkisine sahip olmalısın."));
+        }
+      }
+
+      const yasMatch2 = rawNameArgs.match(/^(.+?)\s*[|│Iİi̇]\s*(\d{1,3})\s*$/);
       let newNick;
-      if (tag) {
-        newNick = `${tag} ${rawNameArgs}`;
+      if (yasMatch2 && tag) {
+        const isim2 = yasMatch2[1].trim();
+        const yas2 = yasMatch2[2].trim();
+        newNick = `${tag} ${isim2} I ${yas2}`;
       } else {
         newNick = rawNameArgs;
       }
@@ -159,6 +174,32 @@ export default {
         return i.reply({ embeds: [sender.errorEmbed("❌ Bu buton sana ait değil.")], ephemeral: true });
       }
 
+      const isSelfAction = member.id === i.user.id;
+      const userMember = message.guild.members.cache.get(i.user.id) || await message.guild.members.fetch(i.user.id).catch(() => null);
+
+      let canChange = false;
+      if (isSelfAction) {
+        canChange = !!userMember?.permissions?.has([
+          PermissionFlagsBits.ChangeNickname,
+          PermissionFlagsBits.ManageNicknames,
+          PermissionFlagsBits.Administrator
+        ]);
+      } else {
+        canChange = !!userMember?.permissions?.has([
+          PermissionFlagsBits.ManageNicknames,
+          PermissionFlagsBits.Administrator
+        ]);
+      }
+
+      if (!["history_btn", "reset_btn"].includes(i.customId) && !canChange) {
+        return i.reply({
+          embeds: [sender.errorEmbed(isSelfAction
+            ? "❌ Kendi sunucu ismini değiştirebilmek için **İsmi Değiştir** yetkisine sahip olmalısın."
+            : "❌ Başkasının ismini değiştirebilmek için **Nickleri Yönet** veya **Yönetici** yetkisine sahip olmalısın.")],
+          ephemeral: true
+        });
+      }
+
       if (i.customId === "history_btn") {
         const records = await NicknameHistory
           .find({ userId: member.id, guildId: message.guild.id })
@@ -205,6 +246,22 @@ export default {
       }
 
       if (i.customId === "reset_btn") {
+        const userMemberReset = message.guild.members.cache.get(i.user.id) || await message.guild.members.fetch(i.user.id).catch(() => null);
+        let canReset = false;
+        if (isSelfAction) {
+          canReset = !!userMemberReset?.permissions?.has([PermissionFlagsBits.ChangeNickname, PermissionFlagsBits.ManageNicknames, PermissionFlagsBits.Administrator]);
+        } else {
+          canReset = !!userMemberReset?.permissions?.has([PermissionFlagsBits.ManageNicknames, PermissionFlagsBits.Administrator]);
+        }
+        if (!canReset) {
+          return i.reply({
+            embeds: [sender.errorEmbed(isSelfAction
+              ? "❌ Kendi sunucu ismini sıfırlayabilmek için **İsmi Değiştir** yetkisine sahip olmalısın."
+              : "❌ Başkasının ismini sıfırlayabilmek için **Nickleri Yönet** veya **Yönetici** yetkisine sahip olmalısın.")],
+            ephemeral: true
+          });
+        }
+
         const oldNick = member.nickname || null;
         if (!oldNick) {
           return i.reply({
@@ -258,12 +315,7 @@ export default {
 
           const isim = submitted.fields.getTextInputValue("isim").trim();
 
-          let newNick;
-          if (tag) {
-            newNick = `${tag} ${isim}`;
-          } else {
-            newNick = isim;
-          }
+          let newNick = isim;
 
           if (newNick.length > 32) {
             await submitted.reply({ embeds: [sender.errorEmbed(`❌ İsim 32 karakterden uzun olamaz (${newNick.length}/32).`)], ephemeral: true });
