@@ -48,7 +48,7 @@ export default {
     const reasonText = args.slice(1).join(' ') || 'Sebep belirtilmemiş';
     const baseReason = `[UN GOD BAN] ${reasonText} | by ${message.author.tag} (${message.author.id})`;
 
-    const loading = await sender.reply(sender.classic(`🕊️ **${rawId}** ID'li kullanıcının GOD BAN'ı kaldırılıyor... Tüm sunucular taranıyor.`));
+    const loading = await sender.reply(sender.classic(`**${rawId}** ID'li kullanıcının GOD BAN'ı kaldırılıyor... Tüm sunucular taranıyor.`));
 
     const guilds = Array.from(client.guilds.cache.values());
     const total = guilds.length;
@@ -106,14 +106,14 @@ export default {
         try {
           await targetUser.send({
             embeds: [sender.embed({
-              title: '🕊️ GOD BAN Kaldırıldı',
+              title: 'GOD BAN Kaldırıldı',
               description:
                 `Botun bulunduğu sunuculardaki global banın kaldırıldı.\n\n` +
                 `**Kaldıran:** ${message.author.tag} (${message.author.id})\n` +
                 `**Açıklama:** ${reasonText}\n\n` +
                 `✅ Başarıyla banın kaldırıldığı sunucu: **${successCount}**\n` +
                 `❌ Başarısız: ${failCount}\n` +
-                `⏭️ Atlanan: ${skippedCount}\n\n` +
+                `Atlanan: ${skippedCount}\n\n` +
                 `Tekrar sunuculara katılabilirsin. Hoş geldin!`,
               color: 0x10b981,
             })],
@@ -145,13 +145,13 @@ export default {
       `📊 **Sonuç:**\n` +
       `   ✅ Banı başarıyla kaldırıldı: **${successCount}** sunucu\n` +
       `   ❌ Başarısız: ${failCount}\n` +
-      `   ⏭️ Atlanan: ${skippedCount}\n` +
-      `   🔍 Toplam banlı bulunduğu sunucu: ${bannedGuildCount} / ${total}`;
+      `Atlanan: ${skippedCount}\n` +
+      `Toplam banlı bulunduğu sunucu: ${bannedGuildCount} / ${total}`;
 
     const fields = [];
     if (firstReason) {
       fields.push({
-        name: `📌 İlk Bulunan Önceki Ban Sebebi (${firstGuildWithBan || ''})`,
+        name: `İlk Bulunan Önceki Ban Sebebi (${firstGuildWithBan || ''})`,
         value: String(firstReason).length > 180 ? String(firstReason).slice(0, 177) + '...' : String(firstReason),
         inline: false,
       });
@@ -167,7 +167,7 @@ export default {
     if (skipList.length > 0 && fields.length < 25) {
       const firstSkips = skipList.slice(0, 10);
       fields.push({
-        name: `⏭️ Atlanan sunucular (${skipList.length})`,
+        name: `Atlanan sunucular (${skipList.length})`,
         value: firstSkips.map((s) => `  • ${s.name}: ${s.reason}`).join('\n') + (skipList.length > 10 ? `\n... (${skipList.length - 10} tane daha)` : ''),
         inline: false,
       });
@@ -175,7 +175,7 @@ export default {
 
     const embed = sender.embed({
       author: { name: message.author.username, iconURL: message.author.displayAvatarURL({ forceStatic: true }) },
-      title: '🕊️ GOD BAN Kaldırıldı (Tüm Sunuculardan)',
+      title: 'GOD BAN Kaldırıldı (Tüm Sunuculardan)',
       description: summary,
       color: 0x10b981,
       thumbnail: targetUser?.displayAvatarURL ? targetUser.displayAvatarURL({ forceStatic: true, size: 128 }) : undefined,

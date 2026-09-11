@@ -76,7 +76,7 @@ export default {
     const reasonText = args.slice(1).join(' ') || 'Sebep belirtilmemiş';
     const baseReason = `[GOD BAN] ${reasonText} | Global ban by ${message.author.tag} (${message.author.id})`;
 
-    const loading = await sender.reply(sender.classic(`🌩️ **${targetUser.username}** için GOD BAN uygulanıyor... Tüm sunucular taranıyor.`));
+    const loading = await sender.reply(sender.classic(`**${targetUser.username}** için GOD BAN uygulanıyor... Tüm sunucular taranıyor.`));
 
     const guilds = Array.from(client.guilds.cache.values());
     const total = guilds.length;
@@ -148,7 +148,7 @@ export default {
         try {
           await targetUser.send({
             embeds: [sender.embed({
-              title: '🌩️ GOD BAN Aldın',
+              title: 'GOD BAN Aldın',
               description:
                 `Botun bulunduğu sunucularda global ban aldın.\n\n` +
                 `**Banlayan:** ${message.author.tag} (${message.author.id})\n` +
@@ -208,7 +208,7 @@ export default {
 
     const embed = sender.embed({
       author: { name: message.author.username, iconURL: message.author.displayAvatarURL({ forceStatic: true }) },
-      title: '🌩️ GOD BAN Uygulandı (Tüm Sunuculardan)',
+      title: 'GOD BAN Uygulandı',
       description: summary,
       color: 0x7f1d1d,
       thumbnail: targetUser.displayAvatarURL ? targetUser.displayAvatarURL({ forceStatic: true, size: 128 }) : undefined,
