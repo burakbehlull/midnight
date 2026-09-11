@@ -67,9 +67,12 @@ Create ` config.json ` file and set permission settings:
 ### contents: Mod
 | command | comment | values | situation |
 | ------ | ------ | ------ | ------ |
-| **ban** |  Ban the user | user -ticket, id- | stable |
-| **unban** |  Unban the user | user id | stable |
-| **kick** |  Kick the user | user -ticket, id- | stable |
+| **ban** | Ban the user | user -ticket, id- | stable |
+| **unban** | Unban the user | user id | stable |
+| **forceban** | Force ban the user | user id | stable |
+| **unforceban** | Unforceban the user | user id | stable |
+| **ban-list** | Ban list | user id | stable |
+| **kick** | Kick the user | user -ticket, id- | stable |
 | **vmute** | Throws voice mute on tagged user | user, second -exp. 10m -, reason | stable |
 | **vunmute** | Unmute | user, reason | stable |
 | **mute** | Throws chat mute on tagged user | user, reason | stable |

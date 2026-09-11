@@ -6,7 +6,7 @@ export default {
 	async execute(client) {
 		try {
             await client.application.fetch();
-            console.log('✅ Application bilgisi (emojiler dahil) fetch edildi.');
+            console.log('Application bilgisi (emojiler dahil) fetch edildi.');
 
             const emojiCount = client.application?.emojis?.cache?.size ?? 0;
             if (emojiCount > 0) {
