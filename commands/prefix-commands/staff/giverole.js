@@ -18,8 +18,6 @@ export default {
     });
 
     try {
-      
-
       let member = message.mentions.members.first();
       if (!member && args[0]) {
         const fetchedMember = await message.guild.members.fetch(args[0]).catch(() => null);
@@ -40,6 +38,32 @@ export default {
 
       const isUserHasRole = member.roles.cache.has(role.id);
       if (isUserHasRole) return manager.sender.reply(manager.sender.errorEmbed('❌ Kullanıcı zaten bu role sahip!'));
+
+      const isOwnerOrBotOwner = await manager.authority.checkOwnerAndBotOwners();
+      if (!isOwnerOrBotOwner) {
+        const authorHighestRole = message.member.roles.highest;
+        
+        if (role.position >= authorHighestRole.position) {
+          return manager.sender.reply(manager.sender.errorEmbed(
+            `❌ Bu rolü veremezsin!\n\n` +
+            `**Senin En Yüksek Rolün:** ${authorHighestRole} (Pozisyon: ${authorHighestRole.position})\n` +
+            `**Vermek İstediğin Rol:** ${role} (Pozisyon: ${role.position})\n\n` +
+            `*Not: Sadece kendi rolünden ALTTAKI rolleri verebilirsin.*`
+          ));
+        }
+      }
+
+      const botMember = message.guild.members.cache.get(client.user.id);
+      const botHighestRole = botMember.roles.highest;
+      
+      if (role.position >= botHighestRole.position) {
+        return manager.sender.reply(manager.sender.errorEmbed(
+          `❌ Bu rolü veremem!\n\n` +
+          `**Botun En Yüksek Rolü:** ${botHighestRole} (Pozisyon: ${botHighestRole.position})\n` +
+          `**Verilecek Rol:** ${role} (Pozisyon: ${role.position})\n\n` +
+          `*Not: Bot sadece kendi rolünden ALTTAKI rolleri verebilir.*`
+        ));
+      }
 
       await member.roles.add(role);
       return manager.sender.reply(manager.sender.classic(`<@${member.id}> adlı kullanıcıya ${role} rolü başarıyla verildi.`));
