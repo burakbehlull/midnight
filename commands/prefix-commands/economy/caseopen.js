@@ -209,11 +209,11 @@ export default {
       .setFooter({ text: message.author.displayName || username, iconURL: message.author.avatarURL() });
 
     const buildButtons = (money, uid, ts) => new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
+   /*   new ButtonBuilder()
         .setCustomId(`case_reopen_${uid}_${ts}`)
         .setLabel('Tekrar Aç')
         .setStyle(ButtonStyle.Primary)
-        .setDisabled(money < CASE_PRICE),
+        .setDisabled(money < CASE_PRICE),*/
       new ButtonBuilder()
         .setCustomId(`case_exit_${uid}_${ts}`)
         .setLabel('Çık')
