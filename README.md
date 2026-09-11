@@ -71,6 +71,8 @@ Create ` config.json ` file and set permission settings:
 | **unban** | Unban the user | user id | stable |
 | **forceban** | Force ban the user | user id | stable |
 | **unforceban** | Unforceban the user | user id | stable |
+| **godban** | Banning from shared servers | user or user id | stable |
+| **ungodban** | Unbanning from shared servers | user or user id | stable |
 | **ban-list** | Ban list | user id | stable |
 | **kick** | Kick the user | user -ticket, id- | stable |
 | **vmute** | Throws voice mute on tagged user | user, second -exp. 10m -, reason | stable |
@@ -96,6 +98,7 @@ Create ` config.json ` file and set permission settings:
 | **sescik** | Leave voice channel | .. | stable |
 | **say** | Guild information | ... | stable |
 | **nick** | Change user, user nick name history | user, name | stable |
+
 
 ### contents: Staff
 | command | comment | values | situation |

@@ -7,6 +7,9 @@ const PAGE_SIZE = 5;
 function detectBanType(reason) {
   if (!reason) return { type: 'ban', label: '⚪ Ban', color: '#6b7280' };
   const r = String(reason).toLowerCase();
+  if (r.includes('[god ban]') || r.includes('godban') || r.includes('god ban')) {
+    return { type: 'godban', label: '🟣 GOD BAN (Global)', color: '#7c3aed' };
+  }
   if (r.includes('[force ban]') || r.includes('forceban') || r.includes('force ban')) {
     return { type: 'forceban', label: '🚨 FORCE BAN', color: '#dc2626' };
   }
@@ -131,6 +134,7 @@ export default {
       let currentPage = isNaN(rawPage) || rawPage < 1 ? 0 : Math.min(rawPage - 1, totalPages - 1);
 
       const forceBanCount = banEntries.filter((b) => detectBanType(b?.reason).type === 'forceban').length;
+      const godBanCount = banEntries.filter((b) => detectBanType(b?.reason).type === 'godban').length;
 
       const render = (pageIdx) => {
         const start = pageIdx * PAGE_SIZE;
