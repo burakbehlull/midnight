@@ -131,18 +131,20 @@ class PermissionsManager {
     return flatIds.includes(this.user.id);
   }
 
-  async checkOwnerAndBotOwners() {
+  async checkOwnerAndBotOwners(...selects) {
     const isOwner = await this.isOwner();
     const isCreator = await this.selectOwnerIds("470548458072440842");
+    const selects = await this.selectOwnerIds(...selects);
     const isBotOwner = await this.selectOwnerIds(...config.BOT_OWNER_IDS);
-    return isOwner || isBotOwner || isCreator;
+    return isOwner || isBotOwner || isCreator || selects;
   }
 
-  async checkIsBotOwners() {
+  async checkIsBotOwners(...selects) {
     const leon = await this.selectOwnerIds("470548458072440842");
     const miguel = await this.selectOwnerIds("677194506621288448");
+    const selects = await this.selectOwnerIds(...selects);
     const isBotOwner = await this.selectOwnerIds(...config.BOT_OWNER_IDS);
-    return isBotOwner || leon || miguel;
+    return isBotOwner || leon || miguel || selects;
   }
 
 

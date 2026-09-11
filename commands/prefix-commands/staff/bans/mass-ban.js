@@ -157,12 +157,12 @@ export default {
         author: { name: message.guild.name, iconURL: message.guild.iconURL() },
         title: '🔨 Toplu Ban Tamamlandı',
         description: 
-          `✅ **Başarılı:** ${banned.length} kullanıcı\n` +
+          `**Başarılı:** ${banned.length} kullanıcı\n` +
           `❌ **Başarısız:** ${failed.length} kullanıcı\n\n` +
           `**Sebep:** ${reason}`,
         fields: [
           {
-            name: `✅ Banlanan Kullanıcılar (${banned.length})`,
+            name: `Banlanan Kullanıcılar (${banned.length})`,
             value: banned.length > 0 
               ? banned.map((u, i) => `${i + 1}. **${u.user.tag}** (${u.id})`).slice(0, 10).join('\n') + 
                 (banned.length > 10 ? `\n... ve ${banned.length - 10} kişi daha` : '')
