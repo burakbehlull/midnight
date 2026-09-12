@@ -6,6 +6,9 @@ export async function fetchPartialNeed(obj) {
     }
     return obj;
   } catch (err) {
+    if (err.code === 10008) {
+      return obj;
+    }
     console.error('[fetchPartialIfNeeded] Fetch başarısız:', err);
     return obj;
   }

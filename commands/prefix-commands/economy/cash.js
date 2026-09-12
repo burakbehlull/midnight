@@ -5,7 +5,7 @@ import { createCanvas, loadImage } from "@napi-rs/canvas";
 export default {
   name: "money",
   description: "Bakiyeni gösterir.",
-  aliases: ["cash", "bakiye"],
+  aliases: ["cash", "bakiye", "coin"],
   usage: ".cash [@kullanıcı]",
   category: "economy",
 

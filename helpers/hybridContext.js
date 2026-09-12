@@ -192,22 +192,32 @@ export async function hybridReply(ctx, payload) {
   if (isInter) {
     if (ctx.replied || ctx.deferred) {
       try {
-        return await ctx.followUp(safePayload).catch(() => null);
-      } catch {
-        return await ctx.channel?.send(safePayload).catch(() => null);
+        return await ctx.followUp(safePayload);
+      } catch (err) {
+        if (ctx.channel && typeof ctx.channel.send === 'function') {
+          return await ctx.channel.send(safePayload).catch(() => null);
+        }
+        return null;
       }
     }
+    
     try {
-      return await ctx.reply(safePayload).catch(async () => {
-        return await ctx.channel?.send(safePayload).catch(() => null);
-      });
-    } catch {
-      return await ctx.channel?.send(safePayload).catch(() => null);
+      return await ctx.reply(safePayload);
+    } catch (err) {
+      if (ctx.channel && typeof ctx.channel.send === 'function') {
+        return await ctx.channel.send(safePayload).catch(() => null);
+      }
+      return null;
     }
   }
 
   try {
-    if (ctx.channel?.send) return await ctx.channel.send(safePayload).catch(() => null);
-  } catch {}
+    if (ctx.channel && typeof ctx.channel.send === 'function') {
+      return await ctx.channel.send(safePayload);
+    }
+  } catch (err) {
+    console.error('[hybridReply] Channel send hatası:', err);
+  }
+  
   return null;
 }

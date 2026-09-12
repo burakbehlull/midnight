@@ -10,7 +10,7 @@ export default {
   category: 'moderation',
 
   permissions: {
-    authorities: [PermissionFlagsBits.ManageRoles, PermissionFlagsBits.Administrator],
+    enabled: false
   },
   
   async execute(client, message, args) {

@@ -6,6 +6,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 export default {
   name: 'divorce',
   description: 'Eşinden boşan.',
+  aliases: ['boşan', 'ayrıl'],
   usage: '.divorce',
   category: 'economy',
 

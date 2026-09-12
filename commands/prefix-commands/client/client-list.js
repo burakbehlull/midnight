@@ -37,7 +37,7 @@ export default {
       }
 
       const loadingMsg = await manager.sender.reply(
-        manager.sender.classic('⏳ Botun uygulama emojileri alınıyor...')
+        manager.sender.classic('Botun uygulama emojileri alınıyor...')
       );
 
       try {
