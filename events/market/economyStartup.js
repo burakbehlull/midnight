@@ -4,7 +4,7 @@ import { emoji } from '#data'
 
 export default {
 	name: Events.ClientReady,
-	once: false, // Her bot başlatıldığında çalışsın
+	once: true,
 	async execute(client) {
 		
 		const emojis = emoji.default || emoji;
@@ -12,7 +12,7 @@ export default {
 		// economy
 		const shopItems = [
 			
-			{ id: 1, emoji: emojis.heart, name: "Kalp", price: 200, type: 'item', module: null, slug: null },
+			{ id: 1, emoji: emojis.heart, name: "Kalp", price: 200, type: 'item', module: 'consumable', slug: 'heart_item' },
 			{ id: 2, emoji: emojis.silver_ring, name: "Gümüş Yüzük", price: 100, type: 'item', module: 'ring', slug: 'silver_ring' },
 			{ id: 3, emoji: emojis.gold_ring, name: "Altın Yüzük", price: 1000, type: 'item', module: 'ring', slug: 'gold_ring' },
 			{ id: 4, emoji: emojis.ruby_ring, name: "Yakut Yüzük", price: 5000, type: 'item', module: 'ring', slug: 'ruby_ring' },
