@@ -56,6 +56,6 @@ export default {
     const heartEmojis = [emojis.bearheart1, emojis.bearheart2];
     const randomHeart = heartEmojis[Math.floor(Math.random() * heartEmojis.length)] || '❤️';
 
-    message.channel.send(`**${target.globalName || target.username}** adlı kullanıcıya ${randomHeart} attın!`);
+    message.channel.send(`${randomHeart}\n ${message.author.globalName || message.author.username}, *${target.globalName || target.username}* adlı kullanıcıya attı!`);
   }
 };
