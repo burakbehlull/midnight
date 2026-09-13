@@ -1,5 +1,5 @@
 import { misc } from '#helpers';
-import { Economy } from '#models';
+import { Economy, Shop } from '#models';
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 
 const { drawRoundedRect, formatNumber, applyText } = misc;
@@ -315,11 +315,24 @@ export default {
     if (userData.marriedTo) {
       const partner = client.users.cache.get(userData.marriedTo);
       const partnerName = partner ? (partner.globalName || partner.username) : `<@${userData.marriedTo}>`;
+      
+      let ringText = "💍";
+      if (userData.marriageRing) {
+        try {
+          const ringItem = await Shop.findOne({ slug: userData.marriageRing });
+          if (ringItem && ringItem.emoji) {
+            ringText = ringItem.emoji;
+          }
+        } catch (e) {
+          ringText = "💍";
+        }
+      }
+      
       let dayText = "0 days together";
       if (userData.marriageSince) {
         const marrDate = new Date(userData.marriageSince);
         const diffDays = Math.max(0, Math.floor((Date.now() - marrDate.getTime()) / (1000 * 60 * 60 * 24)));
-        dayText = `${diffDays} days together`;
+        dayText = `${diffDays} days together ${ringText}`;
       }
       ctx.font = "13px sans-serif";
       ctx.fillStyle = "rgba(210, 210, 225, 0.75)";

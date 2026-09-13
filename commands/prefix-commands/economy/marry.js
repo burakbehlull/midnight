@@ -1,7 +1,8 @@
 import { Button } from '#helpers';
 import Manager from '#managers';
 
-import { Economy } from '#models';
+import { Economy, Shop } from '#models';
+import { emoji } from '#data';
 
 export default {
   name: 'marry',
@@ -17,6 +18,7 @@ export default {
   async execute(client, message, args) {
     const manager = new Manager(client, { action: message });
     const authorId = message.author.id;
+    const emojis = emoji.default || emoji;
 
     const authorData = await Economy.findOne({ userId: authorId }) || new Economy({ userId: authorId });
 
@@ -28,8 +30,23 @@ export default {
       const diffTime = Math.abs(new Date() - marriedDate);
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
+      let ringEmoji = '💍';
+      
+      if (authorData.marriageRing) {
+        const ringItem = await Shop.findOne({ slug: authorData.marriageRing });
+        if (ringItem && ringItem.emoji) {
+          ringEmoji = ringItem.emoji;
+        }
+      }
+
+      const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+      const day = marriedDate.getDate();
+      const month = months[marriedDate.getMonth()];
+      const year = marriedDate.getFullYear();
+      const formattedDate = `${day} ${month} ${year}`;
+
       return manager.sender.reply(
-        `💍 **${partnerName}** ile **${diffDays}** gündür evlisiniz! ❤️`
+        `${ringEmoji} **${partnerName}** ile **${diffDays}** gündür evlisiniz! ${emojis.rings} \nEvlenme Tarihi: ${formattedDate}`
       );
     }
 
@@ -50,10 +67,19 @@ export default {
     if (targetData.marriedTo) 
       return manager.sender.reply(manager.sender.errorEmbed(`❌ **${target.username}** zaten başkasıyla evli.`));
 
-    if (!ringId || !['2', '3', '4'].includes(ringId)) 
-      return manager.sender.reply(manager.sender.errorEmbed('❌ Geçerli bir yüzük ID girmelisin. (Örn: 2, 3 veya 4)'));
+    if (!ringId || isNaN(ringId)) 
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Geçerli bir yüzük ID girmelisin. Örn: `.marry @user 2`'));
 
-    const inventoryCount = authorData.inventory.get(ringId) || 0;
+    // ID'den yüzük bilgisini çek ve module kontrolü yap
+    const ringItem = await Shop.findOne({ id: parseInt(ringId), module: 'ring' });
+    
+    if (!ringItem) {
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Bu ID ile bir yüzük bulunamadı. Yalnızca yüzüklerle evlenebilirsin!'));
+    }
+
+    const ringSlug = ringItem.slug || `item_${ringItem.id}`;
+    const inventoryCount = authorData.inventory.get(ringSlug) || 0;
+    
     if (inventoryCount < 1) 
       return manager.sender.reply(manager.sender.errorEmbed('❌ Envanterinde bu yüzükten bulunmuyor.'));
 
@@ -62,10 +88,15 @@ export default {
     btns.add('marry_reject', '❌ Reddet',  btns.style.Danger);
     const row = btns.build();
 
-    const proposalEmbed = manager.sender.classic(
-      `💍 **${message.author.username}**, **${target.username}** ile evlenmek istiyor!\n\n` +
-      `Sadece <@${target.id}> butonları kullanabilir. 60 saniye içinde cevap ver!`
-    );
+    const proposalEmbed = manager.sender.embed({
+      title: '💍 Evlilik Teklifi',
+      description: 
+        `**${message.author.username}**, **${target.username}** ile evlenmek istiyor!\n\n` +
+        `**Yüzük:** ${ringItem.emoji || '💍'} **${ringItem.name}**\n\n` +
+        `<@${target.id}> 60 saniye içinde cevap ver!`,
+      color: manager.theme.colors.pink,
+      thumbnail: target.displayAvatarURL()
+    });
 
     const proposalMsg = await message.channel.send({
       embeds: [proposalEmbed],
@@ -95,7 +126,8 @@ export default {
         const refreshedAuthorData = await Economy.findOne({ userId: authorId }) || new Economy({ userId: authorId });
         const refreshedTargetData = await Economy.findOne({ userId: target.id }) || new Economy({ userId: target.id });
 
-        const stock = refreshedAuthorData.inventory.get(ringId) || 0;
+        // Slug ile kontrol
+        const stock = refreshedAuthorData.inventory.get(ringSlug) || 0;
         if (stock < 1) {
           const fail = manager.sender.errorEmbed('❌ Kabul edildi ama yüzük envanterinden çıkmış, işlem iptal edildi.');
           return proposalMsg.edit({ embeds: [fail], components: [] }).catch(() => {});
@@ -106,21 +138,32 @@ export default {
           return proposalMsg.edit({ embeds: [fail], components: [] }).catch(() => {});
         }
 
-        refreshedAuthorData.inventory.set(ringId, stock - 1);
+        // Slug ile yüzüğü azalt
+        refreshedAuthorData.inventory.set(ringSlug, stock - 1);
 
         const now = new Date();
+        const marriageRingSlug = ringItem?.slug || null;
+        
         refreshedAuthorData.marriedTo = target.id;
         refreshedAuthorData.marriageSince = now;
+        refreshedAuthorData.marriageRing = marriageRingSlug;
 
         refreshedTargetData.marriedTo = authorId;
         refreshedTargetData.marriageSince = now;
+        refreshedTargetData.marriageRing = marriageRingSlug;
 
         await refreshedAuthorData.save();
         await refreshedTargetData.save();
 
-        const successEmbed = manager.sender.classic(
-          `🎉 Tebrikler! **${message.author.username}** ile **${target.username}** artık evli! 💍❤️`
-        );
+        const successEmbed = manager.sender.embed({
+          title: '🎉 Evlilik Gerçekleşti!',
+          description: 
+            `**${message.author.username}** ile **${target.username}** artık evli!\n\n` +
+            `**Evlilik Yüzüğü:** ${ringItem.emoji || '💍'} **${ringItem.name}**`,
+          color: manager.theme.colors.green,
+          thumbnail: target.displayAvatarURL(),
+          footer: { text: '❤️ Mutluluklar dileriz!', iconURL: message.author.displayAvatarURL() }
+        });
 
         return proposalMsg.edit({ embeds: [successEmbed], components: [] }).catch(() => {});
       }

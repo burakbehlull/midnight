@@ -6,6 +6,7 @@ import { Economy, Shop } from '#models';
 export default {
   name: 'envanter',
   description: 'Sahip olduğun eşyaları listeler.',
+  aliases: ['envanterim', 'inventory', 'inv', 'env'],
   usage: '.envanter',
   category: 'economy',
 
@@ -25,13 +26,13 @@ export default {
     const shopItems = await Shop.find();
 
     const entries = inventoryEntries
-	  .filter(([_, count]) => count > 0)
-	  .map(([itemId, count]) => {
-		const item = shopItems.find(i => i.id === parseInt(itemId));
-		if (!item) return null;
-		return `\` ${item.id} \` ***|** ${item.name} **|** **${count} adet** **|** Değer: 💰 ${item.price}`;
-	  })
-	  .filter(Boolean);
+      .filter(([_, count]) => count > 0)
+      .map(([slug, count]) => {
+        const item = shopItems.find(i => (i.slug || `item_${i.id}`) === slug);
+        if (!item) return null;
+        return `\` ${item.id} \` | ${item.name} | **${count}** adet | Değer: 💰 ${item.price}`;
+      })
+      .filter(Boolean);
 
     if (!entries.length) return manager.sender.reply(manager.sender.classic('📦 **Envanterin boş.**'));
 

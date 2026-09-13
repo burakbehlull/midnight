@@ -35,8 +35,9 @@ export default {
 
     userData.money -= item.price;
 
-    const currentAmount = userData.inventory.get(itemId) || 0;
-    userData.inventory.set(itemId, currentAmount + 1);
+    const slug = item.slug || `item_${item.id}`;
+    const currentAmount = userData.inventory.get(slug) || 0;
+    userData.inventory.set(slug, currentAmount + 1);
 
     userData.xp += 5;
 

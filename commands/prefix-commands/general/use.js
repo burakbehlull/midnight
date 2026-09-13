@@ -5,7 +5,7 @@ export default {
   name: 'use',
   description: 'Kişisel tema ve kozmetik seçimlerini yönetir.',
   aliases: ['kozmetik', 'tema', 'temaayarla'],
-  usage: 'use <modül> <tema/id/default> — örn: use spotify light | use spotify 6 | use spotify default | use spotify (listeler)',
+  usage: 'use <modül> <tema/id/default> — örn: use spotify light | use spotify 10 | use spotify default | use spotify (listeler)',
   category: 'general',
 
   permissions: {
@@ -34,7 +34,7 @@ export default {
       lines.push('**Örnekler:**');
       lines.push('• `k!use spotify` → spotify temalarını listeler');
       lines.push('• `k!use spotify light` → spotify light temasını açar (envanterinde olmalı)');
-      lines.push('• `k!use spotify 6` → spotify #6 idli temayı açar');
+      lines.push('• `k!use spotify 10` → spotify #10 idli temayı açar');
       lines.push('• `k!use spotify default` → spotify varsayılan temaya döner');
       lines.push('');
       lines.push('**Mevcut Modüller:**');

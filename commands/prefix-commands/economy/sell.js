@@ -25,13 +25,15 @@ export default {
       return manager.sender.reply(manager.sender.errorEmbed('❌ Bu ID ile bir item bulunamadı.'));
 
     const user = await Economy.findOne({ userId }) || new Economy({ userId });
-    const currentAmount = user.inventory.get(itemId) || 0;
+    
+    const slug = item.slug || `item_${item.id}`;
+    const currentAmount = user.inventory.get(slug) || 0;
 
     if (currentAmount < amount)
       return manager.sender.reply(manager.sender.errorEmbed('❌ Envanterinde yeterli eşya yok.'));
 
     const gain = Math.floor((item.price * amount) * 0.75);
-    user.inventory.set(itemId, currentAmount - amount);
+    user.inventory.set(slug, currentAmount - amount);
     user.money += gain;
     user.xp += 5;
 

@@ -140,7 +140,7 @@ export default {
           themeArg = prefixArgs.shift();
         }
         if (!themeArg) {
-          return manager.sender.reply(manager.sender.errorEmbed("Kullanım: `k!spotify use <tema/ID/default>` örn: `k!spotify use light` veya `k!spotify use 6` veya `k!spotify use default`"));
+          return manager.sender.reply(manager.sender.errorEmbed("Kullanım: `k!spotify use <tema/ID/default>` örn: `k!spotify use light` veya `k!spotify use 10` veya `k!spotify use default`"));
         }
         const res = await cosmeticsHelper.setActiveCosmetic(selfId, "spotify", themeArg);
         

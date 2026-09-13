@@ -12,6 +12,7 @@ const economySchema = new mongoose.Schema({
   xp: { type: Number, default: 0 },
   marriedTo: { type: String, default: null },
   marriageSince: { type: Date, default: null },
+  marriageRing: { type: String, default: null }, // Hangi yüzükle evlendi (ring slug)
   background: { type: String, default: null },
   fosterlings: { type: [String], default: [] },
   inventory: {

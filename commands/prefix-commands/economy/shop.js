@@ -25,16 +25,16 @@ export default {
     }
 
     const pages = [];
-    for (let i = 0; i < shopItems.length; i += 8) {
+    for (let i = 0; i < shopItems.length; i += 10) {
       const embed = new EmbedBuilder()
         .setTitle('Mağaza')
         .setDescription(
           shopItems
-            .slice(i, i + 8)
-            .map(item => `\`${item.id}\` | **${item.name}** - ${item.price} 💰`)
+            .slice(i, i + 10)
+            .map(item => `\`${item.id}\`  ${item.emoji ? `${item.emoji} |` : ''} **${item.name}** - ${item.price} 💰`)
             .join('\n')
         )
-        .setFooter({ text: `Sayfa ${Math.floor(i / 8) + 1}` });
+        .setFooter({ text: `Sayfa ${Math.floor(i / 10) + 1}` });
 
       pages.push(embed);
     }
