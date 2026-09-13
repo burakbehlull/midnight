@@ -1,10 +1,7 @@
 import { Button } from '#helpers';
 import Manager from '#managers';
 
-import { Economy } from '#models';
-
-
-const CERTIFICATE_ID = '5';
+import { Economy, Shop } from '#models';
 
 export default {
   name: 'fosterling',
@@ -48,16 +45,23 @@ export default {
       return manager.sender.reply(manager.sender.errorEmbed(`❌ **${target.username}** zaten başka bir ailenin evladı.`));
     }
 
-    const stock = parentData.inventory.get(CERTIFICATE_ID) || 0;
+    const certificate = await Shop.findOne({ module: 'certificate' });
+    if (!certificate) {
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Evlat Edinme Belgesi bulunamadı. Lütfen bot sahibine başvur.'));
+    }
+
+    const certificateSlug = certificate.slug || `item_${certificate.id}`;
+    const stock = parentData.inventory.get(certificateSlug) || 0;
+    
     if (stock < 1) {
       return manager.sender.reply(
-        manager.sender.errorEmbed('❌ Envanterinde **Evlat Edinme Belgesi** (ID: 5) yok. Satın almak için shop komutunu kullanabilirsin.')
+        manager.sender.errorEmbed(`❌ Envanterinde **Evlat Edinme Belgesi** (ID: ${certificate.id}) yok. Satın almak için shop komutunu kullanabilirsin.`)
       );
     }
 
     const btns = new Button();
-    btns.add('foster_accept', '✅ Kabul Et', btns.style.Success);
-    btns.add('foster_reject', '❌ Reddet', btns.style.Danger);
+    btns.add('foster_accept', 'Kabul Et', btns.style.Success);
+    btns.add('foster_reject', 'Reddet', btns.style.Danger);
     const row = btns.build();
 
     const proposalEmbed = manager.sender.classic(
@@ -111,13 +115,13 @@ export default {
           return proposalMsg.edit({ embeds: [fail], components: [] }).catch(() => {});
         }
 
-        const stockAfter = refreshedParent.inventory.get(CERTIFICATE_ID) || 0;
+        const stockAfter = refreshedParent.inventory.get(certificateSlug) || 0;
         if (stockAfter < 1) {
           const fail = manager.sender.errorEmbed('❌ Kabul edildi ancak Evlat Edinme Belgesi envanterden çıkmış, işlem iptal edildi.');
           return proposalMsg.edit({ embeds: [fail], components: [] }).catch(() => {});
         }
 
-        refreshedParent.inventory.set(CERTIFICATE_ID, stockAfter - 1);
+        refreshedParent.inventory.set(certificateSlug, stockAfter - 1);
 
         if (!Array.isArray(refreshedParent.fosterlings)) refreshedParent.fosterlings = [];
         if (!refreshedParent.fosterlings.includes(target.id)) refreshedParent.fosterlings.push(target.id);

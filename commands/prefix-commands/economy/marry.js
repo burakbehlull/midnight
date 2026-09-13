@@ -84,8 +84,8 @@ export default {
       return manager.sender.reply(manager.sender.errorEmbed('❌ Envanterinde bu yüzükten bulunmuyor.'));
 
     const btns = new Button();
-    btns.add('marry_accept', '✅ Kabul Et', btns.style.Success);
-    btns.add('marry_reject', '❌ Reddet',  btns.style.Danger);
+    btns.add('marry_accept', 'Kabul Et', btns.style.Success);
+    btns.add('marry_reject', 'Reddet',  btns.style.Danger);
     const row = btns.build();
 
     const proposalEmbed = manager.sender.embed({
