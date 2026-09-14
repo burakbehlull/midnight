@@ -101,33 +101,6 @@ export default {
         ));
       }
 
-      const confirmEmbed = sender.embed({
-        title: '⚠️ Toplu Ban Onayı',
-        description: `**${bannableUsers.length}** kullanıcıyı banlamak üzeresin.\n\n` +
-          `**Banlanacaklar:**\n` +
-          bannableUsers.map((u, i) => `${i + 1}. ${u.user.tag} (${u.id})`).join('\n') +
-          `\n\n**Sebep:** ${reason}` +
-          (errors.length > 0 ? `\n\n**Atlanacaklar:**\n${errors.join('\n')}` : ''),
-        color: manager.theme.colors.yellow,
-        footer: { text: 'Onaylamak için 30 saniye içinde "onayla" yaz', iconURL: message.author.displayAvatarURL() }
-      });
-
-      const confirmMsg = await sender.reply(confirmEmbed);
-
-      const filter = (m) => m.author.id === message.author.id && m.content.toLowerCase() === 'onayla';
-      const collected = await message.channel.awaitMessages({ 
-        filter, 
-        max: 1, 
-        time: 30000, 
-        errors: ['time'] 
-      }).catch(() => null);
-
-      if (!collected || collected.size === 0) {
-        return confirmMsg.edit({
-          embeds: [sender.errorEmbed('❌ Toplu ban işlemi iptal edildi (zaman aşımı).')],
-        });
-      }
-
       const progressMsg = await sender.reply(sender.classic(`⏳ ${bannableUsers.length} kullanıcı banlanıyor...`));
 
       const banned = [];
@@ -187,11 +160,6 @@ export default {
         content: null,
         embeds: [resultEmbed]
       });
-
-      try {
-        await collected.first().delete();
-        await confirmMsg.delete();
-      } catch {}
 
     } catch (error) {
       console.error('[mass-ban] komut hatası:', error);
