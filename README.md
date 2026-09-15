@@ -48,6 +48,7 @@ Create ` config.json ` file and set permission settings:
 | **yaz** | This command allows you to write from the bot | text | stable |
 | **client-load** | Client emoji load | emoji, emoji name | stable |
 | **client-list** | Client emoji load | emoji | stable |
+| **eval** | command test | text | stable |
 
 ### contents: General User
 | command | comment | values | situation |
