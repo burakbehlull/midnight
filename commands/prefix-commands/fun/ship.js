@@ -34,16 +34,27 @@ export default {
         const theme = themes[Math.floor(Math.random() * themes.length)];
 
         try {
-            const canvas = createCanvas(1000, 450);
+            const canvas = createCanvas(1024, 500);
             const ctx = canvas.getContext('2d');
 
-            ctx.fillStyle = '#fdeef4';
-            ctx.fillRect(0, 0, 1000, 450);
+            // Arka plan pembe
+            ctx.fillStyle = '#f5e5ee';
+            ctx.fillRect(0, 0, 1024, 500);
 
-            ctx.fillStyle = '#3a3a3a';
-            ctx.font = 'bold 30px "Times New Roman", Georgia, serif';
+            // Başlık - yüzdeye göre değişir
+            let title;
+            if (lovePercentage >= 80) {
+                title = 'BÜYÜK AŞK';
+            } else if (lovePercentage >= 50) {
+                title = 'AŞK';
+            } else {
+                title = 'SİZDEN OLMAZ';
+            }
+
+            ctx.fillStyle = '#4a4a4a';
+            ctx.font = 'bold 32px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText('BÜYÜK AŞK', 500, 45);
+            ctx.fillText(title, 512, 50);
 
             await drawPolaroid(
                 ctx, 
@@ -67,12 +78,12 @@ export default {
             ctx.fillStyle = '#555555';
             ctx.font = 'bold 20px "Times New Roman", Georgia, serif';
             ctx.textAlign = 'center';
-            ctx.fillText(`Tema: ${theme}`, 500, 425);
+            ctx.fillText(`${theme}`, 500, 425);
 
             const attachment = new AttachmentBuilder(canvas.toBuffer(), { name: 'ship.png' });
 
             message.reply({
-                content: `💕 **${message.author.username}** & **${user.user.username}** ${lovePercentage >= 50 ? '❤️' : '💔'}`,
+                content: `**${message.author.username}** & **${user.user.username}** ${lovePercentage >= 50 ? '❤️' : '💔'}`,
                 files: [attachment]
             });
 
