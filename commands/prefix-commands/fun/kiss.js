@@ -1,4 +1,5 @@
 import Manager from '#managers';
+import { urls } from '#data';
 
 export default {
     name: "kiss",
@@ -25,13 +26,7 @@ export default {
             return manager.sender.reply(manager.sender.errorEmbed("❌ Kendini öpemezsin!"));
         }
 
-        const gifs = [
-            'https://media.tenor.com/FmeV4jZ5l7cAAAAC/anime-kiss.gif',
-            'https://media.tenor.com/vtWMLqGeImMAAAAC/kiss-anime.gif',
-            'https://media.tenor.com/5Y5DZ5PJqJsAAAAC/anime-kiss.gif',
-            'https://media.tenor.com/T_h8H3tVZq0AAAAC/anime-kiss.gif',
-            'https://media.tenor.com/02YB5hGe0HEAAAAC/anime-cute.gif'
-        ];
+        const gifs = urls.kiss;
 
         const randomGif = gifs[Math.floor(Math.random() * gifs.length)];
 

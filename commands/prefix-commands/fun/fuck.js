@@ -1,4 +1,5 @@
 import Manager from '#managers';
+import { urls } from '#data';
 
 export default {
     name: "fuck",
@@ -25,13 +26,7 @@ export default {
             return manager.sender.reply(manager.sender.errorEmbed("❌ Kendini fuck edemezsin!"));
         }
 
-        const gifs = [
-            'https://media.tenor.com/VCnLtQHbbA8AAAAC/anime-hentai.gif',
-            'https://media.tenor.com/3-s96CxFKEEAAAAC/anime-lewd.gif',
-            'https://media.tenor.com/WUu26CZKg34AAAAC/anime-kiss.gif',
-            'https://media.tenor.com/oyArU-831j0AAAAC/anime-hug.gif',
-            'https://media.tenor.com/GvB7Z5v_5tcAAAAC/anime.gif'
-        ];
+        const gifs = urls.fuck;
 
         const randomGif = gifs[Math.floor(Math.random() * gifs.length)];
 

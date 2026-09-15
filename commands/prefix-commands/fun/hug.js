@@ -1,4 +1,5 @@
 import Manager from '#managers';
+import { urls } from '#data';
 
 export default {
     name: "hug",
@@ -25,18 +26,12 @@ export default {
             return manager.sender.reply(manager.sender.errorEmbed("❌ Kendine sarılamazsın!"));
         }
 
-        const gifs = [
-            'https://media.tenor.com/UoU297uD04sAAAAC/anime-hug.gif',
-            'https://media.tenor.com/jMHOAt1k9S8AAAAC/hug-anime.gif',
-            'https://media.tenor.com/kJZzWP2S5O0AAAAC/anime-hugs.gif',
-            'https://media.tenor.com/aN6sGFu-OAoAAAAC/anime-hug.gif',
-            'https://media.tenor.com/8dkk-n4SKVoAAAAC/hug.gif'
-        ];
+        const gifs = urls.hug;
 
         const randomGif = gifs[Math.floor(Math.random() * gifs.length)];
 
         message.reply({ 
-            content: `🤗 **${message.author.username}**, **${target.user.username}** kullanıcısına sarıldı!`,
+            content: `**${message.author.username}**, **${target.user.username}** kullanıcısına sarıldı!`,
             embeds: [{
                 image: { url: randomGif },
                 color: 0x3498DB

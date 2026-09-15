@@ -1,4 +1,5 @@
 import Manager from '#managers';
+import { urls } from '#data';
 
 export default {
     name: "slap",
@@ -25,9 +26,7 @@ export default {
             return manager.sender.reply(manager.sender.errorEmbed("❌ Kendine tokat atamazsın!"));
         }
 
-        const gifs = [
-            'https://cdn.discordapp.com/attachments/948696953695383643/1549388572832825344/792e3d12af444957a678b29363b619b3.gif?ex=6aaa840e&is=6aa9328e&hm=5d53e1b3cd8431420ac03b02ef7581d3d860f9df2c4a7969f07774849134c6d3&=&width=400&height=225',
-        ];
+        const gifs = urls.slap;
 
         const randomGif = gifs[Math.floor(Math.random() * gifs.length)];
 

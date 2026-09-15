@@ -165,10 +165,8 @@ Create ` config.json ` file and set permission settings:
 | **gofishing** | take fish | bet amount (1 userly), user and bet amount (userly) | stable |
 | **blackjack** | blackjack | bet amount | stable |
 | **kiss** | kiss user | user | stable |
-| **kiss** | kiss user | user | stable |
 | **slap** | slaps user | user | stable |
 | **hug** | hugs user | user | stable |
-| **order** | order user | user, caffee and tea | stable |
 | **fuck** | fxck user | user | stable |
 
 ### events:
