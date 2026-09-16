@@ -1,4 +1,5 @@
 import Manager from '#managers';
+import { emoji } from '#data';
 import { PermissionFlagsBits } from 'discord.js';
 
 export default {
@@ -24,7 +25,7 @@ export default {
 
     try {
       await message.channel.bulkDelete(deleteCount, true);
-	  const IEmbed = sender.errorEmbed(`${deleteCount} mesaj başarıyla silindi.`)
+	    const IEmbed = sender.errorEmbed(`${deleteCount} mesaj başarıyla silindi. ${emoji.clear}`)
       const sent = await message.channel.send({embeds: [IEmbed]});
       setTimeout(() => sent.delete().catch(() => {}), 3000);
     } catch (err) {

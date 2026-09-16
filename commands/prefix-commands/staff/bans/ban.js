@@ -71,15 +71,19 @@ export default {
         reason
       });
 
+      const avatarURL = target.user?.displayAvatarURL({ dynamic: true, size: 256 }) || 
+                        target.displayAvatarURL?.({ dynamic: true, size: 256 }) ||
+                        `https://cdn.discordapp.com/embed/avatars/${(parseInt(target.id) >> 22) % 6}.png`;
+
       return sender.reply(sender.embed({
         author: { name: message.guild.name, iconURL: message.guild.iconURL() },
         title: "Kullanıcı Banlandı",
         fields: [
-          { name: 'Banlanan Kullanıcı', value: `**${target.user.tag}**\n(${target.id})`, inline: true },
+          { name: 'Banlanan Kullanıcı', value: `**${target.user?.tag || target.tag}**\n(${target.id})`, inline: true },
           { name: 'Banlayan', value: `**${message.author.tag}**\n(${message.author.id})`, inline: true },
           { name: 'Sebep', value: reason, inline: false }
         ],
-        thumbnail: target.user.displayAvatarURL(),
+        thumbnail: avatarURL,
       }), true);
 
     } catch (error) {
