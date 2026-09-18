@@ -330,7 +330,7 @@ async function generateMyStatsCanvas(client, member, guild) {
 		topMessageChannels.forEach((ch, i) => {
 			const itemY = channelY + 65 + (i * 65);
 			const channel = guild.channels.cache.get(ch.channelId);
-			const channelName = channel ? `#${channel.name}` : (ch.channelName ? `#${ch.channelName}` : 'Bilinmeyen Kanal');
+			const channelName = channel ? `#${channel.name}` : (ch.channelName ? `#${ch.channelName}` : 'Silinmiş Kanal');
 			
 			drawRoundedRect(ctx, 70, itemY, channelBoxWidth - 40, 55, 8, '#2a2a2a');
 			
@@ -363,7 +363,7 @@ async function generateMyStatsCanvas(client, member, guild) {
 		topVoiceChannels.forEach((ch, i) => {
 			const itemY = channelY + 65 + (i * 65);
 			const channel = guild.channels.cache.get(ch.id);
-			const channelName = channel ? channel.name : (ch.channelName ? ch.channelName : 'Bilinmeyen Kanal');
+			const channelName = channel ? channel.name : (ch.channelName ? ch.channelName : 'Silinmiş Kanal');
 			
 			drawRoundedRect(ctx, 70 + channelBoxWidth + gapX, itemY, channelBoxWidth - 40, 55, 8, '#2a2a2a');
 			

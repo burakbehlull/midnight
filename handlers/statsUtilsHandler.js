@@ -26,11 +26,11 @@ async function updateMessageStats(userId, guildId, channelId, channelName = '') 
   let channel = stats.messageChannels.find(c => c.channelId === channelId);
   if (channel) {
     channel.count += 1;
-    if (!channel.channelName && channelName) {
+    if (channelName && channelName.trim()) {
       channel.channelName = channelName;
     }
   } else {
-    stats.messageChannels.push({ channelId, channelName, count: 1 });
+    stats.messageChannels.push({ channelId, channelName: channelName || 'Silinmiş Kanal', count: 1 });
   }
 
   await stats.save();
@@ -54,11 +54,12 @@ async function updateVoiceStats(userId, guildId, channelId, durationMs, channelN
   let channel = stats.voiceChannels.find(c => c.channelId === channelId);
   if (channel) {
     channel.duration += durationMs;
-    if (!channel.channelName && channelName) {
+    // Eğer yeni channelName varsa güncelle, yoksa mevcut olanı koru
+    if (channelName && channelName.trim()) {
       channel.channelName = channelName;
     }
   } else {
-    stats.voiceChannels.push({ channelId, channelName, duration: durationMs });
+    stats.voiceChannels.push({ channelId, channelName: channelName || 'Silinmiş Kanal', duration: durationMs });
   }
 
   await stats.save();
