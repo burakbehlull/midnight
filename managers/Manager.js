@@ -11,6 +11,7 @@ class Manager {
     client,
     options = { action: null, authority: {}, utils: {}, theme: {}, sender: {} },
   ) {
+    this.client = client;
     this.theme = new ThemeBuilder(
       options.theme?.action ? options.theme?.action : options.action,
     );

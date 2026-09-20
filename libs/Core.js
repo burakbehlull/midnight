@@ -13,21 +13,21 @@ class Core {
 	}
 	
 	async loaders() {
-	  const client = this.client;
-	  
-	  const prefixCommands = await getPrefixCommands()
-	  const slashCommands = await getSlashCommands()
-	  const hybridCommands = await getHybridCommands()
-	  const events = await getEvents()
-	 
-	  await commandExecuter(client, slashCommands, prefixCommands, hybridCommands)
-	  
-	  if(config.AUTO_SLASH_COMMAND_DEPLOY) {
-	    const deployable = await getDeployableSlashCommands()
-	    await deploySlashCommands(this.token, this.botId, deployable)
-	  }
+		const client = this.client;
+		
+		const prefixCommands = await getPrefixCommands()
+		const slashCommands = await getSlashCommands()
+		const hybridCommands = await getHybridCommands()
+		const events = await getEvents()
+		
+		await commandExecuter(client, slashCommands, prefixCommands, hybridCommands)
+		
+		if(config.AUTO_SLASH_COMMAND_DEPLOY) {
+			const deployable = await getDeployableSlashCommands()
+			await deploySlashCommands(this.token, this.botId, deployable)
+		}
 
-	  await eventExecuter(client, events)  
+		await eventExecuter(client, events)  
 	}
 	
 	connect(){
