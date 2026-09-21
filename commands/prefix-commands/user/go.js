@@ -11,7 +11,7 @@ export default {
 		enabled: false
 	},
   
-  async execute(client, message, args) {
+  async execute(client, message) {
     try {
       const manager = new Manager(client, { action: message });
 	 

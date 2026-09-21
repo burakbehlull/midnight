@@ -7,11 +7,13 @@ Server Public bot built with Discord v14 version, integrated with slash and pref
 
 Operating path:
 
-` npm i `
+**Libs install**  : ` npm start `
 
-` npm run deploy `
+**Slash commands load**  : ` npm start `
 
-` npm start `
+**Start command** : ` npm start `
+
+**Bot and web panel start command** : ` npm run all `
 
 To enter bot settings, create an .env file, there is an example ` .env ` file named **.env-example** in the project.
 

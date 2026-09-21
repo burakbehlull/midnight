@@ -2,3 +2,8 @@ node_modules
 package-lock.json
 .env
 query
+
+# Dashboard
+dashboard/node_modules
+dashboard/dist
+dashboard/.vite

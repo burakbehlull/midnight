@@ -11,10 +11,10 @@ export default {
 		enabled: false
 	},
 
-  async execute(client, message, args) {
+  async execute(client, message) {
     try {
 		
-      const sender = new Manager(client, { action: message });
+      const manager = new Manager(client, { action: message });
 	  
       const target = message.mentions.members.first();
       if (!target) return manager.sender.reply(manager.sender.errorEmbed("❌ Lütfen bir kullanıcı etiketleyin."), true);
