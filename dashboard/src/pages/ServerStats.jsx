@@ -4,6 +4,7 @@ import { api } from '../api/client'
 import UserManagementModal from '../components/UserManagementModal'
 import UserProfileModal from '../components/UserProfileModal'
 import DeletedMessagesTab from '../components/tabs/DeletedMessagesTab'
+import ChannelsTab from '../components/tabs/ChannelsTab'
 
 const ServerStats = () => {
   const { guildId } = useParams()
@@ -58,6 +59,9 @@ const ServerStats = () => {
       } else if (activeTab === 'deleted') {
         // Deleted messages tab handles its own data
         setStats([])
+      } else if (activeTab === 'channels') {
+        // Channels tab handles its own data
+        setStats([])
       } else {
         const res = await api.getGuildStats(guildId, activeTab, limit)
         setStats(res.data)
@@ -92,6 +96,7 @@ const ServerStats = () => {
     { id: 'staff', label: 'Yetkililer', icon: '👮' },
     { id: 'roles', label: 'Roller', icon: '🎭' },
     { id: 'bans', label: 'Banlı Kullanıcılar', icon: '🔨' },
+    { id: 'channels', label: 'Kanallar', icon: '📺' },
     { id: 'deleted', label: 'Silinen Mesajlar', icon: '🗑️' }
   ]
 
@@ -189,6 +194,9 @@ const ServerStats = () => {
       {activeTab === 'deleted' ? (
         /* Deleted Messages - Separate Component */
         <DeletedMessagesTab guildId={guildId} />
+      ) : activeTab === 'channels' ? (
+        /* Channels - Separate Component */
+        <ChannelsTab guildId={guildId} />
       ) : loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-midnight-purple"></div>

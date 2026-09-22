@@ -27,6 +27,8 @@ export const api = {
     apiClient.get(`/guilds/${guildId}/bans`),
   getGuildDeletedMessages: (guildId, limit = 100) =>
     apiClient.get(`/guilds/${guildId}/deleted-messages`, { params: { limit } }),
+  getGuildChannelMessages: (guildId, channelId, limit = 50) =>
+    apiClient.get(`/guilds/${guildId}/channels/${channelId}/messages`, { params: { limit } }),
 
   // Economy
   getGlobalEconomy: (limit = 100) => 
@@ -48,6 +50,7 @@ export const api = {
   getBotDMs: () => apiClient.get('/bot/dms'),
   replyToDM: (userId, content, messageIds = null) => 
     apiClient.post(`/bot/dms/${userId}/reply`, { content, messageIds }),
+  getUserById: (userId) => apiClient.get(`/users/${userId}`),
 
   // Messages
   sendMessage: (data) => apiClient.post('/message/send', data),

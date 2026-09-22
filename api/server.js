@@ -57,6 +57,41 @@ class MidnightAPI {
     this.setupErrorHandling();
   }
 
+  async fetchUserSmart(guild, userId) {
+    try {
+      const member = await guild.members.fetch(userId).catch(() => null);
+      if (member) {
+        return {
+          username: member.user.username,
+          globalName: member.user.globalName || null,
+          avatar: member.user.displayAvatarURL({ size: 64 }),
+          user: member.user
+        };
+      }
+    } catch (error) {
+    }
+
+    try {
+      const user = await this.client.users.fetch(userId).catch(() => null);
+      if (user) {
+        return {
+          username: user.username,
+          globalName: user.globalName || null,
+          avatar: user.displayAvatarURL({ size: 64 }),
+          user: user
+        };
+      }
+    } catch (error) {
+    }
+
+    return {
+      username: 'Unknown User',
+      globalName: null,
+      avatar: null,
+      user: null
+    };
+  }
+
   setupMiddleware() {
     this.app.use(cors());
     this.app.use(express.json());
@@ -310,18 +345,23 @@ class MidnightAPI {
         }
 
         if (type === 'economy') {
-          // Get top users by money
+          // Get all economy data sorted by money
           const economyData = await Economy.find({})
-            .sort({ money: -1 })
-            .limit(parseInt(limit));
+            .sort({ money: -1 });
 
-          const economyWithUsers = await Promise.all(
-            economyData.map(async (data) => {
-              const member = await guild.members.fetch(data.userId).catch(() => null);
-              return {
+          // Filter and map in one go to avoid rate limits
+          const economyWithUsers = [];
+          
+          for (const data of economyData) {
+            // Check if user is in guild (using cache only, no API calls)
+            const member = guild.members.cache.get(data.userId);
+            
+            if (member) {
+              // User is in guild, add to results
+              economyWithUsers.push({
                 userId: data.userId,
-                username: member?.user.username || 'Unknown User',
-                avatar: member?.user.displayAvatarURL({ size: 64 }) || null,
+                username: member.user.username,
+                avatar: member.user.displayAvatarURL({ size: 64 }),
                 money: data.money,
                 cookies: data.cookies,
                 hearts: data.hearts,
@@ -329,9 +369,14 @@ class MidnightAPI {
                 xp: data.xp,
                 marriedTo: data.marriedTo,
                 subtitle: data.subtitle
-              };
-            })
-          );
+              });
+              
+              // Stop when we reach the limit
+              if (economyWithUsers.length >= parseInt(limit)) {
+                break;
+              }
+            }
+          }
 
           return res.json(economyWithUsers);
         }
@@ -345,7 +390,7 @@ class MidnightAPI {
 
           const levelWithUsers = await Promise.all(
             levelData.map(async (data) => {
-              const member = await guild.members.fetch(data.userId).catch(() => null);
+              const userInfo = await this.fetchUserSmart(guild, data.userId);
               
               // UserStats'tan kanal bilgilerini al
               const userStats = await UserStats.findOne({ guildId, userId: data.userId });
@@ -360,23 +405,30 @@ class MidnightAPI {
               
               // Rolleri düzgün şekilde al
               let userRoles = [];
-              if (member?.roles?.cache) {
-                userRoles = Array.from(member.roles.cache.values())
-                  .filter(r => r.id !== guild.id) // @everyone'ı çıkar
-                  .sort((a, b) => b.position - a.position)
-                  .slice(0, 5)
-                  .map(r => ({
-                    id: r.id,
-                    name: r.name,
-                    color: r.color,
-                    position: r.position
-                  }));
+              if (userInfo.user) {
+                try {
+                  const member = await guild.members.fetch(data.userId).catch(() => null);
+                  if (member?.roles?.cache) {
+                    userRoles = Array.from(member.roles.cache.values())
+                      .filter(r => r.id !== guild.id) // @everyone'ı çıkar
+                      .sort((a, b) => b.position - a.position)
+                      .slice(0, 5)
+                      .map(r => ({
+                        id: r.id,
+                        name: r.name,
+                        color: r.color,
+                        position: r.position
+                      }));
+                  }
+                } catch (e) {
+                  // Member değilse rol yok
+                }
               }
               
               return {
                 userId: data.userId,
-                username: member?.user.username || 'Unknown User',
-                avatar: member?.user.displayAvatarURL({ size: 64 }) || null,
+                username: userInfo.username,
+                avatar: userInfo.avatar,
                 messageXP: data.messageXP || 0,
                 voiceXP: data.voiceXP || 0,
                 messageLevel: data.messageLevel || 0,
@@ -400,11 +452,11 @@ class MidnightAPI {
 
           const invitesWithUsers = await Promise.all(
             inviteData.map(async (data) => {
-              const member = await guild.members.fetch(data.userId).catch(() => null);
+              const userInfo = await this.fetchUserSmart(guild, data.userId);
               return {
                 userId: data.userId,
-                username: member?.user.username || 'Unknown User',
-                avatar: member?.user.displayAvatarURL({ size: 64 }) || null,
+                username: userInfo.username,
+                avatar: userInfo.avatar,
                 invitesCount: data.invitesCount
               };
             })
@@ -420,11 +472,11 @@ class MidnightAPI {
 
           const staffWithUsers = await Promise.all(
             staffData.map(async (data) => {
-              const member = await guild.members.fetch(data.userId).catch(() => null);
+              const userInfo = await this.fetchUserSmart(guild, data.userId);
               return {
                 userId: data.userId,
-                username: member?.user.username || 'Unknown User',
-                avatar: member?.user.displayAvatarURL({ size: 64 }) || null,
+                username: userInfo.username,
+                avatar: userInfo.avatar,
                 registerCount: data.registerCount,
                 startedStaffCount: data.startedStaffCount,
                 startedAt: data.startedAt
@@ -463,12 +515,12 @@ class MidnightAPI {
             .sort((a, b) => (b.totalVoice || 0) - (a.totalVoice || 0))
             .slice(0, 10)
             .map(async (data, index) => {
-              const member = await guild.members.fetch(data.userId).catch(() => null);
+              const userInfo = await this.fetchUserSmart(guild, data.userId);
               return {
                 rank: index + 1,
                 userId: data.userId,
-                username: member?.user.username || 'Unknown User',
-                avatar: member?.user.displayAvatarURL({ size: 128 }) || null,
+                username: userInfo.username,
+                avatar: userInfo.avatar,
                 value: data.totalVoice || 0
               };
             })
@@ -480,12 +532,12 @@ class MidnightAPI {
             .sort((a, b) => (b.totalMessages || 0) - (a.totalMessages || 0))
             .slice(0, 10)
             .map(async (data, index) => {
-              const member = await guild.members.fetch(data.userId).catch(() => null);
+              const userInfo = await this.fetchUserSmart(guild, data.userId);
               return {
                 rank: index + 1,
                 userId: data.userId,
-                username: member?.user.username || 'Unknown User',
-                avatar: member?.user.displayAvatarURL({ size: 128 }) || null,
+                username: userInfo.username,
+                avatar: userInfo.avatar,
                 value: data.totalMessages || 0
               };
             })
@@ -498,12 +550,12 @@ class MidnightAPI {
             .sort((a, b) => (b.totalCameraOpens || 0) - (a.totalCameraOpens || 0))
             .slice(0, 10)
             .map(async (data, index) => {
-              const member = await guild.members.fetch(data.userId).catch(() => null);
+              const userInfo = await this.fetchUserSmart(guild, data.userId);
               return {
                 rank: index + 1,
                 userId: data.userId,
-                username: member?.user.username || 'Unknown User',
-                avatar: member?.user.displayAvatarURL({ size: 128 }) || null,
+                username: userInfo.username,
+                avatar: userInfo.avatar,
                 value: data.totalCameraOpens || 0
               };
             })
@@ -516,12 +568,12 @@ class MidnightAPI {
             .sort((a, b) => (b.totalStreams || 0) - (a.totalStreams || 0))
             .slice(0, 10)
             .map(async (data, index) => {
-              const member = await guild.members.fetch(data.userId).catch(() => null);
+              const userInfo = await this.fetchUserSmart(guild, data.userId);
               return {
                 rank: index + 1,
                 userId: data.userId,
-                username: member?.user.username || 'Unknown User',
-                avatar: member?.user.displayAvatarURL({ size: 128 }) || null,
+                username: userInfo.username,
+                avatar: userInfo.avatar,
                 value: data.totalStreams || 0
               };
             })
@@ -636,6 +688,57 @@ class MidnightAPI {
 
       } catch (error) {
         console.error('Error fetching deleted messages:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get channel messages
+    this.app.get('/api/guilds/:guildId/channels/:channelId/messages', async (req, res) => {
+      try {
+        const { guildId, channelId } = req.params;
+        const { limit = 50 } = req.query;
+
+        const guild = this.client.guilds.cache.get(guildId);
+        if (!guild) {
+          return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const channel = guild.channels.cache.get(channelId);
+        if (!channel || !channel.isTextBased()) {
+          return res.status(404).json({ error: 'Channel not found or not text-based' });
+        }
+
+        const messages = await channel.messages.fetch({ limit: parseInt(limit) });
+        
+        const formattedMessages = messages.map(msg => ({
+          id: msg.id,
+          content: msg.content,
+          author: {
+            id: msg.author.id,
+            username: msg.author.username,
+            globalName: msg.author.globalName || null,
+            avatar: msg.author.displayAvatarURL({ size: 128 }),
+            bot: msg.author.bot
+          },
+          createdAt: msg.createdTimestamp,
+          attachments: msg.attachments.map(att => ({
+            url: att.url,
+            proxyUrl: att.proxyURL,
+            filename: att.name,
+            contentType: att.contentType,
+            size: att.size
+          })),
+          embeds: msg.embeds.map(e => e.toJSON()),
+          reactions: msg.reactions.cache.map(r => ({
+            emoji: r.emoji.name,
+            count: r.count
+          }))
+        }));
+
+        res.json(formattedMessages.reverse()); // Chronological order
+
+      } catch (error) {
+        console.error('Error fetching channel messages:', error);
         res.status(500).json({ error: error.message });
       }
     });
@@ -884,6 +987,31 @@ class MidnightAPI {
       } catch (error) {
         console.error('Error fetching DMs:', error);
         res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get user by ID
+    this.app.get('/api/users/:userId', async (req, res) => {
+      try {
+        const { userId } = req.params;
+        
+        const user = await this.client.users.fetch(userId);
+        if (!user) {
+          return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json({
+          id: user.id,
+          username: user.username,
+          globalName: user.globalName || null,
+          avatar: user.displayAvatarURL({ size: 128 }),
+          bot: user.bot,
+          discriminator: user.discriminator
+        });
+
+      } catch (error) {
+        console.error('Error fetching user:', error);
+        res.status(404).json({ error: 'User not found' });
       }
     });
 

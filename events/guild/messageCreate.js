@@ -1,5 +1,5 @@
 import { Events } from 'discord.js';
-import { afkHandler, levelMessageHandler, statsUtilsHandler, handleCooldown, directMessageHandler } from "#handlers"
+import { afkHandler, levelMessageHandler, statsUtilsHandler, handleCooldown } from "#handlers"
 import { relationsHandler } from "#handlers";
 import { Settings } from "#models";
 import { checkCommandRestrictions, handleAutoDelete, normalizePrefixArgs } from "#helpers";
@@ -15,12 +15,13 @@ export default {
     let prefix = process.env.PREFIX;
     let settings = null;
 
-    await directMessageHandler(client, message);
-
+    // DM Handler - Sadece DM'ler için
     if (!message.guild) {
       try {
+        // Bot'un kendi mesajlarını kaydetme
         if (message.author.id === client.user.id) return;
         
+        // Bot mesajlarını kaydetme
         if (message.author.bot) return;
 
         const dm = new DirectMessage({
@@ -38,9 +39,10 @@ export default {
       } catch (error) {
         console.error('Error saving DM:', error);
       }
-      return;
+      return; // DM ise diğer işlemleri yapma
     }
 
+    // Guild mesajları için ayarları çek
     if (message.guild) {
       try {
         settings = await Settings.findOne({ guildId: message.guild.id }).lean();
@@ -48,9 +50,9 @@ export default {
           prefix = settings.prefix;
         }
       } catch (err) {
-          console.error('[messageCreate] Prefix okunurken hata:', err);
-        }
+        console.error('[messageCreate] Prefix okunurken hata:', err);
       }
+    }
 	
     if(message.author.bot) return
 

@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
 import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import AdminPanel from './pages/AdminPanel'
@@ -10,6 +11,30 @@ import BotSettings from './pages/BotSettings'
 function App() {
   return (
     <Router>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
+            color: '#fff',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+          },
+          success: {
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
       <Layout>
         <Routes>
           <Route path="/" element={<Dashboard />} />

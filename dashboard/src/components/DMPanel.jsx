@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../api/client'
+import toast from 'react-hot-toast'
 
 const DMPanel = () => {
   const [users, setUsers] = useState([])
@@ -8,6 +9,8 @@ const DMPanel = () => {
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [searchUserId, setSearchUserId] = useState('')
+  const [searchingUser, setSearchingUser] = useState(false)
 
   useEffect(() => {
     fetchDMs()
@@ -35,13 +38,52 @@ const DMPanel = () => {
       setReplyText('')
       setRefreshKey(prev => prev + 1) // Refresh DMs
       
-      // Show success message
-      alert('Mesaj başarıyla gönderildi!')
+      toast.success('Mesaj başarıyla gönderildi! ✅')
     } catch (error) {
       console.error('Mesaj gönderilirken hata:', error)
-      alert('Mesaj gönderilemedi: ' + error.message)
+      toast.error('Mesaj gönderilemedi: ' + error.message)
     } finally {
       setSending(false)
+    }
+  }
+
+  const handleSearchUser = async () => {
+    if (!searchUserId.trim()) {
+      toast.error('Lütfen bir kullanıcı ID girin!')
+      return
+    }
+
+    try {
+      setSearchingUser(true)
+      // Fetch user info from backend
+      const response = await api.getUserById(searchUserId)
+      const user = response.data
+      
+      // Check if user already in list
+      const existingUser = users.find(u => u.userId === user.id)
+      if (existingUser) {
+        setSelectedUser(existingUser)
+        toast.success('Kullanıcı bulundu!')
+      } else {
+        // Create new user entry
+        const newUser = {
+          userId: user.id,
+          username: user.username,
+          globalName: user.globalName,
+          avatar: user.avatar,
+          messages: [],
+          lastMessage: new Date(),
+          unreadCount: 0
+        }
+        setSelectedUser(newUser)
+        toast.success(`${user.globalName || user.username} ile sohbete başla!`)
+      }
+      setSearchUserId('')
+    } catch (error) {
+      console.error('Kullanıcı bulunamadı:', error)
+      toast.error('Kullanıcı bulunamadı! ID\'yi kontrol edin.')
+    } finally {
+      setSearchingUser(false)
     }
   }
 
@@ -107,6 +149,29 @@ const DMPanel = () => {
         >
           🔄 Yenile
         </button>
+      </div>
+
+      {/* User Search */}
+      <div className="mb-6 glass-strong rounded-lg p-4">
+        <p className="text-sm text-gray-400 mb-3">🔍 Kullanıcı ID ile Ara ve Mesaj Gönder</p>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={searchUserId}
+            onChange={(e) => setSearchUserId(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && !searchingUser && handleSearchUser()}
+            placeholder="Kullanıcı ID'sini gir (örn: 123456789012345678)"
+            className="flex-1 px-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:border-midnight-purple focus:outline-none transition-colors"
+            disabled={searchingUser}
+          />
+          <button
+            onClick={handleSearchUser}
+            disabled={!searchUserId.trim() || searchingUser}
+            className="px-6 py-2 rounded-lg bg-gradient-to-r from-midnight-purple to-pink-500 hover:from-midnight-purple/80 hover:to-pink-500/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold"
+          >
+            {searchingUser ? '⏳ Aranıyor...' : '🔍 Ara'}
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
