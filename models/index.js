@@ -25,6 +25,9 @@ import NicknameHistory from "./NicknameHistory.js"
 import BoosterRole from "./BoosterRole.js"
 
 
+import DirectMessage from "./DirectMessage.js"
+
+
 export {
 	Afk,
 	DeletedMessage,
@@ -47,5 +50,6 @@ export {
 	MarketItem,
 	UserPortfolio,
 	NicknameHistory,
-	BoosterRole
+	BoosterRole,
+	DirectMessage
 }

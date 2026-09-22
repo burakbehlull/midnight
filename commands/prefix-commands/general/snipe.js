@@ -20,20 +20,23 @@ export default {
 
     try {
       const deletedMessages = await DeletedMessage.find({ channelId })
-        .sort({ createdAt: -1 })
+        .sort({ deletedAt: -1 })
         .limit(count);
 
       if (!deletedMessages.length) {
         return manager.sender.reply(manager.sender.errorEmbed('❌ Bu kanalda henüz silinen mesaj yok!'));
       }
 
-      const formattedMessages = deletedMessages.map((msg, index) => 
-        `**#${index + 1}** 👤 **${msg.authorTag}**: \`${msg.messageContent}\``
-      ).join('\n\n');
+      const formattedMessages = deletedMessages.map((msg, index) => {
+        const displayName = msg.globalName || msg.username || 'Bilinmeyen Kullanıcı';
+        const authorTag = msg.username ? `${displayName}#${msg.username}` : displayName;
+        const messageContent = msg.content || '[Mesaj içeriği yok]';
+        
+        return `**#${index + 1}** 👤 **${authorTag}**: \`${messageContent}\``;
+      }).join('\n\n');
 
       return manager.sender.reply(
         manager.sender.classic(
-		
           `**Son silinen ${deletedMessages.length} mesaj:**\n\n${formattedMessages}`
         )
       );

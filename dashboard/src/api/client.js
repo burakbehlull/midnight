@@ -25,6 +25,8 @@ export const api = {
     apiClient.get(`/guilds/${guildId}/punishments`, { params: { limit } }),
   getGuildBans: (guildId) => 
     apiClient.get(`/guilds/${guildId}/bans`),
+  getGuildDeletedMessages: (guildId, limit = 100) =>
+    apiClient.get(`/guilds/${guildId}/deleted-messages`, { params: { limit } }),
 
   // Economy
   getGlobalEconomy: (limit = 100) => 
@@ -41,6 +43,11 @@ export const api = {
   uploadBotBanner: (formData) => apiClient.post('/bot/banner/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
+
+  // Direct Messages
+  getBotDMs: () => apiClient.get('/bot/dms'),
+  replyToDM: (userId, content, messageIds = null) => 
+    apiClient.post(`/bot/dms/${userId}/reply`, { content, messageIds }),
 
   // Messages
   sendMessage: (data) => apiClient.post('/message/send', data),

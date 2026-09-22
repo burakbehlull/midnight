@@ -1,5 +1,5 @@
 import { Events } from 'discord.js';
-import { deleteMessageHandler } from "#handlers"
+import { deletedMessageHandler } from "#handlers"
 
 export default {
   name: Events.MessageDelete, 
@@ -7,7 +7,7 @@ export default {
     if (message.author?.bot) return
 	try {
 		
-      await deleteMessageHandler(message);
+      await deletedMessageHandler(client, message);
     } catch (error) {
       console.error(`❌ Message Delete: `, error); 
     }

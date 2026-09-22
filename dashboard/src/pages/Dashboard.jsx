@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '../api/client'
 import GuildCard from '../components/GuildCard'
+import DMPanel from '../components/DMPanel'
 
 const Dashboard = () => {
   const [guilds, setGuilds] = useState([])
@@ -61,6 +62,11 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+
+      {/* DM Panel */}
+      <div className="mb-8">
+        <DMPanel />
+      </div>
 
       {/* Guilds Grid */}
       <div className="mb-6">

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import UserManagementModal from '../components/UserManagementModal'
 import UserProfileModal from '../components/UserProfileModal'
+import DeletedMessagesTab from '../components/tabs/DeletedMessagesTab'
 
 const ServerStats = () => {
   const { guildId } = useParams()
@@ -54,6 +55,9 @@ const ServerStats = () => {
       } else if (activeTab === 'bans') {
         const res = await api.getGuildBans(guildId)
         setStats(res.data)
+      } else if (activeTab === 'deleted') {
+        // Deleted messages tab handles its own data
+        setStats([])
       } else {
         const res = await api.getGuildStats(guildId, activeTab, limit)
         setStats(res.data)
@@ -87,7 +91,8 @@ const ServerStats = () => {
     { id: 'invites', label: 'Davetler', icon: '🎟️' },
     { id: 'staff', label: 'Yetkililer', icon: '👮' },
     { id: 'roles', label: 'Roller', icon: '🎭' },
-    { id: 'bans', label: 'Banlı Kullanıcılar', icon: '🔨' }
+    { id: 'bans', label: 'Banlı Kullanıcılar', icon: '🔨' },
+    { id: 'deleted', label: 'Silinen Mesajlar', icon: '🗑️' }
   ]
 
   const formatDuration = (ms) => {
@@ -165,7 +170,7 @@ const ServerStats = () => {
       </div>
 
       {/* Limit Selector */}
-      {activeTab !== 'bans' && (
+      {activeTab !== 'bans' && activeTab !== 'deleted' && (
         <div className="mb-6 flex justify-end">
           <select
             value={limit}
@@ -180,8 +185,11 @@ const ServerStats = () => {
         </div>
       )}
 
-      {/* Stats Table */}
-      {loading ? (
+      {/* Stats Content */}
+      {activeTab === 'deleted' ? (
+        /* Deleted Messages - Separate Component */
+        <DeletedMessagesTab guildId={guildId} />
+      ) : loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-midnight-purple"></div>
         </div>

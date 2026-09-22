@@ -1,18 +1,45 @@
 import { Events } from 'discord.js';
-import { afkHandler, levelMessageHandler, statsUtilsHandler, handleCooldown } from "#handlers"
+import { afkHandler, levelMessageHandler, statsUtilsHandler, handleCooldown, directMessageHandler } from "#handlers"
 import { relationsHandler } from "#handlers";
 import { Settings } from "#models";
 import { checkCommandRestrictions, handleAutoDelete, normalizePrefixArgs } from "#helpers";
 import Manager from "#managers";
+import DirectMessage from '../../models/DirectMessage.js';
 import "dotenv/config"
 
-const recentMessages = new Map(); // channelId -> [{ userId, userName, timestamp }]
+const recentMessages = new Map();
 
 export default {
   name: Events.MessageCreate, 
   async execute(client, message) {
     let prefix = process.env.PREFIX;
     let settings = null;
+
+    await directMessageHandler(client, message);
+
+    if (!message.guild) {
+      try {
+        if (message.author.id === client.user.id) return;
+        
+        if (message.author.bot) return;
+
+        const dm = new DirectMessage({
+          userId: message.author.id,
+          username: message.author.username,
+          globalName: message.author.globalName || null,
+          avatar: message.author.displayAvatarURL({ size: 128 }),
+          messageContent: message.content,
+          messageId: message.id
+        });
+
+        await dm.save();
+        console.log(`[DM] Received from ${message.author.username}: ${message.content}`);
+
+      } catch (error) {
+        console.error('Error saving DM:', error);
+      }
+      return;
+    }
 
     if (message.guild) {
       try {
@@ -35,7 +62,6 @@ export default {
         await statsUtilsHandler.updateMessageStats(message.author.id, message.guild.id, message.channel.id, message.channel.name);
       }
       
-      // Arkadaşlık sistemi
       if (settings?.statSystemStatus) {
         const channelId = message.channel.id;
         const now = Date.now();

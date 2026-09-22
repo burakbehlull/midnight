@@ -10,12 +10,12 @@ import Staff from '../models/Staff.js';
 import Punishment from '../models/Punishment.js';
 import InviteModel from '../models/InviteModel.js';
 import Level from '../models/Level.js';
+import DeletedMessage from '../models/DeletedMessage.js';
 import { errorHandler, notFoundHandler, requestLogger } from './middleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Multer configuration for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = path.join(__dirname, '../uploads');
@@ -32,7 +32,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
@@ -62,7 +62,6 @@ class MidnightAPI {
     this.app.use(express.json());
     this.app.use(requestLogger);
     
-    // Serve uploaded files statically
     this.app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
   }
 
@@ -115,7 +114,7 @@ class MidnightAPI {
       }
 
       const roles = guild.roles.cache
-        .filter(role => role.id !== guildId) // @everyone'ı çıkar
+        .filter(role => role.id !== guildId)
         .sort((a, b) => b.position - a.position)
         .map(role => ({
           id: role.id,
@@ -169,9 +168,7 @@ class MidnightAPI {
       }
     });
 
-    // User management endpoints
     
-    // Add role to user
     this.app.post('/api/guilds/:guildId/members/:userId/roles/add', async (req, res) => {
       try {
         const { guildId, userId } = req.params;
@@ -620,6 +617,29 @@ class MidnightAPI {
       }
     });
 
+    // Get deleted messages for a guild
+    this.app.get('/api/guilds/:guildId/deleted-messages', async (req, res) => {
+      try {
+        const { guildId } = req.params;
+        const { limit = 100 } = req.query;
+
+        const guild = this.client.guilds.cache.get(guildId);
+        if (!guild) {
+          return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const deletedMessages = await DeletedMessage.find({ guildId })
+          .sort({ deletedAt: -1 })
+          .limit(parseInt(limit));
+
+        res.json(deletedMessages);
+
+      } catch (error) {
+        console.error('Error fetching deleted messages:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
     // Get global economy (all users)
     this.app.get('/api/economy/global', async (req, res) => {
       try {
@@ -812,6 +832,114 @@ class MidnightAPI {
 
       } catch (error) {
         console.error('Error uploading banner:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get bot DMs - grouped by user
+    this.app.get('/api/bot/dms', async (req, res) => {
+      try {
+        const DirectMessage = (await import('../models/DirectMessage.js')).default;
+        
+        // Tüm DM'leri kullanıcıya göre grupla
+        const messages = await DirectMessage.find().sort({ createdAt: -1 });
+        
+        // Kullanıcıya göre grupla
+        const groupedByUser = {};
+        messages.forEach(msg => {
+          if (!groupedByUser[msg.userId]) {
+            groupedByUser[msg.userId] = {
+              userId: msg.userId,
+              username: msg.username,
+              globalName: msg.globalName,
+              avatar: msg.avatar,
+              messages: [],
+              lastMessage: msg.createdAt,
+              unreadCount: 0
+            };
+          }
+          
+          groupedByUser[msg.userId].messages.push({
+            id: msg.messageId,
+            content: msg.messageContent,
+            createdAt: msg.createdAt,
+            replied: msg.replied,
+            replyContent: msg.replyContent,
+            repliedAt: msg.repliedAt
+          });
+          
+          // Cevap verilmemiş mesaj sayısı
+          if (!msg.replied) {
+            groupedByUser[msg.userId].unreadCount++;
+          }
+        });
+
+        // Array'e çevir ve son mesaja göre sırala
+        const users = Object.values(groupedByUser).sort((a, b) => 
+          new Date(b.lastMessage) - new Date(a.lastMessage)
+        );
+
+        res.json(users);
+
+      } catch (error) {
+        console.error('Error fetching DMs:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Reply to a DM
+    this.app.post('/api/bot/dms/:userId/reply', async (req, res) => {
+      try {
+        const { userId } = req.params;
+        const { content, messageIds } = req.body;
+
+        if (!content) {
+          return res.status(400).json({ error: 'Mesaj içeriği gerekli' });
+        }
+
+        // Kullanıcıya DM gönder
+        const user = await this.client.users.fetch(userId);
+        if (!user) {
+          return res.status(404).json({ error: 'Kullanıcı bulunamadı' });
+        }
+
+        await user.send(content);
+
+        // Veritabanında cevap verildi olarak işaretle
+        const DirectMessage = (await import('../models/DirectMessage.js')).default;
+        
+        if (messageIds && messageIds.length > 0) {
+          await DirectMessage.updateMany(
+            { messageId: { $in: messageIds }, userId: userId },
+            { 
+              $set: { 
+                replied: true, 
+                replyContent: content,
+                repliedAt: new Date()
+              } 
+            }
+          );
+        } else {
+          // Tüm cevaplanmamış mesajları işaretle
+          await DirectMessage.updateMany(
+            { userId: userId, replied: false },
+            { 
+              $set: { 
+                replied: true, 
+                replyContent: content,
+                repliedAt: new Date()
+              } 
+            }
+          );
+        }
+
+        res.json({ 
+          success: true, 
+          message: 'Mesaj başarıyla gönderildi' 
+        });
+
+      } catch (error) {
+        console.error('Error replying to DM:', error);
         res.status(500).json({ error: error.message });
       }
     });

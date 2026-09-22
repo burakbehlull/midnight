@@ -1,6 +1,5 @@
 import afkHandler from "./afkHandler.js"
 import autoRoleHandler from "./autoRoleHandler.js"
-import deleteMessageHandler from "./deleteMessageHandler.js"
 
 import levelMessageHandler from "./levelMessageHandler.js"
 import * as levelVoiceHandler from "./levelVoiceHandler.js"
@@ -19,12 +18,14 @@ import { handleVoiceRoomCreate, handleInteractionCreate } from "./privateRoomHan
 
 import { boosterInteractionHandler } from "./boosterInteractionHandler.js"
 
+import deletedMessageHandler from "./deletedMessageHandler.js"
+import directMessageHandler from "./directMessageHandler.js"
+
 export {
 	handleCooldown,
 	
 	afkHandler,
 	autoRoleHandler,
-	deleteMessageHandler,
 	
 	levelMessageHandler,
 	levelVoiceHandler,
@@ -39,5 +40,8 @@ export {
 	
 	handleVoiceRoomCreate, 
 	handleInteractionCreate,
-	boosterInteractionHandler
+	boosterInteractionHandler,
+
+	deletedMessageHandler,
+	directMessageHandler
 }
