@@ -26,6 +26,7 @@ import BoosterRole from "./BoosterRole.js"
 
 
 import DirectMessage from "./DirectMessage.js"
+import RoleHistory from "./RoleHistory.js"
 
 
 export {
@@ -51,5 +52,6 @@ export {
 	UserPortfolio,
 	NicknameHistory,
 	BoosterRole,
-	DirectMessage
+	DirectMessage,
+	RoleHistory
 }

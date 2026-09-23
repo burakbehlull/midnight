@@ -1,5 +1,6 @@
 import { Events, AuditLogEvent } from 'discord.js';
 import { modLogger } from '#helpers';
+import { RoleHistory } from '#models';
 
 export default {
   name: Events.GuildMemberUpdate,
@@ -95,46 +96,86 @@ export default {
     if (addedRoles.length > 0 || removedRoles.length > 0) {
       const urlogs = await newMember.guild.fetchAuditLogs({ type: AuditLogEvent.MemberRoleUpdate, limit: 5 });
 
-      for (const roleId of addedRoles) {
-        const role = newMember.guild.roles.cache.get(roleId);
-        if (!role) continue;
-
-        const entry = urlogs.entries.find(
+      if (addedRoles.length > 0) {
+        const addEntry = urlogs.entries.find(
           e => e.target.id === newMember.id &&
           now - e.createdTimestamp < 5000 &&
           e.changes.some(change => change.key === '$add')
         );
+        const executor = addEntry?.executor;
 
-        await logger.logEvent({
-          guild: newMember.guild,
-          author: { name: newMember.guild.name, iconURL: newMember.guild.iconURL() },
-          type: 'role',
-		  color: 0x808080,
-          title: null,
-          description: `<@${newMember.id}> kullanıcısına ${entry?.executor ? `<@${entry.executor.id}> tarafından` : ''} <@&${role.id}> rolü verildi.`,
-          footer: { text: entry?.executor?.tag || 'Bilinmiyor', iconURL: entry?.executor?.displayAvatarURL() }
-        });
+        const roleIds = [];
+        const roleNames = [];
+        for (const roleId of addedRoles) {
+          const role = newMember.guild.roles.cache.get(roleId);
+          if (!role) continue;
+          roleIds.push(role.id);
+          roleNames.push(role.name);
+
+          await logger.logEvent({
+            guild: newMember.guild,
+            author: { name: newMember.guild.name, iconURL: newMember.guild.iconURL() },
+            type: 'role',
+		    color: 0x808080,
+            title: null,
+            description: `<@${newMember.id}> kullanıcısına ${executor ? `<@${executor.id}> tarafından` : ''} <@&${role.id}> rolü verildi.`,
+            footer: { text: executor?.tag || 'Bilinmiyor', iconURL: executor?.displayAvatarURL() }
+          });
+        }
+
+        if (roleIds.length > 0) {
+          await RoleHistory.create({
+            userId: newMember.id,
+            guildId: newMember.guild.id,
+            roleIds,
+            roleNames,
+            action: 'add',
+            actionLabel: executor?.id === client.user.id ? 'Ekleme (Komut)' : 'Ekleme',
+            changedBy: executor?.id || null,
+            changedByName: executor?.tag || 'Bilinmiyor'
+          });
+        }
       }
 
-      for (const roleId of removedRoles) {
-        const role = oldMember.guild.roles.cache.get(roleId);
-        if (!role) continue;
-
-        const entry = urlogs.entries.find(
+      if (removedRoles.length > 0) {
+        const removeEntry = urlogs.entries.find(
           e => e.target.id === newMember.id &&
           now - e.createdTimestamp < 5000 &&
           e.changes.some(change => change.key === '$remove')
         );
+        const executor = removeEntry?.executor;
 
-        await logger.logEvent({
-          guild: newMember.guild,
-          author: { name: newMember.guild.name, iconURL: newMember.guild.iconURL() },
-          type: 'role',
-		  color: 0xFF0000,
-          title: null,
-          description: `<@${newMember.id}> kullanıcısından <@&${role.id}> rolü ${entry?.executor ? `<@${entry.executor.id}> tarafından` : ''} alındı.`,
-          footer: { text: entry?.executor?.tag || 'Bilinmiyor', iconURL: entry?.executor?.displayAvatarURL() }
-        });
+        const roleIds = [];
+        const roleNames = [];
+        for (const roleId of removedRoles) {
+          const role = oldMember.guild.roles.cache.get(roleId);
+          if (!role) continue;
+          roleIds.push(role.id);
+          roleNames.push(role.name);
+
+          await logger.logEvent({
+            guild: newMember.guild,
+            author: { name: newMember.guild.name, iconURL: newMember.guild.iconURL() },
+            type: 'role',
+		    color: 0xFF0000,
+            title: null,
+            description: `<@${newMember.id}> kullanıcısından <@&${role.id}> rolü ${executor ? `<@${executor.id}> tarafından` : ''} alındı.`,
+            footer: { text: executor?.tag || 'Bilinmiyor', iconURL: executor?.displayAvatarURL() }
+          });
+        }
+
+        if (roleIds.length > 0) {
+          await RoleHistory.create({
+            userId: newMember.id,
+            guildId: newMember.guild.id,
+            roleIds,
+            roleNames,
+            action: 'remove',
+            actionLabel: executor?.id === client.user.id ? 'Çıkarma (Komut)' : 'Çıkarma',
+            changedBy: executor?.id || null,
+            changedByName: executor?.tag || 'Bilinmiyor'
+          });
+        }
       }
     }
   }
