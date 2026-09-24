@@ -24,7 +24,10 @@ const settingsSchema = new mongoose.Schema({
   otorolStatus: { type: Boolean, default: false },
   levelSystemStatus: { type: Boolean, default: false },
   statSystemStatus: { type: Boolean, default: false },
-  confessionChannelId: { type: String, default: null }
+  confessionChannelId: { type: String, default: null },
+  
+  tagRoleStatus: { type: Boolean, default: false },
+  tagRoleId: { type: String, default: null }
   
 });
 

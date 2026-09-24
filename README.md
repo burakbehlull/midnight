@@ -102,6 +102,7 @@ Create ` config.json ` file and set permission settings:
 | **sescik** | Leave voice channel | .. | stable |
 | **say** | Guild information | ... | stable |
 | **nick** | Change user, user nick name history | user, name | stable |
+| **rollog** | Show user roles history | user | stable |
 
 
 ### contents: Staff

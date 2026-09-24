@@ -15,14 +15,13 @@ export default {
     let prefix = process.env.PREFIX;
     let settings = null;
 
-    // DM Handler - Sadece DM'ler için
     if (!message.guild) {
       try {
-        // Bot'un kendi mesajlarını kaydetme
         if (message.author.id === client.user.id) return;
         
-        // Bot mesajlarını kaydetme
         if (message.author.bot) return;
+        
+        if (!message.content || message.content.trim() === '') return;
 
         const dm = new DirectMessage({
           userId: message.author.id,
@@ -39,10 +38,9 @@ export default {
       } catch (error) {
         console.error('Error saving DM:', error);
       }
-      return; // DM ise diğer işlemleri yapma
+      return;
     }
 
-    // Guild mesajları için ayarları çek
     if (message.guild) {
       try {
         settings = await Settings.findOne({ guildId: message.guild.id }).lean();

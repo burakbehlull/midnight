@@ -21,6 +21,8 @@ import { boosterInteractionHandler } from "./boosterInteractionHandler.js"
 import deletedMessageHandler from "./deletedMessageHandler.js"
 import directMessageHandler from "./directMessageHandler.js"
 
+import tagRoleHandler from "./tagRoleHandler.js"
+
 export {
 	handleCooldown,
 	
@@ -41,7 +43,8 @@ export {
 	handleVoiceRoomCreate, 
 	handleInteractionCreate,
 	boosterInteractionHandler,
-
 	deletedMessageHandler,
-	directMessageHandler
+	directMessageHandler,
+		
+	tagRoleHandler
 }

@@ -182,6 +182,32 @@ export default {
                 )
             )
         )
+        .addSubcommand(sub =>
+          sub
+            .setName('tagrole')
+            .setDescription('Tag Role Sistemini Ac/Kapat')
+            .addStringOption(option =>
+              option
+                .setName("değer")
+                .setDescription("Yetkiler için aç/kapat.")
+                .setRequired(true)
+                .addChoices(
+                  { name: "Aç", value: "aç" },
+                  { name: "Kapat", value: "kapat" }
+                )
+            )
+        )
+    )
+    .addSubcommandGroup(group =>
+      group
+        .setName('tagrole')
+        .setDescription('Tag Role Sistemi Ayarlari')
+        .addSubcommand(sub =>
+          sub
+            .setName('set')
+            .setDescription('Tag alanlar için verilecek rolu ayarla')
+            .addRoleOption(opt => opt.setName('rol').setDescription('Tag alanlara verilecek rol').setRequired(true))
+        )
     ),
    description: 'Sunucu sistemini ayarlar',
    usage: '/settings <subcommand> <değer|rol|kanal>',
@@ -229,6 +255,13 @@ export default {
       option = subcommand;
     }
 
+    if (subcommandGroup === 'tagrole') {
+      if (subcommand === 'set') {
+        role = interaction.options.getRole('rol');
+      }
+      option = `tagrole_${subcommand}`;
+    }
+
     const guildId = interaction.guild.id;
     let settings = await Settings.findOne({ guildId });
     if (!settings) settings = new Settings({ guildId });
@@ -260,6 +293,9 @@ export default {
           
           Seviye Sistemi: **${settings.levelSystemStatus ? "Açık" : "Kapalı"}**
           Stat Sistemi: **${settings.statSystemStatus ? "Açık" : "Kapalı"}**
+          
+          Tag Role Sistemi: **${settings.tagRoleStatus ? "Açık" : "Kapalı"}**
+          Tag Role: **${settings.tagRoleId ? `<@&${settings.tagRoleId}>` : "Yok"}**
         `,
         footer: manager.theme.getNameAndAvatars("user", interaction), 
       })
@@ -403,6 +439,23 @@ export default {
 	  
       await settings.save();
       return interaction.reply({ content: `Stat sistemi başarıyla ${mode ? "açık" : "kapalı"} olarak ayarlandı.`, ephemeral: true });
+    }
+	
+	if (option === 'tagrole') {
+      if (!stringValue) return interaction.reply({ content: '❌ Lütfen bir değer (aç/kapat) belirtin.', ephemeral: true });
+      
+	  const mode = stringValue.toLowerCase() === 'aç';
+	  settings.tagRoleStatus = mode;
+	  
+      await settings.save();
+      return interaction.reply({ content: `Tag Role sistemi başarıyla ${mode ? "açık" : "kapalı"} olarak ayarlandı.`, ephemeral: true });
+    }
+	
+	if (option === 'tagrole_set') {
+      if (!role) return interaction.reply({ content: '❌ Lütfen bir rol belirtin.', ephemeral: true });
+      settings.tagRoleId = role.id;
+      await settings.save();
+      return interaction.reply({ content: `Tag Role başarıyla ${role} olarak ayarlandı. Artık sunucu tag'ını alan kullanıcılara otomatik bu rol verilecek.`, ephemeral: true });
     }
 	
 	
