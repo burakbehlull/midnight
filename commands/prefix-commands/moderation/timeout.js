@@ -56,7 +56,7 @@ export default {
     row2.add(`to_1d`, '1 Gün', row2.style.Danger);
 
     const embed = manager.sender.classic(
-      `⏱️ **${member.user.tag}** kullanıcısı için bir susturma süresi seçin.\n\n**Sebep:** ${reason}`
+      `**${member.user.tag}** kullanıcısı için bir susturma süresi seçin.\n\n**Sebep:** ${reason}`
     );
 
     const replyMsg = await message.reply({

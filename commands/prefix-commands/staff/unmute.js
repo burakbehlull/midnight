@@ -1,5 +1,6 @@
 import Manager from '#managers';
 import { PermissionFlagsBits } from 'discord.js';
+import { muteTimeouts } from './mute.js';
 
 export default {
   name: 'unmute',
@@ -21,6 +22,11 @@ export default {
     const mutedRole = message.guild.roles.cache.find(r => r.name === 'Muted');
     if (!mutedRole || !member.roles.cache.has(mutedRole.id)) return sender.reply(sender.errorEmbed("❌ Bu kullanıcı susturulmamış."));
   
+    const timeoutKey = `${message.guild.id}-${member.id}`;
+    if (muteTimeouts.has(timeoutKey)) {
+      clearTimeout(muteTimeouts.get(timeoutKey));
+      muteTimeouts.delete(timeoutKey);
+    }
   
     await member.roles.remove(mutedRole);
     return sender.reply(sender.classic(`<@${member.id}> adlı kullanıcının susturması kaldırıldı.`));

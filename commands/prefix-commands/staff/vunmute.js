@@ -1,5 +1,6 @@
 import Manager from '#managers';
 import { PermissionFlagsBits } from 'discord.js';
+import { vmuteTimeouts } from './vmute.js';
 
 export default {
   name: 'vunmute',
@@ -23,9 +24,14 @@ export default {
 
       if (!hedef.voice.serverMute) return sender.reply(sender.errorEmbed("❌ Bu kullanıcı zaten susturulmamış."), true);
       
+      const timeoutKey = `${message.guild.id}-${hedef.id}`;
+      if (vmuteTimeouts.has(timeoutKey)) {
+        clearTimeout(vmuteTimeouts.get(timeoutKey));
+        vmuteTimeouts.delete(timeoutKey);
+      }
 
       await hedef.voice.setMute(false, "Manuel olarak susturma kaldırıldı");
-      await sender.reply(sender.classic(`🔊 ${hedef} kullanıcısının susturması kaldırıldı.`), true);
+      await sender.reply(sender.classic(`${hedef} kullanıcısının susturması kaldırıldı.`), true);
 
     } catch (err) {
       console.error("error: ", err);

@@ -28,7 +28,6 @@ export default {
           
           try {
             await member.roles.add(role);
-            console.log(`[Primary Guild] ${newUser.tag} guild tag aldı → ${role.name} rolü verildi (${guild.name})`);
           } catch (error) {
             console.error(`[Primary Guild] Rol verilemedi:`, error.message);
           }
@@ -40,7 +39,6 @@ export default {
           
           try {
             await member.roles.remove(role);
-            console.log(`[Primary Guild] ${newUser.tag} guild tag bıraktı → ${role.name} rolü alındı (${guild.name})`);
           } catch (error) {
             console.error(`[Primary Guild] Rol alınamadı:`, error.message);
           }
