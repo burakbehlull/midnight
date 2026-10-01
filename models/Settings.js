@@ -6,6 +6,7 @@ const settingsSchema = new mongoose.Schema({
   prefix: { type: String },
 
   tag: { type: String, default: null },
+  registerFormat: { type: String, default: null, enum: [null, 'isim_yas', 'tag_isim_yas', 'isim', 'tag_isim'] },
   
   vipRoleId: { type: String, default: null },
   photoRoleId: { type: String, default: null },

@@ -208,6 +208,23 @@ export default {
             .setDescription('Tag alanlar için verilecek rolu ayarla')
             .addRoleOption(opt => opt.setName('rol').setDescription('Tag alanlara verilecek rol').setRequired(true))
         )
+    )
+    .addSubcommand(sub =>
+      sub
+        .setName('registerformat')
+        .setDescription('Kayıt isim formatını seç (İsim Yaş / Tag İsim Yaş / İsim / Tag İsim)')
+        .addStringOption(option =>
+          option
+            .setName("format")
+            .setDescription("Kayıt formatını seçin")
+            .setRequired(true)
+            .addChoices(
+              { name: "İsim Yaş (örn: Ahmet | 18)", value: "isim_yas" },
+              { name: "Tag İsim Yaş (örn: ✦ Ahmet I 18)", value: "tag_isim_yas" },
+              { name: "İsim (örn: Ahmet)", value: "isim" },
+              { name: "Tag İsim (örn: ✦ Ahmet)", value: "tag_isim" }
+            )
+        )
     ),
    description: 'Sunucu sistemini ayarlar',
    usage: '/settings <subcommand> <değer|rol|kanal>',
@@ -238,6 +255,10 @@ export default {
         option = 'tag';
         stringValue = interaction.options.getString('değer');
       }
+      if (subcommand === 'registerformat') {
+        option = 'registerformat';
+        stringValue = interaction.options.getString('format');
+      }
     }
 
     if (subcommandGroup === 'roles') {
@@ -267,7 +288,13 @@ export default {
     if (!settings) settings = new Settings({ guildId });
 
 	  if (option === 'allshow') {
-      
+      const formatText = {
+        'isim_yas': 'İsim Yaş (Ahmet | 18)',
+        'tag_isim_yas': 'Tag İsim Yaş (✦ Ahmet I 18)',
+        'isim': 'İsim (Ahmet)',
+        'tag_isim': 'Tag İsim (✦ Ahmet)'
+      }[settings.registerFormat] || '❌ Ayarlanmamış (/settings registerformat)';
+
       const theme = await manager.theme.embedThemeBuilder(manager.theme.themes.rich, {
           action: true,
           title: "Sunucu Ayarları",
@@ -275,6 +302,7 @@ export default {
           description: `
           Prefix: **${settings.prefix || process.env.PREFIX || "Yok"}**
           Tag: **${settings.tag || "Yok"}**
+          Kayıt Formatı: **${formatText}**
           Vip Role: **${settings.vipRoleId ? `<@!${settings.vipRoleId}>` : "Yok"}**
           Photo Role: **${settings.photoRoleId ? `<@!${settings.photoRoleId}>` : "Yok"}**
           Streamer Rol: **${settings.streamerRoleId ? `<@${settings.streamerRoleId}>` : "Yok"}**
@@ -457,8 +485,42 @@ export default {
       await settings.save();
       return interaction.reply({ content: `Tag Role başarıyla ${role} olarak ayarlandı. Artık sunucu tag'ını alan kullanıcılara otomatik bu rol verilecek.`, ephemeral: true });
     }
-	
-	
+
+    if (option === 'registerformat') {
+      if (!stringValue) return interaction.reply({ content: '❌ Lütfen bir format seçin.', ephemeral: true });
+
+      const formatLabel = {
+        'isim_yas': 'İsim Yaş (Ahmet | 18)',
+        'tag_isim_yas': 'Tag İsim Yaş (✦ Ahmet I 18)',
+        'isim': 'İsim (Ahmet)',
+        'tag_isim': 'Tag İsim (✦ Ahmet)'
+      }[stringValue];
+
+      if (stringValue === 'tag_isim' || stringValue === 'tag_isim_yas') {
+        if (!settings.tag) {
+          return interaction.reply({
+            content: `⚠️ **${formatLabel}** formatı seçildi ama sunucuda **tag ayarlanmamış!**\n` +
+                     `Önce /settings tag ile tag ayarlayın, sonra tekrar format seçin.`,
+            ephemeral: true
+          });
+        }
+      }
+
+      settings.registerFormat = stringValue;
+      await settings.save();
+
+      let extra = '';
+      if (stringValue === 'isim' || stringValue === 'tag_isim') {
+        extra = '\n\n📌 Bu formatta sadece **isim** yazılması yeterli olacak, **yaş** gerekmeyecek.';
+      }
+
+      return interaction.reply({
+        content: `Kayıt formatı başarıyla **${formatLabel}** olarak ayarlandı.${extra}`,
+        ephemeral: true
+      });
+    }
+
+
     return interaction.reply({ content: '❌ Geçersiz işlem.', ephemeral: true });
   }
 };

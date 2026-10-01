@@ -84,7 +84,7 @@ const BLOCKED_KEYWORDS = [
 export default {
   name: 'eval',
   description: 'JavaScript kodu çalıştırır (Sadece bot sahibi kullanabilir)',
-  aliases: ['evaluate', 'exec', 'e'],
+  aliases: ['evaluate', 'exec'],
   usage: 'eval <kod>',
   cooldown: 0,
   category: 'private',
