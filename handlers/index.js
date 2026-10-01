@@ -23,8 +23,11 @@ import directMessageHandler from "./directMessageHandler.js"
 
 import tagRoleHandler from "./tagRoleHandler.js"
 
+import selfRegisterButtonHandler from "./registerHandle.js"
+
 export {
 	handleCooldown,
+	selfRegisterButtonHandler,
 	
 	afkHandler,
 	autoRoleHandler,

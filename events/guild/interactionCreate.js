@@ -1,5 +1,5 @@
 import { Events, MessageFlags } from 'discord.js';
-import { ticketHandler, itirafHandler, handleCooldown, handleInteractionCreate } from "#handlers"
+import { ticketHandler, itirafHandler, handleCooldown, handleInteractionCreate, selfRegisterButtonHandler } from "#handlers"
 import { checkCommandRestrictions, handleAutoDelete, normalizeSlashOptions } from "#helpers"
 import { PermissionsManager } from "#managers";
 import { boosterInteractionHandler } from "#handlers";
@@ -11,6 +11,9 @@ export default {
     if (interaction.isButton()){ 
       await ticketHandler(interaction);
     }
+    const handledSelf = await selfRegisterButtonHandler(interaction);
+    if (handledSelf) return;
+
     await itirafHandler(interaction);
 	  await handleInteractionCreate(interaction)
     await boosterInteractionHandler(interaction)

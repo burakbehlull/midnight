@@ -28,7 +28,15 @@ const settingsSchema = new mongoose.Schema({
   confessionChannelId: { type: String, default: null },
   
   tagRoleStatus: { type: Boolean, default: false },
-  tagRoleId: { type: String, default: null }
+  tagRoleId: { type: String, default: null },
+
+  selfRegisterMode: { type: String, default: null, enum: [null, 'single', 'dual'] },
+  selfRegisterRoleId: { type: String, default: null },
+  selfRegisterErkekRoleId: { type: String, default: null },
+  selfRegisterKizRoleId: { type: String, default: null },
+  selfRegisterMessageId: { type: String, default: null },
+  selfRegisterChannelId: { type: String, default: null },
+  selfRegisterCustomText: { type: String, default: null }
   
 });
 

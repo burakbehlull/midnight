@@ -136,6 +136,8 @@ Create ` config.json ` file and set permission settings:
 | **room-setup** | private room creater | .. | stable |
 | **confession-setup** | people are open or anonymous confessors | channel | stable |
 | **booster-panel-setup** | booster is special feature | .. | stable |
+| **self-register-setup** | register embed | .. | stable |
+
 
 ### contents: Economy
 | command | comment | values | situation |
