@@ -25,7 +25,7 @@ const GuildCard = ({ guild }) => {
       </div>
 
       {/* Action Buttons */}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         <Link 
           to={`/stats/${guild.id}`}
           className="px-4 py-2 bg-midnight-base hover:bg-midnight-light rounded-lg transition-colors text-center text-sm font-medium"
@@ -35,9 +35,16 @@ const GuildCard = ({ guild }) => {
         
         <Link 
           to={`/leaderboard/${guild.id}`}
-          className="px-4 py-2 bg-gradient-to-r from-midnight-purple to-midnight-pink hover:opacity-90 rounded-lg transition-opacity text-center text-sm font-medium"
+          className="px-4 py-2 bg-midnight-base hover:bg-midnight-light rounded-lg transition-colors text-center text-sm font-medium"
         >
           🏆 Liderlik
+        </Link>
+
+        <Link
+          to={`/guilds/${guild.id}/users`}
+          className="px-4 py-2 bg-gradient-to-r from-midnight-purple to-midnight-pink hover:opacity-90 rounded-lg transition-opacity text-center text-sm font-medium"
+        >
+          👥 Kullanıcılar
         </Link>
       </div>
     </div>

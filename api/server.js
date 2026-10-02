@@ -1072,6 +1072,244 @@ class MidnightAPI {
       }
     });
 
+    // List guild members with pagination/search
+    this.app.get('/api/guilds/:guildId/members', async (req, res) => {
+      try {
+        const { guildId } = req.params;
+        const { limit = 100, offset = 0, search = '' } = req.query;
+
+        const guild = this.client.guilds.cache.get(guildId);
+        if (!guild) {
+          return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const members = await guild.members.fetch().catch(() => null);
+        if (!members) {
+          return res.status(500).json({ error: 'Members could not be fetched' });
+        }
+
+        let memberList = members
+          .filter(m => !m.user.bot)
+          .map(member => {
+            const highestRole = member.roles.highest;
+            const topRoles = Array.from(member.roles.cache.values())
+              .filter(r => r.id !== guild.id)
+              .sort((a, b) => b.position - a.position)
+              .slice(0, 5)
+              .map(r => ({
+                id: r.id,
+                name: r.name,
+                color: r.color,
+                hexColor: r.hexColor,
+                position: r.position
+              }));
+
+            return {
+              id: member.user.id,
+              username: member.user.username,
+              globalName: member.user.globalName || member.user.username,
+              displayName: member.displayName || member.user.globalName || member.user.username,
+              avatar: member.user.displayAvatarURL({ size: 128 }),
+              guildAvatar: member.avatarURL ? member.avatarURL({ size: 128 }) : null,
+              tag: member.user.tag,
+              discriminator: member.user.discriminator,
+              joinedAt: member.joinedAt?.toISOString() || null,
+              joinedTimestamp: member.joinedTimestamp || 0,
+              createdAt: member.user.createdAt.toISOString(),
+              highestRole: highestRole && highestRole.id !== guild.id ? {
+                id: highestRole.id,
+                name: highestRole.name,
+                color: highestRole.color,
+                hexColor: highestRole.hexColor
+              } : null,
+              roles: topRoles,
+              isOwner: guild.ownerId === member.user.id,
+              isAdmin: member.permissions?.has('Administrator') || false,
+              isModerator: member.permissions?.has('BanMembers') || member.permissions?.has('KickMembers') || false,
+              timedOutUntil: member.communicationDisabledUntilTimestamp || null
+            };
+          });
+
+        if (search && search.trim()) {
+          const q = search.trim().toLowerCase();
+          memberList = memberList.filter(m =>
+            m.username.toLowerCase().includes(q) ||
+            m.displayName.toLowerCase().includes(q) ||
+            (m.globalName && m.globalName.toLowerCase().includes(q)) ||
+            m.id.includes(q) ||
+            m.tag.toLowerCase().includes(q)
+          );
+        }
+
+        memberList.sort((a, b) => {
+          if (b.isOwner !== a.isOwner) return b.isOwner - a.isOwner;
+          if (b.isAdmin !== a.isAdmin) return b.isAdmin - a.isAdmin;
+          if (b.isModerator !== a.isModerator) return b.isModerator - a.isModerator;
+          return b.joinedTimestamp - a.joinedTimestamp;
+        });
+
+        const total = memberList.length;
+        const numLimit = Math.min(parseInt(limit), 1000);
+        const numOffset = parseInt(offset);
+        const paginated = memberList.slice(numOffset, numOffset + numLimit);
+
+        return res.json({
+          total,
+          returned: paginated.length,
+          limit: numLimit,
+          offset: numOffset,
+          members: paginated
+        });
+
+      } catch (error) {
+        console.error('Error listing members:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get single member detail
+    this.app.get('/api/guilds/:guildId/members/:userId', async (req, res) => {
+      try {
+        const { guildId, userId } = req.params;
+
+        const guild = this.client.guilds.cache.get(guildId);
+        if (!guild) {
+          return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const member = await guild.members.fetch(userId).catch(() => null);
+        if (!member) {
+          return res.status(404).json({ error: 'Member not found' });
+        }
+
+        const roles = Array.from(member.roles.cache.values())
+          .filter(r => r.id !== guild.id)
+          .sort((a, b) => b.position - a.position)
+          .map(r => ({
+            id: r.id,
+            name: r.name,
+            color: r.color,
+            hexColor: r.hexColor,
+            position: r.position
+          }));
+
+        res.json({
+          id: member.user.id,
+          username: member.user.username,
+          globalName: member.user.globalName || null,
+          displayName: member.displayName,
+          avatar: member.user.displayAvatarURL({ size: 256 }),
+          guildAvatar: member.avatarURL ? member.avatarURL({ size: 256 }) : null,
+          joinedAt: member.joinedAt?.toISOString() || null,
+          createdAt: member.user.createdAt.toISOString(),
+          roles,
+          nickname: member.nickname,
+          isOwner: guild.ownerId === member.user.id,
+          permissions: member.permissions.toArray(),
+          timedOutUntil: member.communicationDisabledUntil?.toISOString() || null
+        });
+
+      } catch (error) {
+        console.error('Error fetching member:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Kick user
+    this.app.post('/api/guilds/:guildId/members/:userId/kick', async (req, res) => {
+      try {
+        const { guildId, userId } = req.params;
+        const { reason } = req.body;
+
+        const guild = this.client.guilds.cache.get(guildId);
+        if (!guild) {
+          return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const member = await guild.members.fetch(userId).catch(() => null);
+        if (!member) {
+          return res.status(404).json({ error: 'Member not found' });
+        }
+
+        const username = member.user.username;
+        await member.kick(reason || 'Web panel üzerinden kickleme');
+
+        res.json({
+          success: true,
+          message: `${username} kullanıcısı sunucudan atıldı`
+        });
+
+      } catch (error) {
+        console.error('Error kicking user:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Timeout / mute user
+    this.app.post('/api/guilds/:guildId/members/:userId/timeout', async (req, res) => {
+      try {
+        const { guildId, userId } = req.params;
+        const { durationMinutes, reason } = req.body;
+
+        const guild = this.client.guilds.cache.get(guildId);
+        if (!guild) {
+          return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const member = await guild.members.fetch(userId).catch(() => null);
+        if (!member) {
+          return res.status(404).json({ error: 'Member not found' });
+        }
+
+        const duration = parseInt(durationMinutes);
+        if (!duration || duration <= 0 || duration > 40320) { // 28 gün = 40320 dakika
+          return res.status(400).json({ error: 'durationMinutes 1 ile 40320 arasında olmalı (28 gün)' });
+        }
+
+        const timeoutUntil = new Date(Date.now() + duration * 60 * 1000);
+        await member.disableCommunicationUntil(timeoutUntil, reason || 'Web panel üzerinden timeout');
+
+        res.json({
+          success: true,
+          message: `${member.user.username} kullanıcısı ${duration} dakika boyunca timeout edildi`,
+          durationMinutes: duration,
+          endsAt: timeoutUntil.toISOString()
+        });
+
+      } catch (error) {
+        console.error('Error timing out user:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Remove timeout / untimeout
+    this.app.post('/api/guilds/:guildId/members/:userId/untimeout', async (req, res) => {
+      try {
+        const { guildId, userId } = req.params;
+
+        const guild = this.client.guilds.cache.get(guildId);
+        if (!guild) {
+          return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const member = await guild.members.fetch(userId).catch(() => null);
+        if (!member) {
+          return res.status(404).json({ error: 'Member not found' });
+        }
+
+        await member.disableCommunicationUntil(null, 'Web panel üzerinden timeout kaldırma');
+
+        res.json({
+          success: true,
+          message: `${member.user.username} kullanıcısının timeout süresi kaldırıldı`
+        });
+
+      } catch (error) {
+        console.error('Error removing timeout:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
     // Unban user
     this.app.post('/api/guilds/:guildId/members/:userId/unban', async (req, res) => {
       try {

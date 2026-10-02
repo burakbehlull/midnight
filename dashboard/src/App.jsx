@@ -7,6 +7,7 @@ import ServerStats from './pages/ServerStats'
 import Leaderboard from './pages/Leaderboard'
 import GlobalEconomy from './pages/GlobalEconomy'
 import BotSettings from './pages/BotSettings'
+import GuildUsers from './pages/GuildUsers'
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
           <Route path="/bot/settings" element={<BotSettings />} />
           <Route path="/stats/:guildId" element={<ServerStats />} />
           <Route path="/leaderboard/:guildId" element={<Leaderboard />} />
+          <Route path="/guilds/:guildId/users" element={<GuildUsers />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>

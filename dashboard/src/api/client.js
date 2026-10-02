@@ -64,6 +64,16 @@ export const api = {
     apiClient.post(`/guilds/${guildId}/members/${userId}/ban`, { reason }),
   unbanUser: (guildId, userId) => 
     apiClient.post(`/guilds/${guildId}/members/${userId}/unban`),
+  kickUser: (guildId, userId, reason) =>
+    apiClient.post(`/guilds/${guildId}/members/${userId}/kick`, { reason }),
+  timeoutUser: (guildId, userId, durationMinutes, reason) =>
+    apiClient.post(`/guilds/${guildId}/members/${userId}/timeout`, { durationMinutes, reason }),
+  untimeoutUser: (guildId, userId) =>
+    apiClient.post(`/guilds/${guildId}/members/${userId}/untimeout`),
+  getGuildMembers: (guildId, { limit = 100, offset = 0, search = '' } = {}) =>
+    apiClient.get(`/guilds/${guildId}/members`, { params: { limit, offset, search } }),
+  getGuildMember: (guildId, userId) =>
+    apiClient.get(`/guilds/${guildId}/members/${userId}`),
   updateUserMoney: (userId, amount) => 
     apiClient.post(`/users/${userId}/money/update`, { amount }),
 };

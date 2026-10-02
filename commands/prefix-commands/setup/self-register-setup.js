@@ -18,7 +18,7 @@ export default {
     authorities: [PermissionFlagsBits.Administrator],
   },
 
-  async execute(client, message, args) {
+  async execute(client, message) {
     const manager = new Manager(client, { action: message });
     const sender = manager.sender;
 
@@ -36,8 +36,8 @@ export default {
     }
 
     const btnMode = new Button();
-    btnMode.add(MODE_STEP1_SINGLE, "1 Buton (Sadece Kayıt Ol)", btnMode.style.Primary);
-    btnMode.add(MODE_STEP1_DUAL, "2 Buton (Kız / Erkek)", btnMode.style.Success);
+    btnMode.add(MODE_STEP1_SINGLE, "Sadece Kayıt Ol", btnMode.style.Primary);
+    btnMode.add(MODE_STEP1_DUAL, "Kız / Erkek", btnMode.style.Success);
     btnMode.add(MODE_STEP1_CANCEL, "İptal", btnMode.style.Danger);
 
     const modeMsg = await message.channel.send({
