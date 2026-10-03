@@ -75,6 +75,12 @@ export default {
         )
         .addSubcommand(sub =>
           sub
+            .setName('singleregister')
+            .setDescription('Tek Rol Kayıt Modu İçin Kayıt Rol Ayarla')
+            .addRoleOption(opt => opt.setName('rol').setDescription('Kayıt olan herkese verilecek tek rol').setRequired(true))
+        )
+        .addSubcommand(sub =>
+          sub
             .setName('staffrole')
             .setDescription('Staff Rol Ayarla')
             .addRoleOption(opt => opt.setName('rol').setDescription('Vip, Streamer veya güvenli rolü').setRequired(true))
@@ -219,10 +225,26 @@ export default {
             .setDescription("Kayıt formatını seçin")
             .setRequired(true)
             .addChoices(
+              { name: "Hiçbiri (İsim değiştirme, sadece rol ver)", value: "none" },
               { name: "İsim Yaş (örn: Ahmet | 18)", value: "isim_yas" },
               { name: "Tag İsim Yaş (örn: ✦ Ahmet I 18)", value: "tag_isim_yas" },
               { name: "İsim (örn: Ahmet)", value: "isim" },
               { name: "Tag İsim (örn: ✦ Ahmet)", value: "tag_isim" }
+            )
+        )
+    )
+    .addSubcommand(sub =>
+      sub
+        .setName('registermode')
+        .setDescription('Kayıt modunu seç (Cinsiyet Rolleri / Tek Rol)')
+        .addStringOption(option =>
+          option
+            .setName("mod")
+            .setDescription("Kayıt modunu seçin")
+            .setRequired(true)
+            .addChoices(
+              { name: "Cinsiyet Rolleri (Erkek / Kız 2 buton)", value: "gender" },
+              { name: "Tek Rol (Sadece 1 buton / tek rol)", value: "single" }
             )
         )
     ),
@@ -259,6 +281,10 @@ export default {
         option = 'registerformat';
         stringValue = interaction.options.getString('format');
       }
+      if (subcommand === 'registermode') {
+        option = 'registermode';
+        stringValue = interaction.options.getString('mod');
+      }
     }
 
     if (subcommandGroup === 'roles') {
@@ -289,11 +315,17 @@ export default {
 
 	  if (option === 'allshow') {
       const formatText = {
+        'none': 'Hiçbiri (İsim değiştirme, sadece rol ver)',
         'isim_yas': 'İsim Yaş (Ahmet | 18)',
         'tag_isim_yas': 'Tag İsim Yaş (✦ Ahmet I 18)',
         'isim': 'İsim (Ahmet)',
         'tag_isim': 'Tag İsim (✦ Ahmet)'
       }[settings.registerFormat] || '❌ Ayarlanmamış (/settings registerformat)';
+
+      const modeText = {
+        'gender': 'Cinsiyet Rolleri (Erkek / Kız 2 buton)',
+        'single': 'Tek Rol (1 buton)'
+      }[settings.registerMode || 'gender'];
 
       const theme = await manager.theme.embedThemeBuilder(manager.theme.themes.rich, {
           action: true,
@@ -303,6 +335,7 @@ export default {
           Prefix: **${settings.prefix || process.env.PREFIX || "Yok"}**
           Tag: **${settings.tag || "Yok"}**
           Kayıt Formatı: **${formatText}**
+          Kayıt Modu: **${modeText}**
           Vip Role: **${settings.vipRoleId ? `<@!${settings.vipRoleId}>` : "Yok"}**
           Photo Role: **${settings.photoRoleId ? `<@!${settings.photoRoleId}>` : "Yok"}**
           Streamer Rol: **${settings.streamerRoleId ? `<@${settings.streamerRoleId}>` : "Yok"}**
@@ -311,6 +344,7 @@ export default {
           Jail Rolü: **${settings.jailRoleId ? `<@!${settings.jailRoleId}>` : "Yok"}**
           Erkek Rolü: **${settings.erkekRoleId ? `<@!${settings.erkekRoleId}>` : "Yok"}**
           Kız Rolü: **${settings.kizRoleId ? `<@!${settings.kizRoleId}>` : "Yok"}**
+          Tek Kayıt Rolü: **${settings.singleRegisterRoleId ? `<@!${settings.singleRegisterRoleId}>` : "Yok"}**
           Kayıtsız Rolü: **${settings.kayitsizRoleId ? `<@!${settings.kayitsizRoleId}>` : "Yok"}**
           
           Otorol Rolü: **${settings.autoRoleId ? `<@!${settings.autoRoleId}>` : "Yok"}**
@@ -395,6 +429,13 @@ export default {
       settings.kayitsizRoleId = role.id;
       await settings.save();
       return interaction.reply({ content: `Kayıtsız rolü başarıyla ${role} olarak ayarlandı.`, ephemeral: true });
+    }
+
+	if (option === 'singleregister') {
+      if (!role) return interaction.reply({ content: '❌ Lütfen bir rol belirtin.', ephemeral: true });
+      settings.singleRegisterRoleId = role.id;
+      await settings.save();
+      return interaction.reply({ content: `Tek Kayıt rolü (Tek Rol modu için) başarıyla ${role} olarak ayarlandı. Artık Tek Rol modunda kayıt olan herkese bu rol verilecek.`, ephemeral: true });
     }
 	
 	if (option === 'staffrole') {
@@ -490,13 +531,14 @@ export default {
       if (!stringValue) return interaction.reply({ content: '❌ Lütfen bir format seçin.', ephemeral: true });
 
       const formatLabel = {
+        'none': 'Hiçbiri (İsim değiştirme, sadece rol ver)',
         'isim_yas': 'İsim Yaş (Ahmet | 18)',
         'tag_isim_yas': 'Tag İsim Yaş (✦ Ahmet I 18)',
         'isim': 'İsim (Ahmet)',
         'tag_isim': 'Tag İsim (✦ Ahmet)'
       }[stringValue];
 
-      if (stringValue === 'tag_isim' || stringValue === 'tag_isim_yas') {
+      if (stringValue !== 'none' && (stringValue === 'tag_isim' || stringValue === 'tag_isim_yas')) {
         if (!settings.tag) {
           return interaction.reply({
             content: `⚠️ **${formatLabel}** formatı seçildi ama sunucuda **tag ayarlanmamış!**\n` +
@@ -510,12 +552,45 @@ export default {
       await settings.save();
 
       let extra = '';
-      if (stringValue === 'isim' || stringValue === 'tag_isim') {
+      if (stringValue === 'none') {
+        extra = '\n\n📌 Bu formatta **isim değiştirilmeyecek**, sadece kayıt rolleri verilecektir.\nKullanım: `.k @kullanıcı` (isim/yaş gerekmez).';
+      } else if (stringValue === 'isim' || stringValue === 'tag_isim') {
         extra = '\n\n📌 Bu formatta sadece **isim** yazılması yeterli olacak, **yaş** gerekmeyecek.';
       }
 
       return interaction.reply({
         content: `Kayıt formatı başarıyla **${formatLabel}** olarak ayarlandı.${extra}`,
+        ephemeral: true
+      });
+    }
+
+    if (option === 'registermode') {
+      if (!stringValue) return interaction.reply({ content: '❌ Lütfen bir mod seçin.', ephemeral: true });
+
+      const modeLabel = {
+        'gender': 'Cinsiyet Rolleri (Erkek / Kız 2 buton)',
+        'single': 'Tek Rol (Sadece 1 buton / tek kayıt rolü)'
+      }[stringValue];
+
+      let extra = '';
+      if (stringValue === 'gender') {
+        if (!settings.erkekRoleId || !settings.kizRoleId) {
+          extra = '\n\n⚠️ Dikkat: Cinsiyet rolleri modu seçildi ama erkek/kız rolleri ayarlanmamış görünüyor.\n' +
+                  'Önce `/settings roles erkek` ve `/settings roles kiz` ile ayarlayın.';
+        }
+      }
+      if (stringValue === 'single') {
+        if (!settings.singleRegisterRoleId) {
+          extra = '\n\n⚠️ Dikkat: Tek Rol modu seçildi ama Tek Kayıt Rolü ayarlanmamış görünüyor.\n' +
+                  'Önce `/settings roles singleregister` ile ayarlayın.';
+        }
+      }
+
+      settings.registerMode = stringValue;
+      await settings.save();
+
+      return interaction.reply({
+        content: `Kayıt modu başarıyla **${modeLabel}** olarak ayarlandı.${extra}`,
         ephemeral: true
       });
     }
