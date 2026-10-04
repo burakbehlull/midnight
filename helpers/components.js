@@ -7,15 +7,16 @@ class Button {
         this.style = ButtonStyle
     }
     add(customId, label, style, emoji, disabled){
-        if(!customId || !label || !style) return
-        
+        if(!customId || !style) return;
+        if(!label && !emoji) return;
+
         const btn = new ButtonBuilder()
-            .setCustomId(customId)
-            .setLabel(label)
-        if(emoji) btn.setEmoji(emoji)
-        if(disabled) btn.setDisabled(disabled)
-        if(style) btn.setStyle(style)
-        this.buttons.push(btn)
+            .setCustomId(customId);
+        if(label) btn.setLabel(String(label).slice(0, 80));
+        if(emoji) btn.setEmoji(emoji);
+        if(disabled) btn.setDisabled(disabled);
+        if(style) btn.setStyle(style);
+        this.buttons.push(btn);
 
     }
     build(){

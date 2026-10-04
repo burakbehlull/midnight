@@ -27,6 +27,8 @@ import BoosterRole from "./BoosterRole.js"
 
 import DirectMessage from "./DirectMessage.js"
 import RoleHistory from "./RoleHistory.js"
+import ActionGroup from "./ActionGroup.js"
+import ActionEntry from "./ActionEntry.js"
 
 
 export {
@@ -53,5 +55,7 @@ export {
 	NicknameHistory,
 	BoosterRole,
 	DirectMessage,
-	RoleHistory
+	RoleHistory,
+	ActionGroup,
+	ActionEntry
 }

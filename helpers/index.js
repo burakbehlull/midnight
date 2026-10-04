@@ -23,6 +23,8 @@ import {
   isInteraction
 } from "./hybridContext.js"
 
+import * as actionRolesHelper from "./actionRolesHelper.js"
+
 
 export {
     messageSender,
@@ -32,6 +34,7 @@ export {
 	Utils,
 	marketHelper,
 	cosmeticsHelper,
+	actionRolesHelper,
 	Button, Modal,
 	
 	fetchPartialNeed,

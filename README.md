@@ -103,6 +103,7 @@ Create ` config.json ` file and set permission settings:
 | **say** | Guild information | ... | stable |
 | **nick** | Change user, user nick name history | user, name | stable |
 | **rollog** | Show user roles history | user | stable |
+| **actions** | Show actions groups | show, create, delete, remove | stable |
 
 
 ### contents: Staff

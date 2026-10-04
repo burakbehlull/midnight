@@ -24,10 +24,14 @@ import directMessageHandler from "./directMessageHandler.js"
 import tagRoleHandler from "./tagRoleHandler.js"
 
 import selfRegisterButtonHandler from "./registerHandle.js"
+import { actionButtonHandler, actionReactionAddHandler, actionReactionRemoveHandler } from "./actionRoles.js"
 
 export {
 	handleCooldown,
 	selfRegisterButtonHandler,
+	actionButtonHandler,
+	actionReactionAddHandler,
+	actionReactionRemoveHandler,
 	
 	afkHandler,
 	autoRoleHandler,
