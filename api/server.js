@@ -11,6 +11,7 @@ import Punishment from '../models/Punishment.js';
 import InviteModel from '../models/InviteModel.js';
 import Level from '../models/Level.js';
 import DeletedMessage from '../models/DeletedMessage.js';
+import { ActionGroup, ActionEntry } from '../models/index.js';
 import { errorHandler, notFoundHandler, requestLogger } from './middleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -1332,6 +1333,511 @@ class MidnightAPI {
 
       } catch (error) {
         console.error('Error unbanning user:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // ==================== ACTIONS API ROUTES ====================
+    
+    // Get all action groups for a guild
+    this.app.get('/api/guilds/:guildId/actions', async (req, res) => {
+      try {
+        const { guildId } = req.params;
+
+        const guild = this.client.guilds.cache.get(guildId);
+        if (!guild) {
+          return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const groups = await ActionGroup.find({ guildId }).sort({ createdAt: -1 }).lean();
+        
+        // Her grup için entry sayısını da al
+        const groupsWithCount = await Promise.all(
+          groups.map(async (group) => {
+            const entryCount = await ActionEntry.countDocuments({ guildId, groupId: group.groupId });
+            return {
+              ...group,
+              entryCount
+            };
+          })
+        );
+
+        res.json(groupsWithCount);
+
+      } catch (error) {
+        console.error('Error fetching action groups:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get a specific action group with entries
+    this.app.get('/api/guilds/:guildId/actions/:groupId', async (req, res) => {
+      try {
+        const { guildId, groupId } = req.params;
+
+        const guild = this.client.guilds.cache.get(guildId);
+        if (!guild) {
+          return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const group = await ActionGroup.findOne({ guildId, groupId }).lean();
+        if (!group) {
+          return res.status(404).json({ error: 'Action group not found' });
+        }
+
+        const entries = await ActionEntry.find({ guildId, groupId }).sort({ entryId: 1 }).lean();
+        
+        // Rol bilgilerini ekle
+        const entriesWithRoles = await Promise.all(
+          entries.map(async (entry) => {
+            const role = await guild.roles.fetch(entry.roleId).catch(() => null);
+            return {
+              ...entry,
+              roleName: role?.name || 'Unknown Role',
+              roleColor: role?.hexColor || '#99AAB5',
+              roleExists: !!role
+            };
+          })
+        );
+
+        res.json({
+          group,
+          entries: entriesWithRoles
+        });
+
+      } catch (error) {
+        console.error('Error fetching action group:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Create new action group
+    this.app.post('/api/guilds/:guildId/actions', async (req, res) => {
+      try {
+        const { guildId } = req.params;
+        const { groupName } = req.body;
+
+        if (!groupName || !groupName.trim()) {
+          return res.status(400).json({ error: 'groupName gerekli' });
+        }
+
+        const guild = this.client.guilds.cache.get(guildId);
+        if (!guild) {
+          return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        // Grup sayısı kontrolü
+        const groupCount = await ActionGroup.countDocuments({ guildId });
+        if (groupCount >= 25) {
+          return res.status(400).json({ error: 'Sunucu başına maksimum 25 grup olabilir' });
+        }
+
+        // groupId oluştur
+        const groupId = groupName
+          .toLowerCase()
+          .replace(/[^a-z0-9çğıöşü_]/gi, '_')
+          .replace(/_{2,}/g, '_')
+          .slice(0, 32);
+
+        // Aynı ID'de grup var mı kontrol et
+        const exists = await ActionGroup.findOne({ guildId, groupId });
+        if (exists) {
+          return res.status(400).json({ error: `${groupId} ID'li bir grup zaten var` });
+        }
+
+        const group = await ActionGroup.create({
+          guildId,
+          groupId,
+          groupName: groupName.slice(0, 80),
+          roleMode: 'multi'
+        });
+
+        res.json({
+          success: true,
+          message: 'Action grubu oluşturuldu',
+          group: group.toObject()
+        });
+
+      } catch (error) {
+        console.error('Error creating action group:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Update action group
+    this.app.put('/api/guilds/:guildId/actions/:groupId', async (req, res) => {
+      try {
+        const { guildId, groupId } = req.params;
+        const { groupName, type, roleMode, description, setupText } = req.body;
+
+        const guild = this.client.guilds.cache.get(guildId);
+        if (!guild) {
+          return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const group = await ActionGroup.findOne({ guildId, groupId });
+        if (!group) {
+          return res.status(404).json({ error: 'Action group not found' });
+        }
+
+        // Güncelleme
+        if (groupName !== undefined) group.groupName = groupName.slice(0, 80);
+        if (type !== undefined && !group.type) group.type = type; // Tip sadece bir kez ayarlanabilir
+        if (roleMode !== undefined) group.roleMode = roleMode;
+        if (description !== undefined) group.description = description;
+        if (setupText !== undefined) group.setupText = setupText;
+
+        await group.save();
+
+        res.json({
+          success: true,
+          message: 'Action grubu güncellendi',
+          group: group.toObject()
+        });
+
+      } catch (error) {
+        console.error('Error updating action group:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Delete action group
+    this.app.delete('/api/guilds/:guildId/actions/:groupId', async (req, res) => {
+      try {
+        const { guildId, groupId } = req.params;
+
+        const guild = this.client.guilds.cache.get(guildId);
+        if (!guild) {
+          return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const group = await ActionGroup.findOne({ guildId, groupId });
+        if (!group) {
+          return res.status(404).json({ error: 'Action group not found' });
+        }
+
+        // Setup mesajını sil
+        if (group.setupMessageId && group.setupChannelId) {
+          try {
+            const channel = await guild.channels.fetch(group.setupChannelId).catch(() => null);
+            if (channel && channel.messages) {
+              const message = await channel.messages.fetch(group.setupMessageId).catch(() => null);
+              if (message) await message.delete().catch(() => {});
+            }
+          } catch (e) {}
+        }
+
+        // Entry'leri ve grubu sil
+        await ActionEntry.deleteMany({ guildId, groupId });
+        await ActionGroup.deleteOne({ _id: group._id });
+
+        res.json({
+          success: true,
+          message: 'Action grubu silindi'
+        });
+
+      } catch (error) {
+        console.error('Error deleting action group:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Add entry to action group
+    this.app.post('/api/guilds/:guildId/actions/:groupId/entries', async (req, res) => {
+      try {
+        const { guildId, groupId } = req.params;
+        const { roleId, emojiId, emojiName, emojiAnimated, emojiRaw, buttonStyle, buttonLabel } = req.body;
+
+        const guild = this.client.guilds.cache.get(guildId);
+        if (!guild) {
+          return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const group = await ActionGroup.findOne({ guildId, groupId });
+        if (!group) {
+          return res.status(404).json({ error: 'Action group not found' });
+        }
+
+        if (!group.type) {
+          return res.status(400).json({ error: 'Önce grubun tipini seçmelisin (emoji veya button)' });
+        }
+
+        if (!roleId) {
+          return res.status(400).json({ error: 'roleId gerekli' });
+        }
+
+        // Rol kontrolü
+        const role = await guild.roles.fetch(roleId).catch(() => null);
+        if (!role) {
+          return res.status(404).json({ error: 'Rol bulunamadı' });
+        }
+
+        // Aynı rol var mı kontrol et
+        const entries = await ActionEntry.find({ guildId, groupId });
+        const roleExists = entries.some(e => e.roleId === roleId);
+        if (roleExists) {
+          return res.status(400).json({ error: 'Bu rol zaten eklenmiş' });
+        }
+
+        // Limit kontrolü
+        const limit = group.type === 'emoji' ? 20 : 25;
+        if (entries.length >= limit) {
+          return res.status(400).json({ error: `Maksimum ${limit} kayıt sınırına ulaşıldı` });
+        }
+
+        // Yeni entryId
+        const maxEntry = await ActionEntry.findOne({ guildId, groupId }).sort({ entryId: -1 }).select('entryId').lean();
+        const nextEntryId = (maxEntry?.entryId || 0) + 1;
+
+        // Entry oluştur
+        const entryData = {
+          guildId,
+          groupId,
+          entryId: nextEntryId,
+          type: group.type,
+          roleId
+        };
+
+        if (group.type === 'emoji') {
+          if (!emojiName && !emojiId) {
+            return res.status(400).json({ error: 'Emoji bilgisi gerekli' });
+          }
+          entryData.emojiId = emojiId || null;
+          entryData.emojiName = emojiName || null;
+          entryData.emojiAnimated = emojiAnimated || false;
+          entryData.emojiRaw = emojiRaw || null;
+        } else if (group.type === 'button') {
+          entryData.buttonStyle = buttonStyle || 'secondary';
+          entryData.buttonLabel = buttonLabel || role.name;
+        }
+
+        const entry = await ActionEntry.create(entryData);
+
+        res.json({
+          success: true,
+          message: 'Entry eklendi',
+          entry: entry.toObject()
+        });
+
+      } catch (error) {
+        console.error('Error adding entry:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Update entry
+    this.app.put('/api/guilds/:guildId/actions/:groupId/entries/:entryId', async (req, res) => {
+      try {
+        const { guildId, groupId, entryId } = req.params;
+        const { roleId, emojiId, emojiName, emojiAnimated, emojiRaw, buttonStyle, buttonLabel } = req.body;
+
+        const guild = this.client.guilds.cache.get(guildId);
+        if (!guild) {
+          return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const entry = await ActionEntry.findOne({ guildId, groupId, entryId: parseInt(entryId) });
+        if (!entry) {
+          return res.status(404).json({ error: 'Entry not found' });
+        }
+
+        // Güncelleme
+        if (roleId !== undefined) {
+          const role = await guild.roles.fetch(roleId).catch(() => null);
+          if (!role) {
+            return res.status(404).json({ error: 'Rol bulunamadı' });
+          }
+          entry.roleId = roleId;
+        }
+
+        if (entry.type === 'emoji') {
+          if (emojiId !== undefined) entry.emojiId = emojiId;
+          if (emojiName !== undefined) entry.emojiName = emojiName;
+          if (emojiAnimated !== undefined) entry.emojiAnimated = emojiAnimated;
+          if (emojiRaw !== undefined) entry.emojiRaw = emojiRaw;
+        } else if (entry.type === 'button') {
+          if (buttonStyle !== undefined) entry.buttonStyle = buttonStyle;
+          if (buttonLabel !== undefined) entry.buttonLabel = buttonLabel;
+        }
+
+        await entry.save();
+
+        res.json({
+          success: true,
+          message: 'Entry güncellendi',
+          entry: entry.toObject()
+        });
+
+      } catch (error) {
+        console.error('Error updating entry:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Delete entry
+    this.app.delete('/api/guilds/:guildId/actions/:groupId/entries/:entryId', async (req, res) => {
+      try {
+        const { guildId, groupId, entryId } = req.params;
+
+        const guild = this.client.guilds.cache.get(guildId);
+        if (!guild) {
+          return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const entry = await ActionEntry.findOneAndDelete({ 
+          guildId, 
+          groupId, 
+          entryId: parseInt(entryId) 
+        });
+
+        if (!entry) {
+          return res.status(404).json({ error: 'Entry not found' });
+        }
+
+        res.json({
+          success: true,
+          message: 'Entry silindi'
+        });
+
+      } catch (error) {
+        console.error('Error deleting entry:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Setup (deploy) action group
+    this.app.post('/api/guilds/:guildId/actions/:groupId/setup', async (req, res) => {
+      try {
+        const { guildId, groupId } = req.params;
+        const { channelId, setupText, roleMode } = req.body;
+
+        if (!channelId) {
+          return res.status(400).json({ error: 'channelId gerekli' });
+        }
+
+        const guild = this.client.guilds.cache.get(guildId);
+        if (!guild) {
+          return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const channel = await guild.channels.fetch(channelId).catch(() => null);
+        if (!channel || !channel.isTextBased()) {
+          return res.status(404).json({ error: 'Kanal bulunamadı veya text-based değil' });
+        }
+
+        const group = await ActionGroup.findOne({ guildId, groupId });
+        if (!group) {
+          return res.status(404).json({ error: 'Action group not found' });
+        }
+
+        if (!group.type) {
+          return res.status(400).json({ error: 'Grubun tipi henüz seçilmemiş' });
+        }
+
+        const entries = await ActionEntry.find({ guildId, groupId }).sort({ entryId: 1 });
+        if (entries.length === 0) {
+          return res.status(400).json({ error: 'Grubun içinde hiç kayıt yok' });
+        }
+
+        // Eski setup mesajını sil
+        if (group.setupMessageId && group.setupChannelId) {
+          try {
+            const oldChannel = await guild.channels.fetch(group.setupChannelId).catch(() => null);
+            if (oldChannel && oldChannel.messages) {
+              const oldMessage = await oldChannel.messages.fetch(group.setupMessageId).catch(() => null);
+              if (oldMessage) await oldMessage.delete().catch(() => {});
+            }
+          } catch (e) {}
+        }
+
+        // Setup mesajını oluştur
+        const text = setupText || `**${group.groupName}**\n\nAşağıdaki ${group.type === 'emoji' ? 'emojilere' : 'butonlara'} tıklayarak ilgili rolleri alabilirsiniz.`;
+        
+        let sentMessage;
+
+        if (group.type === 'emoji') {
+          // Emoji grubu
+          sentMessage = await channel.send({
+            embeds: [{
+              title: `🎯 ${group.groupName}`,
+              description: text,
+              color: 0x5865F2
+            }]
+          });
+
+          // Emojileri ekle
+          for (const entry of entries) {
+            try {
+              let reactionTarget;
+              if (entry.emojiId) {
+                reactionTarget = { id: entry.emojiId, animated: !!entry.emojiAnimated, name: entry.emojiName || null };
+              } else {
+                reactionTarget = entry.emojiName;
+              }
+              await sentMessage.react(reactionTarget).catch(() => {});
+            } catch (e) {}
+          }
+        } else if (group.type === 'button') {
+          // Button grubu
+          const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = await import('discord.js');
+          
+          const styleMap = {
+            'primary': ButtonStyle.Primary,
+            'secondary': ButtonStyle.Secondary,
+            'success': ButtonStyle.Success,
+            'danger': ButtonStyle.Danger,
+            'warning': ButtonStyle.Secondary
+          };
+
+          const rows = [];
+          let currentRow = [];
+          
+          for (let i = 0; i < entries.length; i++) {
+            const entry = entries[i];
+            
+            if (i % 5 === 0 && i !== 0) {
+              rows.push(new ActionRowBuilder().addComponents(currentRow));
+              currentRow = [];
+            }
+
+            const button = new ButtonBuilder()
+              .setCustomId(`actions_${groupId}_btn_${entry.entryId}`)
+              .setLabel(entry.buttonLabel || 'Rol')
+              .setStyle(styleMap[entry.buttonStyle] || ButtonStyle.Secondary);
+
+            currentRow.push(button);
+          }
+
+          if (currentRow.length > 0) {
+            rows.push(new ActionRowBuilder().addComponents(currentRow));
+          }
+
+          sentMessage = await channel.send({
+            embeds: [{
+              title: `🔘 ${group.groupName}`,
+              description: text,
+              color: 0x57F287
+            }],
+            components: rows
+          });
+        }
+
+        // Grubu güncelle
+        group.setupMessageId = sentMessage.id;
+        group.setupChannelId = channel.id;
+        if (setupText) group.setupText = setupText;
+        if (roleMode) group.roleMode = roleMode;
+        await group.save();
+
+        res.json({
+          success: true,
+          message: 'Setup tamamlandı',
+          messageId: sentMessage.id,
+          messageUrl: sentMessage.url
+        });
+
+      } catch (error) {
+        console.error('Error setting up action group:', error);
         res.status(500).json({ error: error.message });
       }
     });

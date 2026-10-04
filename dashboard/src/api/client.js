@@ -76,6 +76,26 @@ export const api = {
     apiClient.get(`/guilds/${guildId}/members/${userId}`),
   updateUserMoney: (userId, amount) => 
     apiClient.post(`/users/${userId}/money/update`, { amount }),
+
+  // Actions (Role Menus)
+  getActionGroups: (guildId) => 
+    apiClient.get(`/guilds/${guildId}/actions`),
+  getActionGroup: (guildId, groupId) => 
+    apiClient.get(`/guilds/${guildId}/actions/${groupId}`),
+  createActionGroup: (guildId, groupName) => 
+    apiClient.post(`/guilds/${guildId}/actions`, { groupName }),
+  updateActionGroup: (guildId, groupId, data) => 
+    apiClient.put(`/guilds/${guildId}/actions/${groupId}`, data),
+  deleteActionGroup: (guildId, groupId) => 
+    apiClient.delete(`/guilds/${guildId}/actions/${groupId}`),
+  addActionEntry: (guildId, groupId, entryData) => 
+    apiClient.post(`/guilds/${guildId}/actions/${groupId}/entries`, entryData),
+  updateActionEntry: (guildId, groupId, entryId, entryData) => 
+    apiClient.put(`/guilds/${guildId}/actions/${groupId}/entries/${entryId}`, entryData),
+  deleteActionEntry: (guildId, groupId, entryId) => 
+    apiClient.delete(`/guilds/${guildId}/actions/${groupId}/entries/${entryId}`),
+  setupActionGroup: (guildId, groupId, setupData) => 
+    apiClient.post(`/guilds/${guildId}/actions/${groupId}/setup`, setupData),
 };
 
 export default apiClient;
