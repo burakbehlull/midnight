@@ -52,14 +52,9 @@ export async function checkCommandRestrictions(ctx, commandName) {
       return channelCheck;
     }
 
-    const roleCheck = checkRoleRestriction(member, settings);
-    if (!roleCheck.allowed) {
-      return roleCheck;
-    }
-
-    const userCheck = checkUserRestriction(user?.id, settings);
-    if (!userCheck.allowed) {
-      return userCheck;
+    const combinedCheck = checkCombinedRoleUserRestriction(member, user?.id, settings);
+    if (!combinedCheck.allowed) {
+      return combinedCheck;
     }
 
     return { allowed: true };
@@ -114,79 +109,112 @@ function checkChannelRestriction(channelId, settings) {
   return { allowed: true };
 }
 
-function checkRoleRestriction(member, settings) {
-  if (settings.roleMode === 'off') {
+/**
+ * Rol + Üye kısıtlamalarını BİRLİKTE (VEYA mantığı ile) kontrol eder
+ * 
+ * KURAL (Whitelist - Sadece bunlar):
+ * - Hem rol whitelist hem üye whitelist açık → ROL VEYA ÜYE (ikisinden biri olması yeterli)
+ * - Sadece rol whitelist açık → İzinsiz rol gerekir
+ * - Sadece üye whitelist açık → İzinli üye olmak gerekir
+ * 
+ * KURAL (Blacklist - Bunlar hariç):
+ * - Herhangi bir blacklist'te (rol veya üye) görünmek → ENGELLE
+ * - Hem rol blacklist hem üye blacklist → ikisinden birinde olmak engellemek için yeterli
+ * 
+ * KURAL (KARIŞIK modlar - whitelist + blacklist):
+ * - Önce blacklist kontrol edilir (listede varsa direkt ENGELLENİR)
+ * - Sonra whitelist kontrol edilir (listede yoksa ENGELLENİR)
+ */
+function checkCombinedRoleUserRestriction(member, userId, settings) {
+  const roleOff = settings.roleMode === 'off' || !settings.roleMode;
+  const userOff = settings.userMode === 'off' || !settings.userMode;
+
+  if (roleOff && userOff) {
     return { allowed: true };
   }
 
-  const memberRoles = member.roles.cache.map(r => r.id);
+  const memberRoles = member?.roles?.cache?.map(r => r.id) || [];
 
-  if (settings.roleMode === 'whitelist') {
+  // ========================
+  // 1. ADIM: BLACKLIST KONTROLÜ (Önce engel olanları eleyelim)
+  // ========================
+  let blockedByRole = false;
+  if (settings.roleMode === 'blacklist' && settings.blockedRoles?.length > 0) {
+    blockedByRole = settings.blockedRoles.some(roleId => memberRoles.includes(roleId));
+  }
+
+  let blockedByUser = false;
+  if (settings.userMode === 'blacklist' && settings.blockedUsers?.length > 0) {
+    blockedByUser = settings.blockedUsers.includes(userId);
+  }
+
+  if (blockedByRole || blockedByUser) {
+    const reasons = [];
+    if (blockedByRole) reasons.push('sahip olduğunuz rol');
+    if (blockedByUser) reasons.push('kullanıcı hesabınız');
+    return {
+      allowed: false,
+      reason: `❌ Bu komutu kullanmanız ${reasons.join(' ve ')} tarafından engellenmiş!`
+    };
+  }
+
+  // ========================
+  // 2. ADIM: WHITELIST KONTROLÜ (VEYA mantığı ile geçişe izin ver)
+  // ========================
+  const roleWhitelistOn = settings.roleMode === 'whitelist';
+  const userWhitelistOn = settings.userMode === 'whitelist';
+
+  if (!roleWhitelistOn && !userWhitelistOn) {
+    return { allowed: true };
+  }
+
+  let hasRoleWhitelist = false;
+  if (roleWhitelistOn) {
     if (!settings.allowedRoles || settings.allowedRoles.length === 0) {
       return {
         allowed: false,
         reason: '❌ Bu komut için henüz izinli rol belirlenmemiş!'
       };
     }
+    hasRoleWhitelist = settings.allowedRoles.some(roleId => memberRoles.includes(roleId));
+  }
 
+  let hasUserWhitelist = false;
+  if (userWhitelistOn) {
+    if (!settings.allowedUsers || settings.allowedUsers.length === 0) {
+      return {
+        allowed: false,
+        reason: '❌ Bu komut için henüz izinli üye belirlenmemiş!'
+      };
+    }
+    hasUserWhitelist = settings.allowedUsers.includes(userId);
+  }
 
-    const hasAllowedRole = settings.allowedRoles.some(roleId =>
-      memberRoles.includes(roleId)
-    );
+  // ----- VEYA (OR) MANTIĞI -----
+  // Hem rol hem üye whitelist açıksa → ikisinden BİRİ olması yeterli
+  // Sadece biri açıksa → o koşulun sağlanması gerekir
+  let allowed;
+  if (roleWhitelistOn && userWhitelistOn) {
+    allowed = hasRoleWhitelist || hasUserWhitelist;
+  } else if (roleWhitelistOn) {
+    allowed = hasRoleWhitelist;
+  } else {
+    allowed = hasUserWhitelist;
+  }
 
-
-    if (!hasAllowedRole) {
+  if (!allowed) {
+    const parts = [];
+    if (roleWhitelistOn) {
       const roles = settings.allowedRoles.map(id => `<@&${id}>`).join(', ');
-      return {
-        allowed: false,
-        reason: `❌ Bu komutu kullanmak için şu rollerden birine sahip olmalısınız: ${roles}`
-      };
+      parts.push(`şu rollerden birine sahip olmalısınız: ${roles}`);
     }
-  }
-
-  if (settings.roleMode === 'blacklist') {
-    if (!settings.blockedRoles || settings.blockedRoles.length === 0) {
-      return { allowed: true };
+    if (userWhitelistOn) {
+      parts.push(`veya izin verilen üyelerden biri olmalısınız`);
     }
-
-    const hasBlockedRole = settings.blockedRoles.some(roleId =>
-      memberRoles.includes(roleId)
-    );
-
-    if (hasBlockedRole) {
-      return {
-        allowed: false,
-        reason: '❌ Sahip olduğunuz rol bu komutu kullanmanıza izin vermiyor!'
-      };
-    }
-  }
-
-  return { allowed: true };
-}
-
-function checkUserRestriction(userId, settings) {
-  if (settings.userMode === 'off') {
-    return { allowed: true };
-  }
-
-  if (settings.userMode === 'whitelist') {
-    const isAllowed = settings.allowedUsers.includes(userId);
-    if (!isAllowed) {
-      return {
-        allowed: false,
-        reason: '❌ Bu komutu kullanma yetkiniz yok!'
-      };
-    }
-  }
-
-  if (settings.userMode === 'blacklist') {
-    const isBlocked = settings.blockedUsers.includes(userId);
-    if (isBlocked) {
-      return {
-        allowed: false,
-        reason: '❌ Bu komutu kullanmanız engellenmiş!'
-      };
-    }
+    return {
+      allowed: false,
+      reason: `❌ Bu komutu kullanmak için ${parts.join(' ')}`
+    };
   }
 
   return { allowed: true };
