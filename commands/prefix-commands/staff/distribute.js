@@ -8,7 +8,7 @@ export default {
 	aliases: ["distribute", "dagit"],
 	cooldown: 5,
 	usage: '.dağıt',
-	category: 'moderation',
+	category: 'submoderation',
     permissions: {
         authorities: [PermissionFlagsBits.ManageChannels, PermissionFlagsBits.Administrator],
     },

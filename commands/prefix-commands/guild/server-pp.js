@@ -5,7 +5,7 @@ export default {
     aliases: ['sunucu-profil'],
     description: 'Sunucunun profil resmini gösterir.',
     usage: 'server-pp',
-    category: 'moderation',
+    category: 'submoderation',
 
     permissions: {
         enabled: false

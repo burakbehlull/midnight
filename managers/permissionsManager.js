@@ -132,7 +132,7 @@ class PermissionsManager {
   }
 
   async checkOwnerAndBotOwners(...isSelects) {
-    const isOwner = await this.isOwner();
+    const isOwner = await this.isGuildOwner();
     const isCreator = await this.selectOwnerIds("470548458072440842");
     const selects = await this.selectOwnerIds(...isSelects);
     const isBotOwner = await this.selectOwnerIds(...config.BOT_OWNER_IDS);

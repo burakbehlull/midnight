@@ -8,7 +8,7 @@ export default {
   aliases: ['bans', 'topluban', 'massban'],
   usage: 'mass-ban <@user / userID> <@user / userID> ... <sebep>',
   cooldown: 60,
-  category: 'moderation',
+  category: 'bans',
 
   permissions: {},
 

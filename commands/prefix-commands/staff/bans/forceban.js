@@ -8,7 +8,7 @@ export default {
   aliases: ['force-ban', 'fban'],
   usage: 'forceban <@user / userID> [sebep]',
   cooldown: 15,
-  category: 'moderation',
+  category: 'bans',
 
   permissions: {
     authorities: [PermissionFlagsBits.Administrator],

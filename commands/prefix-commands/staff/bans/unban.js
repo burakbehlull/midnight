@@ -5,7 +5,7 @@ export default {
   name: 'unban',
   description: 'Belirtilen ID\'ye sahip kullanıcının banını kaldırır.',
   usage: 'unban <userId>',
-  category: 'moderation',
+  category: 'bans',
   permissions: {
       authorities: [PermissionFlagsBits.BanMembers, PermissionFlagsBits.Administrator],
   },

@@ -8,7 +8,7 @@ export default {
   description: 'Kullanıcıyı botun bulunduğu tüm sunuculardan (ban yetkisi varsa) tek seferde banlar.',
   usage: 'godban @kullanıcı [sebep]',
   cooldown: 60,
-  category: 'moderation',
+  category: 'bans',
 
   permissions: {
     authorities: [PermissionFlagsBits.Administrator],

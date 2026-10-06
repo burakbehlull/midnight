@@ -8,7 +8,7 @@ export default {
   description: 'Kullanıcının botun bulunduğu tüm sunuculardaki (unban yetkisi varsa) banını kaldırır.',
   usage: 'ungodban <user id> [sebep]',
   cooldown: 60,
-  category: 'moderation',
+  category: 'bans',
 
   permissions: {
     authorities: [PermissionFlagsBits.Administrator],

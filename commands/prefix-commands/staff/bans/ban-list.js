@@ -22,7 +22,7 @@ export default {
   description: 'Sunucudaki banların listesini sayfalar halinde gösterir. Global name, ID, sebep ve force ban etiketi içerir.',
   usage: 'ban-list [sayfa]',
   cooldown: 10,
-  category: 'moderation',
+  category: 'bans',
 
   permissions: {
     authorities: [PermissionFlagsBits.BanMembers, PermissionFlagsBits.Administrator],

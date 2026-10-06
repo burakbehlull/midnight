@@ -8,7 +8,7 @@ export default {
   aliases: ['unforce-ban', 'ufban'],
   usage: 'unforceban <userID> [açıklama/sebep]',
   cooldown: 10,
-  category: 'moderation',
+  category: 'bans',
 
   permissions: {
     authorities: [PermissionFlagsBits.BanMembers, PermissionFlagsBits.Administrator],

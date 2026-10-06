@@ -5,7 +5,7 @@ export default {
     aliases: ['sunucu-afis'],
     description: 'Sunucunun afişini gösterir.',
     usage: 'server-banner',
-    category: 'moderation',
+    category: 'submoderation',
 
     permissions: {
         enabled: false

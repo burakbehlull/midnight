@@ -5,7 +5,7 @@ export default {
   aliases: ['device'],
   description: 'Kişinin cihazını gösterir.',
   usage: 'cihaz @user',
-  category: 'moderation',
+  category: 'submoderation',
 
   permissions: {
     enabled: false

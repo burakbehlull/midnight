@@ -8,7 +8,7 @@ export default {
   aliases: ["hüplet", "yargı", "primdog"],
   usage: 'ban <@user / userID> <sebep>',
   cooldown: 10,
-  category: 'moderation',
+  category: 'bans',
 
   permissions: {
     authorities: [PermissionFlagsBits.BanMembers, PermissionFlagsBits.Administrator],
