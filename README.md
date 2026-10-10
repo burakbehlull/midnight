@@ -179,6 +179,7 @@ Create ` config.json ` file and set permission settings:
 | feature | comment | set command |
 | ------ | ------ | ------ | 
 | otorole | Gives automatic roles to users | Can be set with the /settings Auto Role command |
+| spotify-match | Creates a Spotify match card for users in the server. | Can be set with the /settings Spotify Match command |
 
 **libs** uses:
 | Helper | Comment | Use | 

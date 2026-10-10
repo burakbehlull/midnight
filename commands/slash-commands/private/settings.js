@@ -108,6 +108,12 @@ export default {
             .setDescription('Davet Log Kanal Ayarla')
             .addChannelOption(opt => opt.setName('kanal').setDescription('Log kanalını seçin').setRequired(true))
         )
+        .addSubcommand(sub =>
+          sub
+            .setName('spotifymatchchannel')
+            .setDescription('Spotify Eşleşme Kanal Ayarla')
+            .addChannelOption(opt => opt.setName('kanal').setDescription('Eşleşme mesajlarının atılacağı kanal').setRequired(true))
+        )
     )
     .addSubcommandGroup(group =>
       group
@@ -196,6 +202,21 @@ export default {
               option
                 .setName("değer")
                 .setDescription("Yetkiler için aç/kapat.")
+                .setRequired(true)
+                .addChoices(
+                  { name: "Aç", value: "aç" },
+                  { name: "Kapat", value: "kapat" }
+                )
+            )
+        )
+        .addSubcommand(sub =>
+          sub
+            .setName('spotifymatchstatus')
+            .setDescription('Spotify Eşleşme Sistemini Ac/Kapat')
+            .addStringOption(option =>
+              option
+                .setName("değer")
+                .setDescription("Spotify eşleşme sistemi için aç/kapat.")
                 .setRequired(true)
                 .addChoices(
                   { name: "Aç", value: "aç" },
@@ -358,6 +379,9 @@ export default {
           
           Tag Role Sistemi: **${settings.tagRoleStatus ? "Açık" : "Kapalı"}**
           Tag Role: **${settings.tagRoleId ? `<@&${settings.tagRoleId}>` : "Yok"}**
+          
+          Spotify Eşleşme Sistemi: **${settings.spotifyMatchEnabled ? "Açık" : "Kapalı"}**
+          Spotify Eşleşme Kanalı: **${settings.spotifyMatchChannelId ? `<#${settings.spotifyMatchChannelId}>` : "Yok"}**
         `,
         footer: manager.theme.getNameAndAvatars("user", interaction), 
       })
@@ -525,6 +549,26 @@ export default {
       settings.tagRoleId = role.id;
       await settings.save();
       return interaction.reply({ content: `Tag Role başarıyla ${role} olarak ayarlandı. Artık sunucu tag'ını alan kullanıcılara otomatik bu rol verilecek.`, ephemeral: true });
+    }
+
+	if (option === 'spotifymatchchannel') {
+      if (!channel) return interaction.reply({ content: '❌ Lütfen bir kanal belirtin.', ephemeral: true });
+      settings.spotifyMatchChannelId = channel.id;
+      if (!settings.spotifyMatchEnabled) settings.spotifyMatchEnabled = true;
+      await settings.save();
+      return interaction.reply({ content: `Spotify eşleşme kanalı başarıyla ${channel} olarak ayarlandı. Sistem otomatik olarak **açıldı**.`, ephemeral: true });
+    }
+
+	if (option === 'spotifymatchstatus') {
+      if (!stringValue) return interaction.reply({ content: '❌ Lütfen bir değer (aç/kapat) belirtin.', ephemeral: true });
+      const mode = stringValue.toLowerCase() === 'aç';
+      settings.spotifyMatchEnabled = mode;
+      await settings.save();
+      let extra = '';
+      if (mode && !settings.spotifyMatchChannelId) {
+        extra = '\n\n⚠️ **Kanal ayarlanmamış!** Önce `/settings channels spotifymatchchannel` ile kanal ayarlayın.';
+      }
+      return interaction.reply({ content: `Spotify eşleşme sistemi başarıyla ${mode ? "açık" : "kapalı"} olarak ayarlandı.${extra}`, ephemeral: true });
     }
 
     if (option === 'registerformat') {

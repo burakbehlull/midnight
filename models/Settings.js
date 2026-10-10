@@ -38,7 +38,10 @@ const settingsSchema = new mongoose.Schema({
   selfRegisterKizRoleId: { type: String, default: null },
   selfRegisterMessageId: { type: String, default: null },
   selfRegisterChannelId: { type: String, default: null },
-  selfRegisterCustomText: { type: String, default: null }
+  selfRegisterCustomText: { type: String, default: null },
+
+  spotifyMatchEnabled: { type: Boolean, default: false },
+  spotifyMatchChannelId: { type: String, default: null }
   
 });
 
