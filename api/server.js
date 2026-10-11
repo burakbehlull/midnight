@@ -1468,7 +1468,7 @@ class MidnightAPI {
     this.app.put('/api/guilds/:guildId/actions/:groupId', async (req, res) => {
       try {
         const { guildId, groupId } = req.params;
-        const { groupName, type, roleMode, description, setupText } = req.body;
+        const { groupName, type, roleMode, description, setupText, embedTitle } = req.body;
 
         const guild = this.client.guilds.cache.get(guildId);
         if (!guild) {
@@ -1486,6 +1486,7 @@ class MidnightAPI {
         if (roleMode !== undefined) group.roleMode = roleMode;
         if (description !== undefined) group.description = description;
         if (setupText !== undefined) group.setupText = setupText;
+        if (embedTitle !== undefined) group.embedTitle = embedTitle;
 
         await group.save();
 
@@ -1546,7 +1547,7 @@ class MidnightAPI {
     this.app.post('/api/guilds/:guildId/actions/:groupId/entries', async (req, res) => {
       try {
         const { guildId, groupId } = req.params;
-        const { roleId, emojiId, emojiName, emojiAnimated, emojiRaw, buttonStyle, buttonLabel } = req.body;
+        const { roleId, emojiId, emojiName, emojiAnimated, emojiRaw, buttonStyle, buttonLabel, buttonEmojiId, buttonEmojiName, buttonEmojiAnimated, buttonEmojiRaw } = req.body;
 
         const guild = this.client.guilds.cache.get(guildId);
         if (!guild) {
@@ -1609,6 +1610,12 @@ class MidnightAPI {
         } else if (group.type === 'button') {
           entryData.buttonStyle = buttonStyle || 'secondary';
           entryData.buttonLabel = buttonLabel || role.name;
+          if (buttonEmojiId || buttonEmojiName) {
+            entryData.buttonEmojiId = buttonEmojiId || null;
+            entryData.buttonEmojiName = buttonEmojiName || null;
+            entryData.buttonEmojiAnimated = buttonEmojiAnimated || false;
+            entryData.buttonEmojiRaw = buttonEmojiRaw || null;
+          }
         }
 
         const entry = await ActionEntry.create(entryData);
@@ -1629,7 +1636,7 @@ class MidnightAPI {
     this.app.put('/api/guilds/:guildId/actions/:groupId/entries/:entryId', async (req, res) => {
       try {
         const { guildId, groupId, entryId } = req.params;
-        const { roleId, emojiId, emojiName, emojiAnimated, emojiRaw, buttonStyle, buttonLabel } = req.body;
+        const { roleId, emojiId, emojiName, emojiAnimated, emojiRaw, buttonStyle, buttonLabel, buttonEmojiId, buttonEmojiName, buttonEmojiAnimated, buttonEmojiRaw } = req.body;
 
         const guild = this.client.guilds.cache.get(guildId);
         if (!guild) {
@@ -1658,6 +1665,10 @@ class MidnightAPI {
         } else if (entry.type === 'button') {
           if (buttonStyle !== undefined) entry.buttonStyle = buttonStyle;
           if (buttonLabel !== undefined) entry.buttonLabel = buttonLabel;
+          if (buttonEmojiId !== undefined) entry.buttonEmojiId = buttonEmojiId;
+          if (buttonEmojiName !== undefined) entry.buttonEmojiName = buttonEmojiName;
+          if (buttonEmojiAnimated !== undefined) entry.buttonEmojiAnimated = buttonEmojiAnimated;
+          if (buttonEmojiRaw !== undefined) entry.buttonEmojiRaw = buttonEmojiRaw;
         }
 
         await entry.save();
@@ -1752,6 +1763,7 @@ class MidnightAPI {
 
         // Setup mesajını oluştur
         const text = setupText || `**${group.groupName}**\n\nAşağıdaki ${group.type === 'emoji' ? 'emojilere' : 'butonlara'} tıklayarak ilgili rolleri alabilirsiniz.`;
+        const embedTitle = group.embedTitle || (group.type === 'emoji' ? `🎯 ${group.groupName}` : `🔘 ${group.groupName}`);
         
         let sentMessage;
 
@@ -1759,7 +1771,7 @@ class MidnightAPI {
           // Emoji grubu
           sentMessage = await channel.send({
             embeds: [{
-              title: `🎯 ${group.groupName}`,
+              title: embedTitle,
               description: text,
               color: 0x5865F2
             }]
@@ -1805,6 +1817,18 @@ class MidnightAPI {
               .setLabel(entry.buttonLabel || 'Rol')
               .setStyle(styleMap[entry.buttonStyle] || ButtonStyle.Secondary);
 
+            if (entry.buttonEmojiId || entry.buttonEmojiName) {
+              if (entry.buttonEmojiId) {
+                button.setEmoji({
+                  id: entry.buttonEmojiId,
+                  name: entry.buttonEmojiName || null,
+                  animated: !!entry.buttonEmojiAnimated
+                });
+              } else {
+                button.setEmoji({ name: entry.buttonEmojiName });
+              }
+            }
+
             currentRow.push(button);
           }
 
@@ -1814,7 +1838,7 @@ class MidnightAPI {
 
           sentMessage = await channel.send({
             embeds: [{
-              title: `🔘 ${group.groupName}`,
+              title: embedTitle,
               description: text,
               color: 0x57F287
             }],

@@ -35,7 +35,8 @@ export default function Actions() {
     roleId: '',
     emojiName: '',
     buttonStyle: 'secondary',
-    buttonLabel: ''
+    buttonLabel: '',
+    buttonEmoji: ''
   });
   const [setupFormData, setSetupFormData] = useState({
     channelId: '',
@@ -125,12 +126,16 @@ export default function Actions() {
       } else if (selectedGroup.type === 'button') {
         data.buttonStyle = entryFormData.buttonStyle;
         data.buttonLabel = entryFormData.buttonLabel || roles.find(r => r.id === entryFormData.roleId)?.name || 'Rol';
+        if (entryFormData.buttonEmoji) {
+          data.buttonEmojiRaw = entryFormData.buttonEmoji;
+          data.buttonEmojiName = entryFormData.buttonEmoji;
+        }
       }
 
       await api.addActionEntry(guildId, selectedGroup.groupId, data);
       toast.success('Entry eklendi');
       setShowAddEntryModal(false);
-      setEntryFormData({ roleId: '', emojiName: '', buttonStyle: 'secondary', buttonLabel: '' });
+      setEntryFormData({ roleId: '', emojiName: '', buttonStyle: 'secondary', buttonLabel: '', buttonEmoji: '' });
       fetchGroupDetail(selectedGroup.groupId);
     } catch (error) {
       toast.error(error.response?.data?.error || 'Entry eklenemedi');
@@ -199,7 +204,8 @@ export default function Actions() {
       type: group.type,
       roleMode: group.roleMode || 'multi',
       description: group.description || '',
-      setupText: group.setupText || ''
+      setupText: group.setupText || '',
+      embedTitle: group.embedTitle || ''
     });
     setShowEditModal(true);
   };
@@ -308,6 +314,12 @@ export default function Actions() {
                           <span>{getRoleModeLabel(group.roleMode)}</span>
                           <span>•</span>
                           <span>{group.entryCount || 0} kayıt</span>
+                          {group.embedTitle && (
+                            <>
+                              <span>•</span>
+                              <span className="text-yellow-400" title={`Embed Başlığı: ${group.embedTitle}`}>🏷️ {String(group.embedTitle).slice(0, 30)}{group.embedTitle.length > 30 ? '...' : ''}</span>
+                            </>
+                          )}
                           {group.setupMessageId && (
                             <>
                               <span>•</span>
@@ -403,7 +415,10 @@ export default function Actions() {
                                 {entry.type === 'emoji' ? (
                                   <span className="text-2xl">{entry.emojiName}</span>
                                 ) : (
-                                  <span className={`px-3 py-1 rounded text-white text-sm ${getButtonStyleColor(entry.buttonStyle)}`}>
+                                  <span className={`px-3 py-1 rounded text-white text-sm inline-flex items-center gap-1.5 ${getButtonStyleColor(entry.buttonStyle)}`}>
+                                    {(entry.buttonEmojiName || entry.buttonEmojiRaw) && (
+                                      <span>{entry.buttonEmojiRaw || entry.buttonEmojiName}</span>
+                                    )}
                                     {entry.buttonLabel}
                                   </span>
                                 )}
@@ -522,6 +537,18 @@ export default function Actions() {
                   placeholder="Setup sırasında gösterilecek metin..."
                 />
               </div>
+
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Embed Başlığı (Opsiyonel)</label>
+                <input
+                  type="text"
+                  value={editFormData.embedTitle || ''}
+                  onChange={(e) => setEditFormData({ ...editFormData, embedTitle: e.target.value })}
+                  placeholder="Boş bırakılırsa varsayılan başlık kullanılır"
+                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
+                />
+                <p className="text-xs text-gray-500 mt-1">Kurulum mesajındaki embed'ın üst başlığı</p>
+              </div>
             </div>
 
             <div className="flex gap-2 mt-6">
@@ -606,6 +633,18 @@ export default function Actions() {
                       className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
                     />
                   </div>
+
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-2">Buton Emojisi (Opsiyonel)</label>
+                    <input
+                      type="text"
+                      value={entryFormData.buttonEmoji}
+                      onChange={(e) => setEntryFormData({ ...entryFormData, buttonEmoji: e.target.value })}
+                      placeholder="🔴 veya <a:kalp:123456>"
+                      className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Butonun yanında gösterilecek emoji. Boş bırakılırsa emoji olmaz.</p>
+                  </div>
                 </>
               )}
             </div>
@@ -620,7 +659,7 @@ export default function Actions() {
               <button
                 onClick={() => {
                   setShowAddEntryModal(false);
-                  setEntryFormData({ roleId: '', emojiName: '', buttonStyle: 'secondary', buttonLabel: '' });
+                  setEntryFormData({ roleId: '', emojiName: '', buttonStyle: 'secondary', buttonLabel: '', buttonEmoji: '' });
                 }}
                 className="flex-1 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
               >

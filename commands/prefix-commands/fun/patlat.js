@@ -6,6 +6,7 @@ const { delay } = misc;
 export default {
   name: 'patlat',
   category: 'fun',
+  cooldown: 10,
   description: 'Sunucuyu patlatma şaka komutu.',
   permissions: {
     enabled: false

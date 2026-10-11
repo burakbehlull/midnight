@@ -10,6 +10,7 @@ const actionGroupSchema = new mongoose.Schema({
   setupMessageId: { type: String, default: null },
   setupChannelId: { type: String, default: null },
   setupText: { type: String, default: null },
+  embedTitle: { type: String, default: null },
   createdAt: { type: Date, default: Date.now }
 });
 

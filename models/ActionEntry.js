@@ -15,7 +15,11 @@ const actionEntrySchema = new mongoose.Schema({
     default: 'secondary',
     enum: ['primary', 'secondary', 'success', 'danger', 'warning']
   },
-  buttonLabel: { type: String, default: null }
+  buttonLabel: { type: String, default: null },
+  buttonEmojiId: { type: String, default: null },
+  buttonEmojiName: { type: String, default: null },
+  buttonEmojiAnimated: { type: Boolean, default: false },
+  buttonEmojiRaw: { type: String, default: null }
 });
 
 actionEntrySchema.index({ guildId: 1, groupId: 1, entryId: 1 }, { unique: true });

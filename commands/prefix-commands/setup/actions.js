@@ -112,19 +112,25 @@ function pickButtonStyleAndLabel(args, excludeRoleId, fallbackRoleName) {
   }
 
   let labelParts = [];
+  let emojiRaw = null;
   for (let i = 2; i < args.length; i++) {
     const piece = args[i];
     if (!piece) continue;
     if (/^<@&\d+>$/.test(piece)) continue;
     if (String(excludeRoleId) === piece) continue;
     if (styleFoundIdx === i) continue;
+    const parsed = parseEmoji(piece);
+    if (parsed && !emojiRaw) {
+      emojiRaw = piece;
+      continue;
+    }
     labelParts.push(piece);
   }
 
   let label = labelParts.join(' ').trim();
   if (!label) label = String(fallbackRoleName || 'Rol');
 
-  return { style, label };
+  return { style, label, emoji: emojiRaw };
 }
 
 async function renderGroupEmbed(manager, group, entries, message, extra = '') {
@@ -142,6 +148,10 @@ async function renderGroupEmbed(manager, group, entries, message, extra = '') {
 
   if (group.setupText) {
     body += `\n**📝 Setup Metni (Açıklama):**\n> ${String(group.setupText).slice(0, 200).replace(/\n/g, '\n> ')}\n`;
+  }
+
+  if (group.embedTitle) {
+    body += `\n**🏷️ Embed Başlığı:** ${String(group.embedTitle).slice(0, 100)}\n`;
   }
 
   if (entries.length === 0) {
@@ -162,7 +172,12 @@ async function renderGroupEmbed(manager, group, entries, message, extra = '') {
           if (role) roleNameFallback = role.name;
         }
         const displayLbl = buttonLabelDisplayForEmbed(e.buttonLabel, roleNameFallback);
-        body += `[\`${String(e.entryId).padStart(2, '0')}\`] [${displayLbl}] (${STYLE_NAME_SHORT[e.buttonStyle] || e.buttonStyle})  →  <@&${e.roleId}>\n`;
+        let emojiPart = '';
+        if (e.buttonEmojiId || e.buttonEmojiName) {
+          const parsed = parseEmoji(e.buttonEmojiRaw || (e.buttonEmojiId ? `<${e.buttonEmojiAnimated ? 'a' : ''}:${e.buttonEmojiName || '_'}:${e.buttonEmojiId}>` : e.buttonEmojiName));
+          emojiPart = `${emojiDisplay(parsed)} `;
+        }
+        body += `[\`${String(e.entryId).padStart(2, '0')}\`] ${emojiPart}[${displayLbl}] (${STYLE_NAME_SHORT[e.buttonStyle] || e.buttonStyle})  →  <@&${e.roleId}>\n`;
       }
     } else {
       for (const e of entries) {
@@ -216,7 +231,7 @@ export default {
   name: 'actions',
   aliases: ['action', 'actionrole', 'actionroles', 'rolmenu'],
   description: "Emoji veya buton ile otomatik rol verme grupları oluştur/yönet.",
-  usage: ".actions list | .actions create <grupAdi> | .actions show <grupId> | .actions add <grupId> <@rol> <emoji|stil> [yazi] | .actions remove <grupId> <entryId> | .actions delete <grupId> | .actions setup <grupId> <text>",
+  usage: ".actions list | .actions create <grupAdi> | .actions show <grupId> | .actions add <grupId> <@rol> <emoji|stil> [yazi] [butonEmoji] | .actions remove <grupId> <entryId> | .actions delete <grupId> | .actions setup <grupId> <text> | .actions title <grupId> <baslik|clear> | .actions button-emoji <grupId> <entryId> <emoji|clear>",
   category: 'setup',
 
   permissions: {
@@ -312,7 +327,7 @@ export default {
 
     if (['add', 'ekle'].includes(sub)) {
       const groupId = (args[1] || '').toLowerCase();
-      if (!groupId) return sender.reply(sender.errorEmbed("❌ Kullanım: `.actions add <grupId> <@rol> <emoji|stili> [butonYazisi]`"));
+      if (!groupId) return sender.reply(sender.errorEmbed("❌ Kullanım: `.actions add <grupId> <@rol> <emoji|stili> [butonYazisi] [butonEmoji]`"));
 
       const group = await getGroup(guildId, groupId);
       if (!group) return sender.reply(sender.errorEmbed(`❌ \`${groupId}\` ID'li grup bulunamadı.`));
@@ -377,9 +392,10 @@ export default {
       }
 
       if (group.type === 'button') {
-        const { style, label } = pickButtonStyleAndLabel(args, roleId, role.name);
+        const { style, label, emoji } = pickButtonStyleAndLabel(args, roleId, role.name);
         const entryId = await getNextEntryId(guildId, groupId);
-        await ActionEntry.create({
+
+        const createData = {
           guildId,
           groupId,
           entryId,
@@ -387,12 +403,25 @@ export default {
           roleId,
           buttonStyle: style,
           buttonLabel: label
-        });
+        };
+
+        if (emoji) {
+          const parsed = parseEmoji(emoji);
+          if (parsed) {
+            createData.buttonEmojiId = parsed.id;
+            createData.buttonEmojiName = parsed.name;
+            createData.buttonEmojiAnimated = parsed.animated;
+            createData.buttonEmojiRaw = parsed.raw;
+          }
+        }
+
+        await ActionEntry.create(createData);
 
         const displayLbl = buttonLabelDisplayForEmbed(label, role.name);
+        const emojiPart = createData.buttonEmojiRaw ? `${emojiDisplay(parseEmoji(createData.buttonEmojiRaw))} ` : '';
         return sender.reply(sender.embed({
           title: " Eklendi",
-          description: `[${displayLbl}] (${buttonStyleLabel(style)})  →  <@&${roleId}>\n(entryId: \`${entryId}\`)`,
+          description: `${emojiPart}[${displayLbl}] (${buttonStyleLabel(style)})  →  <@&${roleId}>\n(entryId: \`${entryId}\`)`,
           color: "Green"
         }));
       }
@@ -576,7 +605,8 @@ export default {
             `**Kanal:** ${targetChannel}\n` +
             `**Tip:** ${groupTypeLabel(group.type)}\n` +
             `**🎚️ Rol Modu:** ${ROLE_MODE_LABEL[state.roleMode] || state.roleMode}\n` +
-            `**Kayıt Sayısı:** ${entries.length}\n\n` +
+            `**Kayıt Sayısı:** ${entries.length}\n` +
+            `**🏷️ Embed Başlığı:** ${group.embedTitle ? '`' + String(group.embedTitle).slice(0, 80) + '`' : '*(varsayılan)*'}\n\n` +
             `**📝 Mesaj Metni:**\n> ${String(state.setupText).slice(0, 600).replace(/\n/g, '\n> ')}\n\n` +
             `Devam edilsin mi?`,
           color: "Yellow"
@@ -645,15 +675,98 @@ export default {
       return;
     }
 
+    if (['title', 'baslik', 'başlık', 'embed-title'].includes(sub)) {
+      const groupId = (args[1] || '').toLowerCase();
+      if (!groupId) return sender.reply(sender.errorEmbed("❌ Kullanım: `.actions title <grupId> <başlık|clear>`"));
+
+      const group = await getGroup(guildId, groupId);
+      if (!group) return sender.reply(sender.errorEmbed(`❌ \`${groupId}\` ID'li grup bulunamadı.`));
+
+      const rest = args.slice(2).join(' ').trim();
+      if (!rest) return sender.reply(sender.errorEmbed("❌ Başlık boş olamaz. Kaldırmak için `clear` yaz."));
+
+      if (rest.toLowerCase() === 'clear') {
+        await ActionGroup.updateOne({ _id: group._id }, { $set: { embedTitle: null } });
+        return sender.reply(sender.embed({
+          title: "🏷️ Başlık Sıfırlandı",
+          description: `**${group.groupName}** grubunun embed başlığı varsayılana döndü.`,
+          color: "Yellow"
+        }));
+      }
+
+      const newTitle = rest.slice(0, 256);
+      await ActionGroup.updateOne({ _id: group._id }, { $set: { embedTitle: newTitle } });
+      return sender.reply(sender.embed({
+        title: "🏷️ Başlık Güncellendi",
+        description: `**${group.groupName}** grubunun embed başlığı:\n> ${newTitle}`,
+        color: "Green"
+      }));
+    }
+
+    if (['button-emoji', 'btn-emoji', 'buttonemoji', 'buton-emoji', 'butonemoji'].includes(sub)) {
+      const groupId = (args[1] || '').toLowerCase();
+      const entryIdRaw = args[2];
+      if (!groupId || !entryIdRaw) return sender.reply(sender.errorEmbed("❌ Kullanım: `.actions button-emoji <grupId> <entryId> <emoji|clear>`"));
+
+      const group = await getGroup(guildId, groupId);
+      if (!group) return sender.reply(sender.errorEmbed(`❌ \`${groupId}\` ID'li grup bulunamadı.`));
+      if (group.type !== 'button') return sender.reply(sender.errorEmbed("❌ Bu özellik sadece buton grupları için geçerlidir."));
+
+      const entryId = parseInt(entryIdRaw, 10);
+      if (isNaN(entryId)) return sender.reply(sender.errorEmbed("❌ entryId sayı olmalı."));
+
+      const entry = await ActionEntry.findOne({ guildId, groupId, entryId });
+      if (!entry) return sender.reply(sender.errorEmbed(`❌ \`${entryId}\` entryId bulunamadı.`));
+
+      const emojiArg = args.slice(3).join(' ').trim();
+      if (!emojiArg) return sender.reply(sender.errorEmbed("❌ Emoji belirtmelisin. Kaldırmak için `clear` yaz."));
+
+      if (emojiArg.toLowerCase() === 'clear') {
+        await ActionEntry.updateOne({ _id: entry._id }, {
+          $set: {
+            buttonEmojiId: null,
+            buttonEmojiName: null,
+            buttonEmojiAnimated: false,
+            buttonEmojiRaw: null
+          }
+        });
+        return sender.reply(sender.embed({
+          title: " Emoji Kaldırıldı",
+          description: `entryId \`${entryId}\` butonunun emojisi kaldırıldı.`,
+          color: "Yellow"
+        }));
+      }
+
+      const parsed = parseEmoji(emojiArg);
+      if (!parsed) return sender.reply(sender.errorEmbed("❌ Geçerli bir emoji değil. Örn: `🔴` veya `<a:kalp:123456>`"));
+
+      await ActionEntry.updateOne({ _id: entry._id }, {
+        $set: {
+          buttonEmojiId: parsed.id,
+          buttonEmojiName: parsed.name,
+          buttonEmojiAnimated: parsed.animated,
+          buttonEmojiRaw: parsed.raw
+        }
+      });
+
+      return sender.reply(sender.embed({
+        title: " Emoji Atandı",
+        description: `${emojiDisplay(parsed)}  →  entryId \`${entryId}\` butonuna emoji olarak atandı.`,
+        color: "Green"
+      }));
+    }
+
     return sender.reply(sender.errorEmbed(
       "❌ Geçersiz komut. Kullanımlar:\n\n" +
       "`.actions list`\n" +
       "`.actions create <grupAdi>`\n" +
       "`.actions show <grupId>`\n" +
-      "`.actions add <grupId> <@rol> <emoji|stil> [butonYazisi]`\n" +
+      "`.actions add <grupId> <@rol> <emoji|stil> [butonYazisi] [butonEmoji]`\n" +
       "`.actions remove <grupId> <entryId>`\n" +
       "`.actions delete <grupId>`\n" +
-      "`.actions setup <grupId> <text>`\n\n" +
+      "`.actions setup <grupId> <text>`\n" +
+      "`.actions title <grupId> <baslik|clear>`\n" +
+      "`.actions button-emoji <grupId> <entryId> <emoji|clear>`\n\n" +
       "**Setup Örneği:**\n" +
       "`.actions setup myroles Aşağıdaki emojilere tıklayarak rollerini alabilirsin!`"
     ));
@@ -664,9 +777,10 @@ async function deployGroup(client, guild, channel, group, entries, sender) {
   try {
     if (group.type === 'emoji') {
       const text = group.setupText || `**${group.groupName}**\n\nAşağıdaki emojilere tıklayarak ilgili rolleri alabilirsiniz.`;
+      const embedTitle = group.embedTitle || `🎯 ${group.groupName}`;
       const sentMsg = await channel.send({
         embeds: [sender.embed({
-          title: `🎯 ${group.groupName}`,
+          title: embedTitle,
           description: text,
           color: 'Blurple'
         })]
@@ -690,6 +804,7 @@ async function deployGroup(client, guild, channel, group, entries, sender) {
 
     if (group.type === 'button') {
       const text = group.setupText || `**${group.groupName}**\n\nAşağıdaki butonlara tıklayarak ilgili rolleri alabilirsiniz.`;
+      const embedTitle = group.embedTitle || (guild ? guild.name : group.groupName);
 
       const rows = [];
       let currentRow = null;
@@ -704,16 +819,35 @@ async function deployGroup(client, guild, channel, group, entries, sender) {
         const labelInfo = buttonLabelRenderForDiscord(e.buttonLabel, null);
         const styleEnum = buttonStyleToEnum(e.buttonStyle);
 
+        let hasEmoji = false;
+        let emojiObj = null;
+
+        if (e.buttonEmojiId || e.buttonEmojiName) {
+          hasEmoji = true;
+          if (e.buttonEmojiId) {
+            emojiObj = {
+              id: e.buttonEmojiId,
+              name: e.buttonEmojiName || null,
+              animated: !!e.buttonEmojiAnimated
+            };
+          } else {
+            emojiObj = { name: e.buttonEmojiName };
+          }
+        } else if (labelInfo.hasCustomEmoji) {
+          hasEmoji = true;
+          emojiObj = {
+            id: labelInfo.customEmojiId,
+            name: labelInfo.customEmojiName,
+            animated: !!labelInfo.customEmojiAnimated
+          };
+        }
+
         currentRow.push({
           customId: `actions_${group.groupId}_btn_${e.entryId}`,
           label: labelInfo.text ? labelInfo.text.slice(0, 80) : (e.buttonLabel ? String(e.buttonLabel).slice(0, 80) : 'Rol'),
           style: styleEnum,
-          hasCustomEmoji: labelInfo.hasCustomEmoji,
-          customEmoji: labelInfo.hasCustomEmoji ? {
-            id: labelInfo.customEmojiId,
-            name: labelInfo.customEmojiName,
-            animated: !!labelInfo.customEmojiAnimated
-          } : null
+          hasEmoji,
+          emoji: emojiObj
         });
 
         count++;
@@ -724,8 +858,8 @@ async function deployGroup(client, guild, channel, group, entries, sender) {
       for (const rawRow of rawRows) {
         const rowObj = new Button();
         for (const b of rawRow) {
-          if (b.hasCustomEmoji && b.customEmoji) {
-            rowObj.add(b.customId, b.label || '', b.style, b.customEmoji);
+          if (b.hasEmoji && b.emoji) {
+            rowObj.add(b.customId, b.label || '', b.style, b.emoji);
           } else {
             rowObj.add(b.customId, b.label, b.style);
           }
@@ -737,7 +871,7 @@ async function deployGroup(client, guild, channel, group, entries, sender) {
 
       const sentMsg = await channel.send({
         embeds: [sender.embed({
-          title: `${message.guild.name}`,
+          title: embedTitle,
           description: text,
           color: 'Green'
         })],
@@ -826,12 +960,12 @@ async function startEditorSession(client, triggerMessage, editorMsg, group, mana
         prompt = "Yeni emojiyi ve rolü şu formatta yaz:\n`@Rol <:emoji:12345>`\n\nveya\n`<a:animemoji:123> @Rol`\n\nÇıkmak için: **bitti**";
       } else {
         prompt =
-          "Yeni butonu şu formatta yaz:\n`@Rol <stil> [butonYazisi_VEYA_Emoji]`\n\n" +
+          "Yeni butonu şu formatta yaz:\n`@Rol <stil> [butonYazisi] [butonEmoji]`\n\n" +
           "Stiller: `primary mavi`, `secondary gri`, `success yesil`, `danger kirmizi`, `warning sari`\n\n" +
           "Örnekler:\n" +
           "`@Üye secondary Üye Ol`\n" +
-          "`@Minecraft primary <:mc:1234567>` (butona sadece emoji basar)\n" +
-          "`@Yetkili danger 🔨 Başvur`\n\n" +
+          "`@Minecraft primary Minecraft 🎮` (butona emoji ekler)\n" +
+          "`@Yetkili danger Başvur 🔨`\n\n" +
           "Çıkmak için: **bitti**";
       }
 
@@ -911,19 +1045,39 @@ async function startEditorSession(client, triggerMessage, editorMsg, group, mana
           const style = parseButtonStyle(stylePart, 'secondary');
           const rolePartIndex = parts.indexOf(rolePart);
           const stylePartIndex = parts.findIndex(p => p === stylePart);
-          let label = '';
+          let labelParts = [];
+          let buttonEmojiRaw = null;
           for (let i = 0; i < parts.length; i++) {
             if (i !== rolePartIndex && i !== stylePartIndex) {
-              label += (label ? ' ' : '') + parts[i];
+              const piece = parts[i];
+              const parsed = parseEmoji(piece);
+              if (parsed && !buttonEmojiRaw) {
+                buttonEmojiRaw = piece;
+                continue;
+              }
+              labelParts.push(piece);
             }
           }
+          let label = labelParts.join(' ').trim();
           if (!label) label = role.name || 'Rol';
           label = label.slice(0, 80);
 
-          await ActionEntry.create({
+          const createData = {
             guildId, groupId, entryId: nextId, type: 'button', roleId,
             buttonStyle: style, buttonLabel: label
-          });
+          };
+
+          if (buttonEmojiRaw) {
+            const parsed = parseEmoji(buttonEmojiRaw);
+            if (parsed) {
+              createData.buttonEmojiId = parsed.id;
+              createData.buttonEmojiName = parsed.name;
+              createData.buttonEmojiAnimated = parsed.animated;
+              createData.buttonEmojiRaw = parsed.raw;
+            }
+          }
+
+          await ActionEntry.create(createData);
         }
 
         await refreshEditor();
