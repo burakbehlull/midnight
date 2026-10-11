@@ -211,21 +211,7 @@ export async function createSpotifyMatchCard({
   ctx.stroke();
   ctx.restore();
 
-  const heartY = coverY + coverSize + 19;
-  ctx.save();
-  const heartColor = withAlpha(lighten(accent, 0.4), 0.9);
-  ctx.fillStyle = heartColor;
-  ctx.translate(width / 2, heartY);
-  const s = 8;
-  ctx.beginPath();
-  ctx.moveTo(0, s * 0.5);
-  ctx.bezierCurveTo(0, s * 0.1, -s, -s * 0.5, -s, -s * 0.9);
-  ctx.bezierCurveTo(-s, -s * 1.3, -s * 0.5, -s * 1.5, 0, -s * 0.8);
-  ctx.bezierCurveTo(s * 0.5, -s * 1.5, s, -s * 1.3, s, -s * 0.9);
-  ctx.bezierCurveTo(s, -s * 0.5, 0, s * 0.1, 0, s * 0.5);
-  ctx.closePath();
-  ctx.fill();
-  ctx.restore();
+  // Kalp kaldırıldı - boşluk bırakıldı
 
   const avatarSize = 115;
   const user1X = 65;
@@ -281,7 +267,7 @@ export async function createSpotifyMatchCard({
     ctx.beginPath();
     ctx.arc(x + avatarSize / 2, y + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
     ctx.strokeStyle = accentHex;
-    ctx.lineWidth = 4.5;
+    ctx.lineWidth = 1.5;
     ctx.stroke();
     ctx.restore();
   }
