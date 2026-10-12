@@ -3,7 +3,7 @@ import { PermissionFlagsBits } from "discord.js";
 
 export default {
   name: "topyetkili",
-  aliases: ["topofficial"],
+  aliases: ["top-staff", "yetkililer", "topstaff"],
   description: "Yetkili kullanıcıları gösterir",
   usage: "topyetkili",
   category: 'register',

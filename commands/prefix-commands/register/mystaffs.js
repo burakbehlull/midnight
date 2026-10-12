@@ -5,7 +5,7 @@ import { PermissionFlagsBits } from "discord.js";
 
 export default {
   name: "yetkililerim",
-  aliases: ["myofficials"],
+  aliases: ["mystaffs", "my-staffs"],
   description: "Kullanıcının çektiği yetkilileri gösterir",
   usage: "yetkililerim",
   category: 'register',

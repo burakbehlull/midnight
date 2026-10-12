@@ -4,7 +4,7 @@ import { PermissionFlagsBits } from "discord.js";
 
 export default {
 	name: "yetkibaslat",
-	aliases: ["yetkibaşlat", "authorizedstart"],
+	aliases: ["yetkibaşlat", "startstaff", "start-staff"],
 	description: "Bir kullanıcıyı yetkili olarak başlatır.",
 	usage: ".yetkibaşlat @kullanıcı",
 	category: "register",
@@ -26,10 +26,10 @@ export default {
 			return sender.reply(sender.errorEmbed("❌ Lütfen bir kullanıcı etiketleyin. Kendinizi başlatamazsınız."));
 		}
 			
-			/*
+		
 		if (isSelf) {
 			return sender.reply(sender.errorEmbed("❌ Kendinizi yetkili olarak başlatamazsınız. Lütfen birini etiketleyin."));
-		}*/
+		}
 
 		const settings = await Settings.findOne({ guildId: message.guild.id });
 		if (!settings?.staffRole) {
@@ -37,14 +37,14 @@ export default {
 			sender.errorEmbed("❌ `StaffRole` ayarlanmamış. `/settings` komutunu kullan.")
 			);
 		}
-		/*
+		
 		const alreadyHasRole = target.roles.cache.has(settings.staffRole);
 		if (alreadyHasRole) {
 			return sender.reply(
 			sender.errorEmbed(`${target} zaten <@&${settings.staffRole}> rolüne sahip.`)
 			);
 		}
-		*/
+		
 
 		const existingStaff = await Staff.findOne({ userId: target.id, guildId: message.guild.id });
 		if (existingStaff) {

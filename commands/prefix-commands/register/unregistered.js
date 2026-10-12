@@ -14,7 +14,7 @@ export default {
   },
 
 
-  async execute(client, message, args) {
+  async execute(client, message) {
     const sender = new Manager(client, { action: message }).sender;
 
 
