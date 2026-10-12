@@ -1,5 +1,6 @@
 import Manager from '#managers';
 import { urls } from '#data';
+import { gifResolver } from '#helpers';
 
 export default {
     name: "kiss",
@@ -26,9 +27,7 @@ export default {
             return manager.sender.reply(manager.sender.errorEmbed("❌ Kendini öpemezsin!"));
         }
 
-        const gifs = urls.kiss;
-
-        const randomGif = gifs[Math.floor(Math.random() * gifs.length)];
+        const randomGif = await gifResolver.pickRandomGif(urls.kiss);
 
         message.reply({ 
             content: `**${message.author.username}**, **${target.user.username}** kullanıcısını öptü!`,

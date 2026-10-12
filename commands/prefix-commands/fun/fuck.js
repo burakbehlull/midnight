@@ -1,5 +1,6 @@
 import Manager from '#managers';
 import { urls } from '#data';
+import { gifResolver } from '#helpers';
 
 export default {
     name: "fuck",
@@ -26,9 +27,7 @@ export default {
             return manager.sender.reply(manager.sender.errorEmbed("❌ Kendini fuck edemezsin!"));
         }
 
-        const gifs = urls.fuck;
-
-        const randomGif = gifs[Math.floor(Math.random() * gifs.length)];
+        const randomGif = await gifResolver.pickRandomGif(urls.fuck);
 
         message.reply({ 
             content: `**${message.author.username}**, **${target.user.username}** kullanıcısına müstehcen şeyler yapıyor ;o`,

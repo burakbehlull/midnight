@@ -24,6 +24,7 @@ import {
 } from "./hybridContext.js"
 
 import * as actionRolesHelper from "./actionRolesHelper.js"
+import * as gifResolver from "./gifResolver.js"
 
 
 export {
@@ -35,6 +36,7 @@ export {
 	marketHelper,
 	cosmeticsHelper,
 	actionRolesHelper,
+	gifResolver,
 	Button, Modal,
 	
 	fetchPartialNeed,

@@ -1,5 +1,6 @@
 import Manager from '#managers';
 import { urls } from '#data';
+import { gifResolver } from '#helpers';
 
 export default {
     name: "hug",
@@ -26,9 +27,7 @@ export default {
             return manager.sender.reply(manager.sender.errorEmbed("❌ Kendine sarılamazsın!"));
         }
 
-        const gifs = urls.hug;
-
-        const randomGif = gifs[Math.floor(Math.random() * gifs.length)];
+        const randomGif = await gifResolver.pickRandomGif(urls.hug);
 
         message.reply({ 
             content: `**${message.author.username}**, **${target.user.username}** kullanıcısına sarıldı!`,

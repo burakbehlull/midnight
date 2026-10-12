@@ -1,5 +1,6 @@
 import Manager from '#managers';
 import { urls } from '#data';
+import { gifResolver } from '#helpers';
 
 export default {
     name: "slap",
@@ -26,9 +27,7 @@ export default {
             return manager.sender.reply(manager.sender.errorEmbed("❌ Kendine tokat atamazsın!"));
         }
 
-        const gifs = urls.slap;
-
-        const randomGif = gifs[Math.floor(Math.random() * gifs.length)];
+        const randomGif = await gifResolver.pickRandomGif(urls.slap);
 
         message.reply({ 
             content: `**${message.author.username}**, **${target.user.username}** tokatladı.`,
