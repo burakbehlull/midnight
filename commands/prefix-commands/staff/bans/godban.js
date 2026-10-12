@@ -165,15 +165,12 @@ export default {
 
     try {
       await Punishment.create({
-        type: 'godban',
-        userID: targetUser.id,
-        tag: targetUser.tag,
-        admin: message.author.id,
-        reason: `[GOD BAN] ${reasonText} | ${successCount}/${total} sunucu`,
+        type: 'ban',
+        userId: targetUser.id,
+        guildId: message.guild.id,
+        staffId: message.author.id,
+        reason: `[G] ${reasonText}`,
         duration: null,
-        serverID: message.guild.id,
-        successGuilds: successCount,
-        totalGuilds: total,
       }).catch(() => {});
     } catch {}
 

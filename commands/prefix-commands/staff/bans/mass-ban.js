@@ -116,7 +116,7 @@ export default {
             staffId: message.author.id,
             type: 'ban',
             duration: null,
-            reason
+            reason: `[M] ${reason}`
           });
 
           banned.push(target);

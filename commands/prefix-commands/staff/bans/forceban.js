@@ -104,9 +104,9 @@ export default {
           userId: user.id,
           guildId: message.guild.id,
           staffId: message.author.id,
-          type: 'forceban',
+          type: 'ban',
           duration: null,
-          reason,
+          reason: `[F] ${reason}`,
         });
       } catch (dbErr) {
         console.error('[forceban] Punishment kaydedilemedi:', dbErr);
