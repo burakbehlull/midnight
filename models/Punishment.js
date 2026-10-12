@@ -9,6 +9,9 @@ const punishmentSchema = new mongoose.Schema({
   date: { type: Date, default: Date.now },
   duration: String,
   staffId: String,
+  deleted: { type: Boolean, default: false }, // Soft delete
+  deletedAt: Date,
+  deletedBy: String
 });
 
 punishmentSchema.pre('save', async function(next) {

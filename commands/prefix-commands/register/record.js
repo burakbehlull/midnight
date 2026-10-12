@@ -26,14 +26,27 @@ export default {
       const mentionedUser = message.mentions.members.first() || message.guild.members.cache.get(args[1]);
       if (!mentionedUser) return sender.reply(sender.errorEmbed("Geçerli bir kullanıcı belirtin!\n\nKullanım: `.sicil clear @user`"));
 
-      const deleted = await Punishment.deleteMany({ 
-        userId: mentionedUser.id, 
-        guildId: message.guild.id 
-      });
+      const result = await Punishment.updateMany(
+        { 
+          userId: mentionedUser.id, 
+          guildId: message.guild.id,
+          deleted: { $ne: true }
+        },
+        {
+          $set: {
+            deleted: true,
+            deletedAt: new Date(),
+            deletedBy: message.author.id
+          }
+        }
+      );
 
-      return sender.reply(sender.classic(
-        `<@${mentionedUser.id}> kullanıcısının tüm sicil kayıtları temizlendi! (${deleted.deletedCount} kayıt silindi)`
-      ));
+      return sender.reply(sender.embed({
+        title: "Sicil Temizlendi",
+        description: `<@${mentionedUser.id}> kullanıcısının tüm sicil kayıtları temizlendi!\n\n` +
+          `**Gizlenen Kayıt:** ${result.modifiedCount}`,
+        color: "Green"
+      }));
     }
     
     if (subCommand === 'remove' || subCommand === 'sil') {
@@ -49,22 +62,35 @@ export default {
         return sender.reply(sender.errorEmbed("Geçerli bir sicil ID numarası belirtin!\n\nKullanım: `.sicil remove @user <id>`"));
       }
 
-      const record = await Punishment.findOneAndDelete({ 
-        userId: mentionedUser.id, 
-        guildId: message.guild.id,
-        recordId: recordId
-      });
+      const record = await Punishment.findOneAndUpdate(
+        { 
+          userId: mentionedUser.id, 
+          guildId: message.guild.id,
+          recordId: recordId,
+          deleted: { $ne: true }
+        },
+        {
+          $set: {
+            deleted: true,
+            deletedAt: new Date(),
+            deletedBy: message.author.id
+          }
+        },
+        { new: false }
+      );
 
       if (!record) {
-        return sender.reply(sender.errorEmbed(`❌ <@${mentionedUser.id}> kullanıcısının \`#${recordId}\` numaralı sicil kaydı bulunamadı!`));
+        return sender.reply(sender.errorEmbed(`❌ <@${mentionedUser.id}> kullanıcısının \`#${recordId}\` numaralı sicil kaydı bulunamadı veya zaten silinmiş!`));
       }
 
-      return sender.reply(sender.classic(
-        `<@${mentionedUser.id}> kullanıcısının \`#${recordId}\` numaralı sicil kaydı silindi!\n\n` +
-        `**Tip:** ${record.type}\n` +
-        `**Sebep:** ${record.reason}\n` +
-        `**Tarih:** ${new Date(record.date).toLocaleDateString()}`
-      ));
+      return sender.reply(sender.embed({
+        title: "Sicil Kaydı Silindi",
+        description: `<@${mentionedUser.id}> kullanıcısının \`#${recordId}\` numaralı sicil kaydı silindi!\n\n` +
+          `**Tip:** ${record.type}\n` +
+          `**Sebep:** ${record.reason}\n` +
+          `**Tarih:** ${new Date(record.date).toLocaleDateString()}`,
+        color: "Green"
+      }));
     }
 
     const mentionedUser = message.mentions.members.first() || message.guild.members.cache.get(args[0]);
@@ -77,7 +103,11 @@ export default {
     const targetUser = targetMember.user ?? targetMember;
     const thumbnailURL = targetUser.displayAvatarURL({ dynamic: true, size: 256 });
 
-    const data = await Punishment.find({ userId, guildId: message.guild.id }).sort({ recordId: 1 });
+    const data = await Punishment.find({ 
+      userId, 
+      guildId: message.guild.id,
+      deleted: { $ne: true }
+    }).sort({ recordId: 1 });
 
     if (!data.length) return sender.reply(sender.errorEmbed("Kaydın yok."));
     
