@@ -5,8 +5,8 @@ import { PermissionFlagsBits } from "discord.js";
 export default {
   name: "sicil",
   aliases: ['record', 'penals'],
-  description: 'Belirtilen kullanıcının sicilini gösterir',
-  usage: 'sicil me/@user',
+  description: 'Belirtilen kullanıcının sicilini gösterir, temizler veya siler',
+  usage: 'sicil me/@user | sicil clear @user | sicil remove @user <id>',
   category: 'moderation',
 
   permissions: {
@@ -14,8 +14,59 @@ export default {
   },
   
   async execute(client, message, args) {
-	  const sender = new Manager(client, { action: message }).sender;
-	  
+    const sender = new Manager(client, { action: message }).sender;
+    
+    const subCommand = args[0]?.toLowerCase();
+    
+    if (subCommand === 'clear' || subCommand === 'temizle') {
+      if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
+        return sender.reply(sender.errorEmbed("Bu komutu kullanmak için yönetici yetkisine sahip olmalısın!"));
+      }
+
+      const mentionedUser = message.mentions.members.first() || message.guild.members.cache.get(args[1]);
+      if (!mentionedUser) return sender.reply(sender.errorEmbed("Geçerli bir kullanıcı belirtin!\n\nKullanım: `.sicil clear @user`"));
+
+      const deleted = await Punishment.deleteMany({ 
+        userId: mentionedUser.id, 
+        guildId: message.guild.id 
+      });
+
+      return sender.reply(sender.classic(
+        `<@${mentionedUser.id}> kullanıcısının tüm sicil kayıtları temizlendi! (${deleted.deletedCount} kayıt silindi)`
+      ));
+    }
+    
+    if (subCommand === 'remove' || subCommand === 'sil') {
+      if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
+        return sender.reply(sender.errorEmbed("Bu komutu kullanmak için yönetici yetkisine sahip olmalısın!"));
+      }
+
+      const mentionedUser = message.mentions.members.first() || message.guild.members.cache.get(args[1]);
+      if (!mentionedUser) return sender.reply(sender.errorEmbed("Geçerli bir kullanıcı belirtin!\n\nKullanım: `.sicil remove @user <id>`"));
+
+      const recordId = parseInt(args[2]);
+      if (!recordId || isNaN(recordId)) {
+        return sender.reply(sender.errorEmbed("Geçerli bir sicil ID numarası belirtin!\n\nKullanım: `.sicil remove @user <id>`"));
+      }
+
+      const record = await Punishment.findOneAndDelete({ 
+        userId: mentionedUser.id, 
+        guildId: message.guild.id,
+        recordId: recordId
+      });
+
+      if (!record) {
+        return sender.reply(sender.errorEmbed(`❌ <@${mentionedUser.id}> kullanıcısının \`#${recordId}\` numaralı sicil kaydı bulunamadı!`));
+      }
+
+      return sender.reply(sender.classic(
+        `<@${mentionedUser.id}> kullanıcısının \`#${recordId}\` numaralı sicil kaydı silindi!\n\n` +
+        `**Tip:** ${record.type}\n` +
+        `**Sebep:** ${record.reason}\n` +
+        `**Tarih:** ${new Date(record.date).toLocaleDateString()}`
+      ));
+    }
+
     const mentionedUser = message.mentions.members.first() || message.guild.members.cache.get(args[0]);
     const isSelf = !args[0] || args[0].toLowerCase() === 'me';
     const targetMember = isSelf ? message.member : mentionedUser;
@@ -26,10 +77,10 @@ export default {
     const targetUser = targetMember.user ?? targetMember;
     const thumbnailURL = targetUser.displayAvatarURL({ dynamic: true, size: 256 });
 
-    const data = await Punishment.find({ userId, guildId: message.guild.id });
+    const data = await Punishment.find({ userId, guildId: message.guild.id }).sort({ recordId: 1 });
 
-	  if (!data.length) return sender.reply(sender.errorEmbed("Kaydın yok."));
-		
+    if (!data.length) return sender.reply(sender.errorEmbed("Kaydın yok."));
+    
     const warns = data.filter(d => d.type === 'warn');
     const jails = data.filter(d => d.type === 'jail');
     const manuals = data.filter(d => d.type === 'manual');
@@ -41,37 +92,37 @@ export default {
     const mute = data.filter(d => d.type === 'mute');
 
     const manualsText = manuals.length
-      ? manuals.map(m => `• ${m.reason} (${new Date(m.date).toLocaleDateString()})`).join("\n")
+      ? manuals.map(m => `\`#${m.recordId || '?'}\` • ${m.reason} (${new Date(m.date).toLocaleDateString()})`).join("\n")
       : "Yok";
     const warnsText = warns.length
-      ? warns.map(w => `• ${w.reason} (${new Date(w.date).toLocaleDateString()})`).join("\n")
+      ? warns.map(w => `\`#${w.recordId || '?'}\` • ${w.reason} (${new Date(w.date).toLocaleDateString()})`).join("\n")
       : "Yok";
     const jailsText = jails.length
-      ? jails.map(j => `• ${j.reason} (${new Date(j.date).toLocaleDateString()}) - ${j.duration}`).join("\n")
+      ? jails.map(j => `\`#${j.recordId || '?'}\` • ${j.reason} (${new Date(j.date).toLocaleDateString()}) - ${j.duration}`).join("\n")
       : "Yok";
 
     const timeoutsText = timeouts.length
-      ? timeouts.map(t => `• ${t.reason} (${new Date(t.date).toLocaleDateString()}) - ${t.duration || ' '}`).join("\n")
+      ? timeouts.map(t => `\`#${t.recordId || '?'}\` • ${t.reason} (${new Date(t.date).toLocaleDateString()}) - ${t.duration || ' '}`).join("\n")
       : "Yok";
 
     const banText = ban.length
-      ? ban.map(b => `• ${b.reason} (${new Date(b.date).toLocaleDateString()})`).join("\n")
+      ? ban.map(b => `\`#${b.recordId || '?'}\` • ${b.reason} (${new Date(b.date).toLocaleDateString()})`).join("\n")
       : "Yok";
 
     const kickText = kick.length
-      ? kick.map(k => `• ${k.reason} (${new Date(k.date).toLocaleDateString()})`).join("\n")
+      ? kick.map(k => `\`#${k.recordId || '?'}\` • ${k.reason} (${new Date(k.date).toLocaleDateString()})`).join("\n")
       : "Yok";
 
     const vmuteText = vmute.length
-      ? vmute.map(v => `• ${v.reason} (${new Date(v.date).toLocaleDateString()}) - ${v.duration || ' '}`).join("\n")
+      ? vmute.map(v => `\`#${v.recordId || '?'}\` • ${v.reason} (${new Date(v.date).toLocaleDateString()}) - ${v.duration || ' '}`).join("\n")
       : "Yok";
     
     const muteText = mute.length
-      ? mute.map(m => `• ${m.reason} (${new Date(m.date).toLocaleDateString()}) - ${m.duration || ' '}`).join("\n")
+      ? mute.map(m => `\`#${m.recordId || '?'}\` • ${m.reason} (${new Date(m.date).toLocaleDateString()}) - ${m.duration || ' '}`).join("\n")
       : "Yok";
 
     const embed = sender.embed({
-	    author: { name: message.guild.name, iconURL: message.guild.iconURL() ?? undefined },
+      author: { name: message.guild.name, iconURL: message.guild.iconURL() ?? undefined },
       title: "Kullanıcı Sicili",
       thumbnail: thumbnailURL,
       description: `<@${userId}> kullanıcısının ceza geçmişi:`,

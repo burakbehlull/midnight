@@ -75,7 +75,7 @@ export default {
       const buttonRow = btn.build();
 
       const embed = manager.sender.embed({
-        title: `🎭 Rol Yönetimi — ${member.user.username}`,
+        title: `Rol Yönetimi — ${member.user.username}`,
         description:
           `Aşağıdan bir veya birden fazla **rol seç**, ardından **Ekle** veya **Kaldır** butonuna bas.\n\n` +
           `**Hedef:** ${member}\n` +
