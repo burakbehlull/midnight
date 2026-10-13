@@ -116,6 +116,7 @@ Create ` config.json ` file and set permission settings:
 | **punish** | user gives punish  | user, reason | stable |
 | **warn** | user gives warn  | user, reason | stable |
 | **jail** | user gives jail  | user, duration, reason | stable |
+| **unjail** | user unjail  | user | stable |
 | **record** | record of user | user | stable |
 | **register** | Saves the user you tagged in | user, name, age | stable |
 | **unregistered** | Gives the user | user | stable |
@@ -168,6 +169,8 @@ Create ` config.json ` file and set permission settings:
 | **slot** | game | bet amount | stable |
 | **rulet** | shows server rules  | user, bet amount | stable |
 | **xox** | shows server rules  | user, bet amount | stable |
+| **wordgame** | two user bet game 1 and 2 word letter mode | user, bet amount | stable |
+| **wordbuilding** | word-building game | channel | stable |
 | **gofishing** | take fish | bet amount (1 userly), user and bet amount (userly) | stable |
 | **blackjack** | blackjack | bet amount | stable |
 | **kiss** | kiss user | user | stable |

@@ -41,7 +41,9 @@ const settingsSchema = new mongoose.Schema({
   selfRegisterCustomText: { type: String, default: null },
 
   spotifyMatchEnabled: { type: Boolean, default: false },
-  spotifyMatchChannelId: { type: String, default: null }
+  spotifyMatchChannelId: { type: String, default: null },
+  
+  wordBuildingChannelId: { type: String, default: null }
   
 });
 

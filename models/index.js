@@ -29,6 +29,7 @@ import DirectMessage from "./DirectMessage.js"
 import RoleHistory from "./RoleHistory.js"
 import ActionGroup from "./ActionGroup.js"
 import ActionEntry from "./ActionEntry.js"
+import WordBuildingGame from "./WordBuildingGame.js"
 
 
 export {
@@ -57,5 +58,6 @@ export {
 	DirectMessage,
 	RoleHistory,
 	ActionGroup,
-	ActionEntry
+	ActionEntry,
+	WordBuildingGame
 }

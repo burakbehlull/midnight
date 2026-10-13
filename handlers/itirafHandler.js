@@ -5,7 +5,6 @@ import { Settings } from '#models';
 export default async function itirafHandler(interaction) {
   const sender = new messageSender(interaction);
   try {
-    // Butona basınca modal aç
     if (interaction.isButton()) {
       if (['anonim_itiraf', 'acik_itiraf'].includes(interaction.customId)) {
         const modal = new Modal(`${interaction.customId}_modal`, 'İtiraf Et');
@@ -18,7 +17,6 @@ export default async function itirafHandler(interaction) {
       }
     }
 
-    // Modal submit olunca
     if (interaction.isModalSubmit()) {
       if (!['anonim_itiraf_modal', 'acik_itiraf_modal'].includes(interaction.customId)) return;
 
