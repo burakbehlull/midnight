@@ -26,7 +26,7 @@ export default {
     if (!channel.joinable) return manager.sender.reply(manager.sender.errorEmbed('Bu kanala katılamıyorum. Yetkilerimi kontrol et.'));
 
     try {
-      const connection = joinVoiceChannel({
+      joinVoiceChannel({
         channelId: channel.id,
         guildId: channel.guild.id,
         adapterCreator: channel.guild.voiceAdapterCreator,

@@ -5,7 +5,7 @@ import { ChannelType, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 export default {
   name: 'room-setup',
   description: 'Özel oda sistemini kurar.',
-  category: "extra",
+  category: "setup",
   cooldown: 10,
 
   async execute(client, message) {

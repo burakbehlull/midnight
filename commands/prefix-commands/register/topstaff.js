@@ -6,7 +6,7 @@ export default {
   aliases: ["top-staff", "yetkililer", "topstaff"],
   description: "Yetkili kullanıcıları gösterir",
   usage: "topyetkili",
-  category: 'register',
+  category: 'staff',
 
   permissions: {
     authorities: [PermissionFlagsBits.ManageRoles, PermissionFlagsBits.Administrator],

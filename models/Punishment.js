@@ -11,7 +11,11 @@ const punishmentSchema = new mongoose.Schema({
   staffId: String,
   deleted: { type: Boolean, default: false }, // Soft delete
   deletedAt: Date,
-  deletedBy: String
+  deletedBy: String,
+  active: { type: Boolean, default: false }, // Ceza aktif mi?
+  expiresAt: Date, // Ceza ne zaman bitiyor?
+  removedAt: Date, // Ceza ne zaman kaldırıldı?
+  removedBy: String // Cezayı kim kaldırdı?
 });
 
 punishmentSchema.pre('save', async function(next) {

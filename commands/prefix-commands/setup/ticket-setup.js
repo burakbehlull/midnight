@@ -5,7 +5,7 @@ export default {
   name: 'ticket-setup',
   description: 'Ticket sistemi kurar',
   cooldown: 10,
-  category: 'server',
+  category: 'setup',
   async execute(client, message) {
 
     const manager = new Manager(client, {

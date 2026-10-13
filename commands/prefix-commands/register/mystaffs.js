@@ -8,7 +8,7 @@ export default {
   aliases: ["mystaffs", "my-staffs"],
   description: "Kullanıcının çektiği yetkilileri gösterir",
   usage: "yetkililerim",
-  category: 'register',
+  category: 'staff',
 
   permissions: {
       authorities: [PermissionFlagsBits.ManageRoles, PermissionFlagsBits.Administrator],

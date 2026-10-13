@@ -19,7 +19,7 @@ export default {
   description: 'Komut ayarlarını yönetir (kanal, rol, üye kısıtlamaları)',
   usage: '.komutpanel',
   aliases: ['kpanel', 'komutayar', 'commandpanel'],
-  category: 'setup',
+  category: 'extra',
 
   async execute(client, message) {
     

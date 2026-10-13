@@ -1,4 +1,4 @@
-import { EmbedBuilder, PermissionFlagsBits, PermissionsBitField } from 'discord.js';
+import { PermissionFlagsBits } from 'discord.js';
 import ms from 'ms';
 
 import Manager from '#managers';
@@ -9,7 +9,7 @@ export default {
     aliases: ["gstart", "giveaway"],
     description: "Belirttiğin süreyle çekiliş başlatır.",
     usage: ".çekiliş <süre> <kazanan_sayısı> <ödül>",
-	category: 'extra',
+	category: 'moderation',
 
     permissions: {
         authorities: [PermissionFlagsBits.Administrator]

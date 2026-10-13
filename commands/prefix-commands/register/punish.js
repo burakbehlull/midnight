@@ -7,7 +7,7 @@ export default {
   aliases: ['punish'],
   description: 'Belirtilen kullanıcıya ceza verir',
   usage: 'ceza @user sebep',
-  category: 'moderation',
+  category: 'staff',
 
   permissions: {
     authorities: [PermissionFlagsBits.ManageRoles, PermissionFlagsBits.Administrator],

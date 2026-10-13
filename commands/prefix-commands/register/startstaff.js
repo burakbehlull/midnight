@@ -7,7 +7,7 @@ export default {
 	aliases: ["yetkibaşlat", "startstaff", "start-staff"],
 	description: "Bir kullanıcıyı yetkili olarak başlatır.",
 	usage: ".yetkibaşlat @kullanıcı",
-	category: "register",
+	category: "staff",
 
 	permissions: {
     	authorities: [PermissionFlagsBits.ManageRoles, PermissionFlagsBits.Administrator],

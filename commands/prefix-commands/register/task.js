@@ -7,7 +7,7 @@ export default {
   aliases: ["görev", "tasks", "görevler"],
   description: "Kullanıcının istatistiklerini görür",
   usage: "task @user/userId",
-  category: 'register',
+  category: 'staff',
 
   permissions: {
     authorities: [PermissionFlagsBits.ManageRoles, PermissionFlagsBits.Administrator],

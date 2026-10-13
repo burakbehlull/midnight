@@ -6,7 +6,7 @@ export default {
   aliases: ['boosterpanel'],
   description: 'Booster özel rol panelini kurar',
   usage: 'booster-panel-setup',
-  category: 'booster',
+  category: 'setup',
 
   permissions: {
     enabled: true,

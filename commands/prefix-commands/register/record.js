@@ -7,7 +7,7 @@ export default {
   aliases: ['record', 'penals'],
   description: 'Belirtilen kullanıcının sicilini gösterir, temizler veya siler',
   usage: 'sicil me/@user | sicil clear @user | sicil remove @user <id>',
-  category: 'moderation',
+  category: 'staff',
 
   permissions: {
     enabled: false

@@ -91,8 +91,7 @@ Create ` config.json ` file and set permission settings:
 | **timeout** | Add emoji to guilds | user, time | stable |
 | **untimeout** | removes user timeout | user | stable |
 | **addemoji** | Add emoji to guilds | emoji or url, name | stable |
-| **giverole** | Gives the user | user, role | stable |
-| **removerole** | Takes the user | user, role | stable |
+| **role** | Gives and takes the user | user, role | stable |
 | **clear** | Deletes messages | amount | stable |
 | **streamer** | Gives streamer role | user | stable |
 | **vip** | Gives vip role | user | stable |
@@ -109,6 +108,7 @@ Create ` config.json ` file and set permission settings:
 ### contents: Staff
 | command | comment | values | situation |
 | ------ | ------ | ------ | ------ |
+| **active-penalties** | show user active penalties | user | stable |
 | **tasks** | staff tasks | me, user | stable |
 | **yetkibaslat** | start staff  | me, user | stable |
 | **yetkililerim** | staffs of moderation user  | .. | stable |

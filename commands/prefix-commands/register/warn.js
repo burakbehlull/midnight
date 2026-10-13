@@ -7,7 +7,7 @@ export default {
   aliases: ['uyari', 'warn'],
   description: 'Belirtilen kullanıcıya uyarı verir',
   usage: 'uyarı @user sebep',
-  category: 'moderation',
+  category: 'staff',
 
   permissions: {
     authorities: [PermissionFlagsBits.ManageRoles, PermissionFlagsBits.Administrator],

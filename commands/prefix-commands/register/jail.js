@@ -8,7 +8,7 @@ export default {
   aliases: ['hapis'],
   description: 'Belirtilen kullanıcıyu jaile atar',
   usage: 'jail @user süre sebep',
-  category: 'moderation',
+  category: 'staff',
 
   permissions: {
     authorities: [PermissionFlagsBits.ManageRoles, PermissionFlagsBits.Administrator],
