@@ -22,23 +22,34 @@ export default {
     const duration = args[1];
     const reason = args.slice(2).join(" ") || "Sebep belirtilmedi";
 
-	  if(!target) return sender.reply(sender.errorEmbed("Kullancı belirtin!"))
+	  if(!target) return sender.reply(sender.errorEmbed("❌ Kullanıcı belirtin!"))
 
     const settings = await Settings.findOne({ guildId: message.guild.id });
     if (!settings?.jailRoleId) return sender.reply(sender.errorEmbed("❌ Jail rolü ayarlanmamış."));
 
-    await target.roles.set([settings.jailRoleId]);
+    if (target.roles.cache.has(settings.jailRoleId)) {
+      return sender.reply(sender.errorEmbed("❌ Bu kullanıcı zaten jail'de!"));
+    }
 
-    await Punishment.create({
-      userId: target.id,
-      guildId: message.guild.id,
-      staffId: message.author.id,
-      type: "jail",
-      reason,
-      duration
-    });
+    try {
+      await target.roles.set([settings.jailRoleId]);
 
-	  message.channel.send({ embeds: [sender.classic(`${target} adlı kullanıcı ${duration} boyunca cezalandırıldı.`)] });
+      await Punishment.create({
+        userId: target.id,
+        guildId: message.guild.id,
+        staffId: message.author.id,
+        type: "jail",
+        reason,
+        duration,
+        active: true
+      });
 
+      message.channel.send({ 
+        embeds: [sender.classic(`${target} adlı kullanıcı ${duration} boyunca jail'e atıldı.\n**Sebep:** ${reason}`)] 
+      });
+    } catch (err) {
+      console.error('Jail hatası:', err);
+      return sender.reply(sender.errorEmbed("❌ Jail rolü verilirken bir hata oluştu!"));
+    }
   }
 };
