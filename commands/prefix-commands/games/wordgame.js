@@ -1,6 +1,41 @@
 import Manager from '#managers';
 import { Economy } from '#models';
 import { Button } from '#helpers';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// words.txt dosyasını yükle (başlangıçta bir kez)
+let wordsSet = null;
+function loadWords() {
+  if (!wordsSet) {
+    try {
+      const wordsPath = join(__dirname, '../../../data/words.txt');
+      const content = readFileSync(wordsPath, 'utf-8');
+      wordsSet = new Set(
+        content
+          .split('\n')
+          .map(line => line.trim().toLowerCase()
+            .replace(/ı/g, 'i')
+            .replace(/ğ/g, 'g')
+            .replace(/ü/g, 'u')
+            .replace(/ş/g, 's')
+            .replace(/ö/g, 'o')
+            .replace(/ç/g, 'c')
+          )
+          .filter(line => line.length > 0)
+      );
+      console.log(`[wordgame] ${wordsSet.size} kelime yüklendi (words.txt)`);
+    } catch (err) {
+      console.error('[wordgame] words.txt yüklenemedi:', err);
+      wordsSet = new Set();
+    }
+  }
+  return wordsSet;
+}
 
 const activeGames = new Set();
 
@@ -29,13 +64,49 @@ function getFirstChars(word, count = 2) {
 }
 
 async function isValidWord(word) {
+  const normalized = normalizeText(word);
+  
+  // Önce words.txt'ye bak (hızlı)
+  const words = loadWords();
+  if (words.has(normalized)) {
+    console.log(`[wordgame] Kelime bulundu (words.txt): "${word}"`);
+    return true;
+  }
+  
+  // words.txt'de yoksa TDK API'ye sor
   try {
-    const response = await fetch(`https://sozluk.gov.tr/gts?ara=${encodeURIComponent(word)}`);
+    // 5 saniye timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
+    const startTime = Date.now();
+    const response = await fetch(`https://sozluk.gov.tr/gts?ara=${encodeURIComponent(word)}`, {
+      signal: controller.signal
+    });
+    const elapsed = Date.now() - startTime;
+    clearTimeout(timeoutId);
+    
+    console.log(`[wordgame] TDK yanıt süresi: ${elapsed}ms - Kelime: "${word}"`);
+    
     const data = await response.json();
-    return Array.isArray(data) && data.length > 0;
+    const isValid = Array.isArray(data) && data.length > 0;
+    
+    if (isValid) {
+      console.log(`[wordgame] Kelime bulundu (TDK): "${word}"`);
+    } else {
+      console.log(`[wordgame] Kelime bulunamadı (TDK + words.txt): "${word}"`);
+    }
+    
+    return isValid;
   } catch (err) {
-    console.error('[wordgame] TDK API Error:', err);
-    return false;
+    // TDK hatası - words.txt'de zaten kontrol ettik, yoktu
+    if (err.name === 'AbortError') {
+      console.log(`[wordgame] TDK Timeout (5s) - Kelime: "${word}" - words.txt'de yok - Beraberlik`);
+    } else {
+      console.log(`[wordgame] TDK API Error - Kelime: "${word}" - words.txt'de yok - Beraberlik`);
+    }
+    // TDK'ya ulaşılamadı VE words.txt'de de yok = beraberlik
+    return null;
   }
 }
 
@@ -331,7 +402,7 @@ export default {
       const words = userMessage.content.match(/[a-zA-ZığüşöçİĞÜŞÖÇ]+/g);
       
       if (!words || words.length === 0) {
-        await userMessage.react('❌');
+        userMessage.react('❌'); // await kaldırıldı - hızlı olsun
         const warningMsg = await userMessage.reply({
           content: `❌ Geçersiz mesaj! Lütfen bir kelime yaz.`,
           allowedMentions: { repliedUser: false }
@@ -349,7 +420,7 @@ export default {
       const normalizedWord = normalizeText(word);
 
       if (!/^[a-zA-ZığüşöçİĞÜŞÖÇ]+$/.test(word)) {
-        await userMessage.react('❌');
+        userMessage.react('❌'); // await kaldırıldı
         const warningMsg = await userMessage.reply({
           content: `❌ **Geçersiz karakter!** Kelime sadece harf içermelidir.`,
           allowedMentions: { repliedUser: false }
@@ -364,7 +435,7 @@ export default {
       }
 
       if (word.length < 3) {
-        await userMessage.react('❌');
+        userMessage.react('❌'); // await kaldırıldı
         const warningMsg = await userMessage.reply({
           content: `❌ **Çok kısa!** Kelime en az 3 harf olmalı.`,
           allowedMentions: { repliedUser: false }
@@ -379,7 +450,7 @@ export default {
       }
 
       if (usedWords.has(normalizedWord)) {
-        await userMessage.react('❌');
+        userMessage.react('❌'); // await kaldırıldı
         loser = currentPlayer;
         winner = players[currentPlayerIndex === 0 ? 1 : 0];
         
@@ -394,7 +465,6 @@ export default {
           footer: { text: `${challenger.username} vs ${targetUser.username}` }
         });
         
-        await userMessage.react('❌');
         try { await confirmMsg.edit({ embeds: [usedEmbed], components: [] }); } catch (_) {}
         setTimeout(async () => {
           try {
@@ -409,7 +479,7 @@ export default {
         const firstChars = getFirstChars(word, gameMode);
 
         if (!firstChars || lastChars !== firstChars) {
-          await userMessage.react('❌');
+          userMessage.react('❌'); // await kaldırıldı
           loser = currentPlayer;
           winner = players[currentPlayerIndex === 0 ? 1 : 0];
           
@@ -438,8 +508,42 @@ export default {
       }
 
       const isValid = await isValidWord(word);
+      
+      // TDK erişilemezse beraberlik
+      if (isValid === null) {
+        const tdkErrorEmbed = manager.sender.embed({
+          color: manager.sender.colors.orange,
+          title: '⚠️ TDK Erişim Hatası - Beraberlik',
+          description: 
+            `TDK sözlüğüne erişilemediği için oyun berabere bitti.\n\n` +
+            `💸 Her iki oyuncuya da **${amount.toLocaleString('tr-TR')}** coin iade edildi.\n\n` +
+            `📊 **İstatistikler:**\n` +
+            `• Toplam Tur: ${turnCount}\n` +
+            `• Kullanılan Kelime: ${usedWords.size}\n` +
+            `• Son Kelime: ${lastWord || 'Yok'}\n\n` +
+            `🔄 Lütfen tekrar deneyin!`,
+          footer: { text: `${challenger.username} vs ${targetUser.username}` }
+        });
+        
+        try { 
+          await confirmMsg.edit({ embeds: [tdkErrorEmbed], components: [] }); 
+        } catch (_) {}
+        
+        // Parayı iade et
+        try {
+          await Economy.findOneAndUpdate({ userId: challenger.id }, { $inc: { money: amount } });
+          await Economy.findOneAndUpdate({ userId: targetUser.id }, { $inc: { money: amount } });
+        } catch (e) {
+          console.error('[wordgame] Para iadesi hatası:', e);
+        }
+        
+        activeGames.delete(challenger.id);
+        activeGames.delete(targetUser.id);
+        return;
+      }
+      
       if (!isValid) {
-        await userMessage.react('❌');
+        userMessage.react('❌'); // await kaldırıldı
         loser = currentPlayer;
         winner = players[currentPlayerIndex === 0 ? 1 : 0];
         
@@ -465,7 +569,7 @@ export default {
         break;
       }
 
-      await userMessage.react('✅');
+      userMessage.react('✅'); // await kaldırıldı - hızlı olsun
       usedWords.add(normalizedWord);
       lastWord = word;
 
