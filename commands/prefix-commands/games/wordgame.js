@@ -12,7 +12,7 @@ let wordsSet = null;
 function loadWords() {
   if (!wordsSet) {
     try {
-      const wordsPath = join(__dirname, '../../../data/words.txt');
+      const wordsPath = join(process.cwd(), 'data', 'words.txt');
       const content = readFileSync(wordsPath, 'utf-8');
       
       const lines = content.split(/\r?\n/);
@@ -32,8 +32,7 @@ function loadWords() {
           )
       );
       
-      
-      
+    
     } catch (err) {
       console.error('[wordgame] words.txt yüklenemedi:', err);
       wordsSet = new Set();
@@ -93,7 +92,6 @@ async function isValidWord(word) {
     const elapsed = Date.now() - startTime;
     clearTimeout(timeoutId);
     
-    console.log(`[wordgame] TDK yanıt süresi: ${elapsed}ms - Status: ${response.status}`);
     
     if (!response.ok) {
       console.log(`[wordgame] ❌ TDK HTTP Error: ${response.status}`);
@@ -103,11 +101,7 @@ async function isValidWord(word) {
     const data = await response.json();
     const isValid = Array.isArray(data) && data.length > 0;
     
-    if (isValid) {
-      console.log(`[wordgame] ✅ Kelime bulundu (TDK): "${word}"`);
-    } else {
-      console.log(`[wordgame] ❌ Kelime bulunamadı (TDK + words.txt): "${word}"`);
-    }
+  
     
     return isValid;
   } catch (err) {

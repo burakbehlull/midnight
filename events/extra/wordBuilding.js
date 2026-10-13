@@ -12,9 +12,9 @@ let wordsSet = null;
 function loadWords() {
   if (!wordsSet) {
     try {
-      const wordsPath = join(__dirname, '../../../data/words.txt');
-      const content = readFileSync(wordsPath, 'utf-8');
+      const wordsPath = join(process.cwd(), 'data', 'words.txt');
       
+      const content = readFileSync(wordsPath, 'utf-8');
 
       const lines = content.split(/\r?\n/);
       
@@ -33,9 +33,7 @@ function loadWords() {
           )
       );
       
-     
-      
-  
+
     } catch (err) {
       console.error('[wordBuilding] words.txt yüklenemedi:', err);
       wordsSet = new Set();
@@ -54,12 +52,10 @@ function loadWords() {
   
   const words = loadWords();
   if (words.has(normalized)) {
-    console.log(`[wordBuilding] ✅ Kelime bulundu (words.txt): "${word}"`);
     return true;
   }
   
-  console.log(`[wordBuilding] words.txt'de yok, TDK'ye soruluyor: "${word}"`);
-  
+
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -76,7 +72,6 @@ function loadWords() {
     const elapsed = Date.now() - startTime;
     clearTimeout(timeoutId);
     
-    console.log(`[wordBuilding] TDK yanıt süresi: ${elapsed}ms - Status: ${response.status}`);
     
     if (!response.ok) {
       console.log(`[wordBuilding] ❌ TDK HTTP Error: ${response.status}`);
@@ -86,11 +81,7 @@ function loadWords() {
     const data = await response.json();
     const isValid = Array.isArray(data) && data.length > 0;
     
-    if (isValid) {
-      console.log(`[wordBuilding] ✅ Kelime bulundu (TDK): "${word}"`);
-    } else {
-      console.log(`[wordBuilding] ❌ Kelime bulunamadı (TDK + words.txt): "${word}"`);
-    }
+   
     
     return isValid;
   } catch (err) {
