@@ -7,17 +7,23 @@ import { dirname, join } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// words.txt dosyasını yükle (başlangıçta bir kez)
+
 let wordsSet = null;
 function loadWords() {
   if (!wordsSet) {
     try {
       const wordsPath = join(__dirname, '../../../data/words.txt');
       const content = readFileSync(wordsPath, 'utf-8');
+      
+
+      const lines = content.split(/\r?\n/);
+      
       wordsSet = new Set(
-        content
-          .split('\n')
-          .map(line => line.trim().toLowerCase()
+        lines
+          .map(line => line.trim())
+          .filter(line => line.length > 0)
+          .filter(line => !line.includes(' ')) 
+          .map(line => line.toLowerCase()
             .replace(/ı/g, 'i')
             .replace(/ğ/g, 'g')
             .replace(/ü/g, 'u')
@@ -25,18 +31,18 @@ function loadWords() {
             .replace(/ö/g, 'o')
             .replace(/ç/g, 'c')
           )
-          .filter(line => line.length > 0)
       );
-      console.log(`[wordBuilding] ${wordsSet.size} kelime yüklendi (words.txt)`);
+      
+     
+      
+  
     } catch (err) {
       console.error('[wordBuilding] words.txt yüklenemedi:', err);
       wordsSet = new Set();
     }
   }
   return wordsSet;
-}
-
-async function isValidWord(word) {
+} async function isValidWord(word) {
   const normalized = word.toLowerCase()
     .replace(/ı/g, 'i')
     .replace(/ğ/g, 'g')
@@ -46,46 +52,55 @@ async function isValidWord(word) {
     .replace(/ç/g, 'c')
     .trim();
   
-  // Önce words.txt'ye bak (hızlı)
   const words = loadWords();
   if (words.has(normalized)) {
-    console.log(`[wordBuilding] Kelime bulundu (words.txt): "${word}"`);
+    console.log(`[wordBuilding] ✅ Kelime bulundu (words.txt): "${word}"`);
     return true;
   }
   
-  // words.txt'de yoksa TDK API'ye sor
+  console.log(`[wordBuilding] words.txt'de yok, TDK'ye soruluyor: "${word}"`);
+  
   try {
-    // 5 saniye timeout
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
     
     const startTime = Date.now();
-    const response = await fetch(`https://sozluk.gov.tr/gts?ara=${encodeURIComponent(word)}`, {
-      signal: controller.signal
+    const url = `https://sozluk.gov.tr/gts?ara=${encodeURIComponent(word)}`;
+    
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
     });
     const elapsed = Date.now() - startTime;
     clearTimeout(timeoutId);
     
-    console.log(`[wordBuilding] TDK yanıt süresi: ${elapsed}ms - Kelime: "${word}"`);
+    console.log(`[wordBuilding] TDK yanıt süresi: ${elapsed}ms - Status: ${response.status}`);
+    
+    if (!response.ok) {
+      console.log(`[wordBuilding] ❌ TDK HTTP Error: ${response.status}`);
+      return null;
+    }
     
     const data = await response.json();
     const isValid = Array.isArray(data) && data.length > 0;
     
     if (isValid) {
-      console.log(`[wordBuilding] Kelime bulundu (TDK): "${word}"`);
+      console.log(`[wordBuilding] ✅ Kelime bulundu (TDK): "${word}"`);
     } else {
-      console.log(`[wordBuilding] Kelime bulunamadı (TDK + words.txt): "${word}"`);
+      console.log(`[wordBuilding] ❌ Kelime bulunamadı (TDK + words.txt): "${word}"`);
     }
     
     return isValid;
   } catch (err) {
-    // TDK hatası - words.txt'de zaten kontrol ettik, yoktu
+
     if (err.name === 'AbortError') {
-      console.log(`[wordBuilding] TDK Timeout (5s) - Kelime: "${word}" - words.txt'de yok`);
+      console.log(`[wordBuilding] ⚠️ TDK Timeout (5s) - Kelime: "${word}"`);
     } else {
-      console.log(`[wordBuilding] TDK API Error - Kelime: "${word}" - words.txt'de yok`);
+      console.log(`[wordBuilding] ⚠️ TDK Error: ${err.message} - Kelime: "${word}"`);
     }
-    // TDK'ya ulaşılamadı VE words.txt'de de yok = null döndür
+
     return null;
   }
 }
@@ -130,7 +145,7 @@ export default {
       const words = message.content.match(/[a-zA-ZığüşöçİĞÜŞÖÇ]+/g);
       
       if (!words || words.length === 0) {
-        message.react('❌'); // await kaldırıldı
+        message.react('❌');
         const warningMsg = await message.reply({
           content: `❌ **Geçersiz mesaj!** Lütfen geçerli bir kelime yazın.`,
           allowedMentions: { repliedUser: false }
@@ -148,7 +163,7 @@ export default {
       const currentWord = words[0];
       
       if (currentWord.length < 3) {
-        message.react('❌'); // await kaldırıldı
+        message.react('❌');
         const warningMsg = await message.reply({
           content: `❌ **Çok kısa!** Kelime en az 3 harf olmalı.`,
           allowedMentions: { repliedUser: false }
@@ -164,7 +179,7 @@ export default {
       }
 
       if (!/^[a-zA-ZığüşöçİĞÜŞÖÇ]+$/.test(currentWord)) {
-        message.react('❌'); // await kaldırıldı
+        message.react('❌'); 
         const warningMsg = await message.reply({
           content: `❌ **Geçersiz karakter!** Kelime sadece harf içermelidir.`,
           allowedMentions: { repliedUser: false }
@@ -196,7 +211,7 @@ export default {
       }
 
       if (game.lastUserId === message.author.id) {
-        message.react('❌'); // await kaldırıldı
+        message.react('❌'); 
         const warningMsg = await message.reply({
           content: `❌ **Sıra sende değil!** Başka bir kullanıcının kelime yazmasını bekle.`,
           allowedMentions: { repliedUser: false }
@@ -214,7 +229,7 @@ export default {
       const normalizedWord = normalizeText(currentWord);
 
       if (game.usedWords.includes(normalizedWord)) {
-        message.react('❌'); // await kaldırıldı
+        message.react('❌'); 
         const warningMsg = await message.reply({
           content: `❌ **Bu kelime daha önce kullanıldı!** Farklı bir kelime yazın.`,
           allowedMentions: { repliedUser: false }
@@ -230,8 +245,7 @@ export default {
       }
 
       const isValid = await isValidWord(currentWord);
-      
-      // TDK erişilemezse uyarı ver ama kelimeyi kabul et
+
       if (isValid === null) {
         message.react('⚠️');
         await message.reply({
@@ -239,7 +253,7 @@ export default {
           allowedMentions: { repliedUser: false }
         });
         
-        // Kelimeyi kabul et (TDK olmadan devam et)
+
         if (!game.lastWord) {
           game.lastWord = currentWord;
           game.lastUserId = message.author.id;
@@ -250,7 +264,7 @@ export default {
           return;
         }
         
-        // Son harfle başlama kontrolü yap
+ 
         const lastChar = getLastChar(game.lastWord);
         const firstChar = getFirstChar(currentWord);
         
@@ -265,11 +279,8 @@ export default {
           message.react('❌');
           const warningMsg = await message.reply({
             content: 
-              `❌ **Yanlış kelime!**\n\n` +
-              `📝 Son kelime: **${game.lastWord}**\n` +
-              `🔤 Son harf: **${lastChar.toUpperCase()}**\n` +
-              `❗ Senin kelimen **${firstChar.toUpperCase()}** ile başlıyor!\n\n` +
-              `✅ Kelimen **${lastChar.toUpperCase()}** ile başlamalıydı.`,
+              `**Yanlış kelime!**\n\n` +
+              `🔤 Son harf: **${lastChar.toUpperCase()}**\n`,
             allowedMentions: { repliedUser: false }
           });
           
@@ -284,7 +295,7 @@ export default {
       }
       
       if (!isValid) {
-        message.react('❌'); // await kaldırıldı
+        message.react('❌');
         const warningMsg = await message.reply({
           content: `❌ **Geçersiz kelime!** "${currentWord}" TDK sözlüğünde bulunamadı.`,
           allowedMentions: { repliedUser: false }
@@ -307,7 +318,7 @@ export default {
         game.totalWords = 1;
         await game.save();
 
-        message.react('✅'); // await kaldırıldı - hızlı olsun
+        message.react('✅');
         await message.reply({
           content: `**İlk kelime kabul edildi!** Oyun başladı!\n\n **Sonraki kelime ${getLastChar(currentWord)?.toUpperCase()} harfi ile başlamalı**`,
           allowedMentions: { repliedUser: false }
@@ -319,7 +330,7 @@ export default {
       const firstChar = getFirstChar(currentWord);
 
       if (!lastChar || !firstChar) {
-        message.react('❌'); // await kaldırıldı
+        message.react('❌');
         return;
       }
 
@@ -331,11 +342,11 @@ export default {
         game.totalWords += 1;
         await game.save();
 
-        message.react('✅'); // await kaldırıldı
+        message.react('✅');
         
 
       } else {
-        message.react('❌'); // await kaldırıldı
+        message.react('❌');
         const warningMsg = await message.reply({
           content: 
             `**Yanlış kelime!**\n\n` +

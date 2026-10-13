@@ -8,17 +8,21 @@ import { dirname, join } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// words.txt dosyasını yükle (başlangıçta bir kez)
 let wordsSet = null;
 function loadWords() {
   if (!wordsSet) {
     try {
       const wordsPath = join(__dirname, '../../../data/words.txt');
       const content = readFileSync(wordsPath, 'utf-8');
+      
+      const lines = content.split(/\r?\n/);
+      
       wordsSet = new Set(
-        content
-          .split('\n')
-          .map(line => line.trim().toLowerCase()
+        lines
+          .map(line => line.trim())
+          .filter(line => line.length > 0)
+          .filter(line => !line.includes(' ')) 
+          .map(line => line.toLowerCase()
             .replace(/ı/g, 'i')
             .replace(/ğ/g, 'g')
             .replace(/ü/g, 'u')
@@ -26,9 +30,10 @@ function loadWords() {
             .replace(/ö/g, 'o')
             .replace(/ç/g, 'c')
           )
-          .filter(line => line.length > 0)
       );
-      console.log(`[wordgame] ${wordsSet.size} kelime yüklendi (words.txt)`);
+      
+      
+      
     } catch (err) {
       console.error('[wordgame] words.txt yüklenemedi:', err);
       wordsSet = new Set();
@@ -66,46 +71,51 @@ function getFirstChars(word, count = 2) {
 async function isValidWord(word) {
   const normalized = normalizeText(word);
   
-  // Önce words.txt'ye bak (hızlı)
   const words = loadWords();
   if (words.has(normalized)) {
-    console.log(`[wordgame] Kelime bulundu (words.txt): "${word}"`);
     return true;
   }
   
-  // words.txt'de yoksa TDK API'ye sor
+  
   try {
-    // 5 saniye timeout
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
     
     const startTime = Date.now();
-    const response = await fetch(`https://sozluk.gov.tr/gts?ara=${encodeURIComponent(word)}`, {
-      signal: controller.signal
+    const url = `https://sozluk.gov.tr/gts?ara=${encodeURIComponent(word)}`;
+    
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
     });
     const elapsed = Date.now() - startTime;
     clearTimeout(timeoutId);
     
-    console.log(`[wordgame] TDK yanıt süresi: ${elapsed}ms - Kelime: "${word}"`);
+    console.log(`[wordgame] TDK yanıt süresi: ${elapsed}ms - Status: ${response.status}`);
+    
+    if (!response.ok) {
+      console.log(`[wordgame] ❌ TDK HTTP Error: ${response.status}`);
+      return null;
+    }
     
     const data = await response.json();
     const isValid = Array.isArray(data) && data.length > 0;
     
     if (isValid) {
-      console.log(`[wordgame] Kelime bulundu (TDK): "${word}"`);
+      console.log(`[wordgame] ✅ Kelime bulundu (TDK): "${word}"`);
     } else {
-      console.log(`[wordgame] Kelime bulunamadı (TDK + words.txt): "${word}"`);
+      console.log(`[wordgame] ❌ Kelime bulunamadı (TDK + words.txt): "${word}"`);
     }
     
     return isValid;
   } catch (err) {
-    // TDK hatası - words.txt'de zaten kontrol ettik, yoktu
     if (err.name === 'AbortError') {
-      console.log(`[wordgame] TDK Timeout (5s) - Kelime: "${word}" - words.txt'de yok - Beraberlik`);
+      console.log(`[wordgame] ⚠️ TDK Timeout (5s) - Kelime: "${word}" - Beraberlik`);
     } else {
-      console.log(`[wordgame] TDK API Error - Kelime: "${word}" - words.txt'de yok - Beraberlik`);
+      console.log(`[wordgame] ⚠️ TDK Error: ${err.message} - Kelime: "${word}" - Beraberlik`);
     }
-    // TDK'ya ulaşılamadı VE words.txt'de de yok = beraberlik
     return null;
   }
 }
@@ -174,7 +184,6 @@ export default {
 
     const gameId = `${challenger.id}_${targetUser.id}_${Date.now()}`;
 
-    // Mod seçimi butonları
     const modeBtns = new Button();
     modeBtns.add(`word_mode1_${gameId}`, 'Son 1 Harf', modeBtns.style.Primary, '1️⃣', false);
     modeBtns.add(`word_mode2_${gameId}`, 'Son 2 Harf', modeBtns.style.Primary, '2️⃣', false);
@@ -238,7 +247,7 @@ export default {
 
     const offerEmbed = manager.sender.embed({
       color: manager.sender.colors.blue,
-      title: '🎮 Kelime Türetme Oyunu Teklifi',
+      title: 'Kelime Türetme Oyunu Teklifi',
       description: 
         `<@${challenger.id}> sana **${amount}** coin'lik kelime oyunu teklif etti!\n\n` +
         `**Mod:** Son ${gameMode} Harf\n\n` +
@@ -248,7 +257,7 @@ export default {
         `• Her tur için 60 saniye süren var\n` +
         `• Geçerli Türkçe kelime olmalı (TDK)\n` +
         `• Aynı kelime 2 kez kullanılamaz\n\n` +
-        `💰 **Bahis:** ${amount} coin | **Havuz:** ${amount * 2} coin\n\n` +
+        `**Bahis:** ${amount} coin | **Havuz:** ${amount * 2} coin\n\n` +
         `Kabul ediyor musun? (30 saniye)`,
       footer: { text: 'Kelime Türetme Oyunu' }
     });
@@ -435,7 +444,7 @@ export default {
       }
 
       if (word.length < 3) {
-        userMessage.react('❌'); // await kaldırıldı
+        userMessage.react('❌');
         const warningMsg = await userMessage.reply({
           content: `❌ **Çok kısa!** Kelime en az 3 harf olmalı.`,
           allowedMentions: { repliedUser: false }
@@ -569,7 +578,7 @@ export default {
         break;
       }
 
-      userMessage.react('✅'); // await kaldırıldı - hızlı olsun
+      userMessage.react('✅');
       usedWords.add(normalizedWord);
       lastWord = word;
 
