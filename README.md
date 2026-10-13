@@ -110,7 +110,7 @@ Create ` config.json ` file and set permission settings:
 | ------ | ------ | ------ | ------ |
 | **active-penalties** | show user active penalties | user | stable |
 | **tasks** | staff tasks | me, user | stable |
-| **yetkibaslat** | start staff  | me, user | stable |
+| **authority** | take and pull staff  | user | stable |
 | **yetkililerim** | staffs of moderation user  | .. | stable |
 | **topyetkili** | top staff  | .. | stable |
 | **punish** | user gives punish  | user, reason | stable |

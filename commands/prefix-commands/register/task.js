@@ -39,6 +39,7 @@ export default {
       fields: [
         { name: "Kayıt Sayısı", value: `${data.registerCount || 0}`, inline: true },
         { name: "Yetkiye Başlatma", value: `${data.startedStaffCount || 0}`, inline: true },
+        { name: "Tag Aldırma", value: `${data.taggedCount || 0}`, inline: true },
         { name: "Sorun Çözme Sayısı", value: `0`, inline: true },
         { name: "Yetkiye Başlama Tarihi", value: formattedStartDate },
       ]		
