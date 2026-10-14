@@ -1,5 +1,5 @@
 import Manager from '#managers';
-import { Punishment } from '#models';
+import { Punishment, ForceBan } from '#models';
 import { PermissionFlagsBits } from 'discord.js';
 
 export default {
@@ -62,26 +62,50 @@ export default {
 
       await target.ban({ reason });
 
-      await Punishment.create({
-        userId: target.id,
-        guildId: message.guild.id,
-        staffId: message.author.id,
-        type: "ban",
-        duration: null,
-        reason
-      });
+      let punishmentRecord = null;
+      try {
+        punishmentRecord = await Punishment.create({
+          userId: target.id,
+          guildId: message.guild.id,
+          staffId: message.author.id,
+          type: "ban",
+          duration: null,
+          reason
+        });
+      } catch (err) {
+        console.error('[ban] Punishment kaydedilemedi:', err);
+      }
+
+      try {
+        await ForceBan.findOneAndUpdate(
+          { userId: target.id, guildId: message.guild.id },
+          {
+            userId: target.id,
+            guildId: message.guild.id,
+            bannedBy: message.author.id,
+            bannedAt: new Date(),
+            reason: reason,
+            banType: 'ban',
+          },
+          { upsert: true, new: true }
+        );
+      } catch (err) {
+        console.error('[ban] ForceBan kaydedilemedi:', err);
+      }
 
       const avatarURL = target.user?.displayAvatarURL({ dynamic: true, size: 256 }) || 
                         target.displayAvatarURL?.({ dynamic: true, size: 256 }) ||
                         `https://cdn.discordapp.com/embed/avatars/${(parseInt(target.id) >> 22) % 6}.png`;
+      
+      const recordIdText = punishmentRecord ? `\n**Ceza No:** #${punishmentRecord.recordId}` : '';
 
       return sender.reply(sender.embed({
         author: { name: message.guild.name, iconURL: message.guild.iconURL() },
         title: "Kullanıcı Banlandı",
         fields: [
-          { name: 'Banlanan Kullanıcı', value: `**${target.user?.tag || target.tag}**\n(${target.id})`, inline: true },
+          { name: 'Banlanan Kullanıcı', value: `**${target.user?.tag || target.tag}**\n(${target.id})${recordIdText}`, inline: true },
           { name: 'Banlayan', value: `**${message.author.tag}**\n(${message.author.id})`, inline: true },
-          { name: 'Sebep', value: reason, inline: false }
+          { name: 'Sebep', value: reason, inline: false },
         ],
         thumbnail: avatarURL,
       }), true);

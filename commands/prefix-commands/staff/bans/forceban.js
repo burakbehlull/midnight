@@ -99,8 +99,9 @@ export default {
         return;
       }
 
+      let punishmentRecord = null;
       try {
-        await Punishment.create({
+        punishmentRecord = await Punishment.create({
           userId: user.id,
           guildId: message.guild.id,
           staffId: message.author.id,
@@ -121,6 +122,7 @@ export default {
             bannedBy: message.author.id,
             bannedAt: new Date(),
             reason: reason,
+            banType: 'forceban',
           },
           { upsert: true, new: true }
         );
@@ -142,16 +144,17 @@ export default {
       } catch {}
 
       const statusEmoji = '🚨';
+      const recordIdText = punishmentRecord ? `**Ceza No:** \`#${punishmentRecord.recordId}\`\n` : '';
       const description =
         `**Kullanıcı:** <@${user.id}> \`${user.tag}\`\n` +
-        `**ID:** \`${user.id}\`\n\n` +
-        `**Banlayan:** <@${message.author.id}> \`${message.author.tag}\`\n\n` +
+        `**ID:** \`${user.id}\`\n` +
+        recordIdText +
+        `\n**Banlayan:** <@${message.author.id}> \`${message.author.tag}\`\n\n` +
         `**Sebep:** ${reason}\n\n` +
         `📌 **Force Ban Özellikleri:**\n` +
         `  • Sunucudan **kalıcı olarak** banlandı\n` +
         `  • 🧹 Son **${deleteMessageDays} gün**ün tüm mesajları silindi\n` +
-        `  • 📩 Kullanıcıya DM'den **bildirim gönderildi**\n` +
-        `  • 🗃️ Kayıtlara **forceban** tipiyle işlendi\n\n`;
+        `  • 📩 Kullanıcıya DM'den **bildirim gönderildi**\n`
 
       const embed = sender.embed({
         author: { name: `Force Ban Uygulandı`, iconURL: message.guild.iconURL() },

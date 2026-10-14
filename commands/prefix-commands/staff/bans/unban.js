@@ -1,4 +1,5 @@
 import Manager from '#managers';
+import { ForceBan } from '#models';
 import { PermissionFlagsBits } from 'discord.js';
 
 export default {
@@ -11,8 +12,8 @@ export default {
   },
   
   async execute(client, message, args) {
-	  const sender = new Manager(client, { action: message }).sender;
-	
+    const sender = new Manager(client, { action: message }).sender;
+  
     const userId = args[0];
     const guild = message.guild;
 
@@ -21,10 +22,32 @@ export default {
     }
 
     try {
+      const forceBanRecord = await ForceBan.findOne({ userId, guildId: guild.id });
+
+      if (forceBanRecord && forceBanRecord.banType !== 'ban' && forceBanRecord.banType !== 'massban') {
+        const banTypeNames = {
+          'forceban': 'Force Ban (unforceban ile açılabilir)',
+          'godban': 'God Ban (ungodban ile açılabilir)',
+        };
+        const correctCommand = forceBanRecord.banType === 'forceban' ? 'unforceban' : 'ungodban';
+        
+        return sender.reply(sender.errorEmbed(
+          `❌ **Bu ban türünü sadece ilgili komut ile açabilirsin!**\n\n` +
+          `**Ban Türü:** ${banTypeNames[forceBanRecord.banType] || forceBanRecord.banType}\n` +
+          `**Doğru Komut:** \`.${correctCommand} ${userId}\`\n\n` +
+          `💡 Normal ban ve massban **unban** ile açılabilir.`
+        ));
+      }
+
       await guild.bans.remove(userId);
-      await sender.reply(sender.classic(`<@${userId.id || userId}> adlı kullanıcının banı kaldırıldı.`));
+
+      if (forceBanRecord) {
+        await ForceBan.deleteOne({ userId, guildId: guild.id });
+      }
+
+      await sender.reply(sender.classic(`✅ <@${userId}> adlı kullanıcının banı kaldırıldı.`));
     } catch (err) {
-      console.error('Ban kaldırma hatası:', err);
+      console.error('[unban] Ban kaldırma hatası:', err);
       await sender.reply(sender.errorEmbed('❌ Kullanıcının banı kaldırılırken bir hata oluştu!'));
     }
   }

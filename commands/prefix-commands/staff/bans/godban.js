@@ -1,6 +1,6 @@
 import Manager from '#managers';
 import { PermissionFlagsBits } from 'discord.js';
-import { Punishment } from '#models';
+import { Punishment, ForceBan } from '#models';
 
 export default {
   name: 'godban',
@@ -164,14 +164,51 @@ export default {
     } catch {}
 
     try {
-      await Punishment.create({
-        type: 'ban',
-        userId: targetUser.id,
-        guildId: message.guild.id,
-        staffId: message.author.id,
-        reason: `[G] ${reasonText}`,
-        duration: null,
-      }).catch(() => {});
+      let punishmentRecord = null;
+      try {
+        punishmentRecord = await Punishment.create({
+          type: 'ban',
+          userId: targetUser.id,
+          guildId: message.guild.id,
+          staffId: message.author.id,
+          reason: `[G] ${reasonText}`,
+          duration: null,
+        });
+        console.log(`[godban] Punishment kaydedildi - ID: ${punishmentRecord.recordId}`);
+      } catch (err) {
+        console.error('[godban] Punishment kaydedilemedi:', err);
+      }
+
+      try {
+        await ForceBan.findOneAndUpdate(
+          { userId: targetUser.id, guildId: message.guild.id },
+          {
+            userId: targetUser.id,
+            guildId: message.guild.id,
+            bannedBy: message.author.id,
+            bannedAt: new Date(),
+            reason: reasonText,
+            banType: 'godban',
+          },
+          { upsert: true, new: true }
+        );
+      } catch (err) {
+        console.error('[godban] ForceBan kaydedilemedi:', err);
+      }
+
+      const recordIdText = punishmentRecord ? `**Ceza No:** #${punishmentRecord.recordId}\n` : '';
+
+      const summary =
+        `👤 **Kullanıcı:** <@${targetUser.id}>  •  ${targetUser.tag}\n` +
+        `🧑‍💼 **Banlayan:** ${message.author.tag}\n` +
+        recordIdText +
+        `📝 **Sebep:** ${reasonText}\n\n` +
+        `📊 **Sonuç:**\n` +
+        `   ✅ Başarılı: **${successCount} / ${total}** sunucuda ban atıldı\n` +
+        `   ❌ Başarısız: ${failCount}\n` +
+        `   ⏭️ Atlanan: ${skippedCount}\n` +
+        `   🧑‍🤝‍🧑 Kullanıcının üye olduğu sunucu: ${memberGuildCount}\n` +
+        `   🧹 Son ${deleteMessageDays} gün mesajları silindi (izin veren sunucularda)\n`
     } catch {}
 
     const summary =

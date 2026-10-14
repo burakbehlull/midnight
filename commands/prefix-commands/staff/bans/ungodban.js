@@ -1,6 +1,6 @@
 import Manager from '#managers';
 import { PermissionFlagsBits } from 'discord.js';
-import { Punishment } from '#models';
+import { Punishment, ForceBan } from '#models';
 
 export default {
   name: 'ungodban',
@@ -38,6 +38,24 @@ export default {
     const rawId = String(targetArg).replace(/[^0-9]/g, '');
     if (!rawId || rawId.length < 16) {
       return sender.reply(sender.errorEmbed('❌ Geçerli bir kullanıcı ID ver. (etiket değil, NUMARAYLA)'));
+    }
+
+    const forceBanRecord = await ForceBan.findOne({ userId: rawId, guildId: message.guild.id });
+
+    if (forceBanRecord && forceBanRecord.banType !== 'godban') {
+      const banTypeNames = {
+        'ban': 'Normal Ban (unban ile açılabilir)',
+        'forceban': 'Force Ban (unforceban ile açılabilir)',
+        'massban': 'Mass Ban (unban veya unmassban ile açılabilir)'
+      };
+      const correctCommand = forceBanRecord.banType === 'forceban' ? 'unforceban' : 'unban';
+      
+      return sender.reply(sender.errorEmbed(
+        `❌ **Bu ban türünü sadece ilgili komut ile açabilirsin!**\n\n` +
+        `**Ban Türü:** ${banTypeNames[forceBanRecord.banType] || forceBanRecord.banType}\n` +
+        `**Doğru Komut:** \`.${correctCommand} ${rawId}\`\n\n` +
+        `💡 God ban sadece **ungodban** komutuyla açılabilir.`
+      ));
     }
 
     let targetUser = null;
@@ -134,6 +152,10 @@ export default {
         successGuilds: successCount,
         totalGuilds: bannedGuildCount,
       }).catch(() => {});
+
+      if (forceBanRecord) {
+        await ForceBan.deleteOne({ userId: rawId, guildId: message.guild.id });
+      }
     } catch {}
 
     const uid = targetUser ? `<@${targetUser.id}>  •  ${targetUser.tag}` : `\`${rawId}\` (kullanıcı hesabı çözümlenemedi)`;

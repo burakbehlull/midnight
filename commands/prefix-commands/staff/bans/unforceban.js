@@ -50,6 +50,22 @@ export default {
       const forceBanRecord = await ForceBan.findOne({ userId, guildId: message.guild.id });
 
       if (forceBanRecord) {
+        if (forceBanRecord.banType !== 'forceban') {
+          const banTypeNames = {
+            'ban': 'Normal Ban (unban ile açılabilir)',
+            'godban': 'God Ban (ungodban ile açılabilir)',
+            'massban': 'Mass Ban (unban veya ungodban ile açılabilir)'
+          };
+          const correctCommand = forceBanRecord.banType === 'godban' ? 'ungodban' : 'unban';
+          
+          return sender.reply(sender.errorEmbed(
+            `❌ **Bu ban türünü sadece ilgili komut ile açabilirsin!**\n\n` +
+            `**Ban Türü:** ${banTypeNames[forceBanRecord.banType] || forceBanRecord.banType}\n` +
+            `**Doğru Komut:** \`.${correctCommand} ${userId}\`\n\n` +
+            `💡 Forceban sadece **unforceban** komutuyla açılabilir.`
+          ));
+        }
+
         if (forceBanRecord.bannedBy !== message.author.id && message.author.id !== message.guild.ownerId) {
           const bannerUser = await client.users.fetch(forceBanRecord.bannedBy).catch(() => null);
           const bannerTag = bannerUser ? bannerUser.tag : forceBanRecord.bannedBy;

@@ -21,6 +21,12 @@ const forceBanSchema = new Schema({
     type: String,
     default: 'Sebep belirtilmedi',
   },
+  banType: {
+    type: String,
+    enum: ['ban', 'forceban', 'godban', 'massban'],
+    required: true,
+    default: 'forceban',
+  },
 });
 
 forceBanSchema.index({ userId: 1, guildId: 1 }, { unique: true });
