@@ -1,5 +1,5 @@
 import Manager from '#managers';
-import { Punishment } from '#models';
+import { Punishment, ForceBan } from '#models';
 import { PermissionFlagsBits } from 'discord.js';
 
 export default {
@@ -47,6 +47,23 @@ export default {
         return sender.reply(sender.errorEmbed(`❌ Bu ID'ye sahip kullanıcı (\`${userId}\`) şu anda bu sunucuda banlı değil.`));
       }
 
+      const forceBanRecord = await ForceBan.findOne({ userId, guildId: message.guild.id });
+
+      if (forceBanRecord) {
+        if (forceBanRecord.bannedBy !== message.author.id && message.author.id !== message.guild.ownerId) {
+          const bannerUser = await client.users.fetch(forceBanRecord.bannedBy).catch(() => null);
+          const bannerTag = bannerUser ? bannerUser.tag : forceBanRecord.bannedBy;
+          
+          return sender.reply(sender.errorEmbed(
+            `❌ **Bu forceban'ı sadece banlayan kişi açabilir!**\n\n` +
+            `**Banlayan:** <@${forceBanRecord.bannedBy}> (\`${bannerTag}\`)\n` +
+            `**Tarih:** <t:${Math.floor(forceBanRecord.bannedAt.getTime() / 1000)}:F>\n` +
+            `**Sebep:** ${forceBanRecord.reason}\n\n` +
+            `💡 Eğer banı açman gerekiyorsa, banlayan kişiyle iletişime geç veya sunucu sahibinden yardım iste.`
+          ));
+        }
+      }
+
       const bannedUser = existingBan.user || (await client.users.fetch(userId, { force: true }).catch(() => null));
       const tagStr = bannedUser ? bannedUser.tag : userId;
 
@@ -75,6 +92,13 @@ export default {
         });
       } catch (dbErr) {
         console.error('[unforceban] Punishment kaydedilemedi:', dbErr);
+      }
+
+      try {
+        await ForceBan.deleteOne({ userId, guildId: message.guild.id });
+        console.log(`[unforceban] ForceBan kaydı silindi: ${userId}`);
+      } catch (dbErr) {
+        console.error('[unforceban] ForceBan silinemedi:', dbErr);
       }
 
       let dmSend = false;

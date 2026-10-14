@@ -15,6 +15,7 @@ import Room from "./Room.js"
 
 import Staff from "./Staff.js"
 import Punishment from "./Punishment.js"
+import ForceBan from "./ForceBan.js"
 
 import Economy from "./Economy.js"
 import Shop from "./Shop.js"
@@ -48,6 +49,7 @@ export {
 	Room,
 	
 	Punishment,
+	ForceBan,
 	Staff,
 	Economy,
 	Shop,

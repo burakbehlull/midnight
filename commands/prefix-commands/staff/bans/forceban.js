@@ -1,5 +1,5 @@
 import Manager from '#managers';
-import { Punishment } from '#models';
+import { Punishment, ForceBan } from '#models';
 import { PermissionFlagsBits } from 'discord.js';
 
 export default {
@@ -110,6 +110,22 @@ export default {
         });
       } catch (dbErr) {
         console.error('[forceban] Punishment kaydedilemedi:', dbErr);
+      }
+
+      try {
+        await ForceBan.findOneAndUpdate(
+          { userId: user.id, guildId: message.guild.id },
+          {
+            userId: user.id,
+            guildId: message.guild.id,
+            bannedBy: message.author.id,
+            bannedAt: new Date(),
+            reason: reason,
+          },
+          { upsert: true, new: true }
+        );
+      } catch (dbErr) {
+        console.error('[forceban] ForceBan kaydedilemedi:', dbErr);
       }
 
       try {
