@@ -86,7 +86,7 @@ Create ` config.json ` file and set permission settings:
 | **unmute** | user unmute for chat | user, reason | stable |
 | **nuke** | Refreshes the channel | channel | stable |
 | **snipe** |  Shows last deleted message | .. | stable |
-| **punish-info** |  Show user punish info | .. | stable |
+| **punish-info** |  Show user punish info | punish id | stable |
 | **lock** | lock to Chat | .. | stable |
 | **allvmute** | Mutes all user in channel | channel | stable |
 | **allvunmute** | Unmutes all user in channel | channel | stable |

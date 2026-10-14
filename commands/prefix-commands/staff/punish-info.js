@@ -44,27 +44,20 @@ export default {
       const removedBy = punishment.removedBy ? await client.users.fetch(punishment.removedBy).catch(() => null) : null;
 
       const cezaTipleri = {
-        'ban': 'Ban',
-        'forceban': 'Force Ban',
-        'godban': 'God Ban',
-        'massban': 'Mass Ban',
-        'kick': 'Kick',
-        'mute': 'Chat Mute',
-        'vmute': 'Voice Mute',
-        'timeout': 'Timeout',
-        'jail': 'Jail',
-        'warn': 'Uyarı',
-        'unban': 'Unban',
-        'unforceban': 'Unforceban',
-        'ungodban': 'Ungodban',
-        'unmassban': 'Unmassban',
-        'unmute': 'Unmute',
-        'unvmute': 'Voice Unmute',
-        'unjail': 'Unjail',
-        'punishment': '📋 Genel Ceza'
+        'ban': '🔨 Ban',
+        'forceban': '⚡ Force Ban',
+        'godban': '👑 God Ban',
+        'massban': '💥 Mass Ban',
+        'kick': '👢 Kick',
+        'mute': '🔇 Chat Mute',
+        'vmute': '🔊 Voice Mute',
+        'timeout': '⏱️ Timeout',
+        'jail': '🔒 Jail',
+        'warn': '⚠️ Uyarı',
+        'manual': '📋 Genel Ceza'
       };
 
-      const cezaTipi = cezaTipleri[punishment.type] || `📋 ${punishment.type}`;
+      const cezaTipi = cezaTipleri[punishment.type] || `📋 ${punishment.type.charAt(0).toUpperCase() + punishment.type.slice(1)}`;
 
       let banType = '';
       if (punishment.reason) {

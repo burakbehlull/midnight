@@ -4,7 +4,11 @@ const punishmentSchema = new mongoose.Schema({
   userId: String,
   guildId: String,
   recordId: Number,
-  type: String, 
+  type: { 
+    type: String, 
+    enum: ['ban', 'forceban', 'godban', 'massban', 'kick', 'mute', 'vmute', 'timeout', 'jail', 'warn', 'manual'],
+    required: true 
+  }, 
   reason: String,
   date: { type: Date, default: Date.now },
   duration: String,
