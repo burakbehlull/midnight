@@ -60,24 +60,31 @@ export default {
 
       await target.kick(reason);
 
+      let punishmentRecord = null;
+      try {
+        punishmentRecord = await Punishment.create({
+          userId: target.id,
+          guildId: message.guild.id,
+          staffId: message.author.id,
+          type: "kick",
+          reason
+        });
+      } catch (err) {
+        console.error('[kick] Punishment kaydedilemedi:', err);
+      }
+
+      const recordIdText = punishmentRecord ? `\n**Ceza No:** #${punishmentRecord.recordId}` : '';
+
       sender.reply(sender.embed({
         author: { name: message.guild.name, iconURL: message.guild.iconURL() },
         title: "Kullanıcı Sunucudan Atıldı",
         fields: [
-          { name: 'Atılan Kullanıcı', value: `**${target.user.tag}**\n(${target.id})`, inline: true },
+          { name: 'Atılan Kullanıcı', value: `**${target.user.tag}**\n(${target.id})${recordIdText}`, inline: true },
           { name: 'Atan', value: `**${message.author.tag}**\n(${message.author.id})`, inline: true },
           { name: 'Sebep', value: reason, inline: false }
         ],
         thumbnail: target.user.displayAvatarURL(),
       }), true);
-
-      await Punishment.create({
-        userId: target.id,
-        guildId: message.guild.id,
-        staffId: message.author.id,
-        type: "kick",
-        reason
-      });
 
       return
 

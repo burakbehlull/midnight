@@ -36,7 +36,23 @@ export default {
       const reason = args.slice(2).join(' ') || 'Sebep belirtilmedi.';
       try {
         await member.timeout(msDuration, reason);
-        return manager.sender.reply(manager.sender.classic(`${member} kullanıcısı **${durationArg}** boyunca susturuldu.\n**Sebep:** ${reason}`));
+
+        let punishmentRecord = null;
+        try {
+          punishmentRecord = await Punishment.create({
+            userId: member.id,
+            guildId: message.guild.id,
+            staffId: message.author.id,
+            type: "timeout",
+            duration: durationArg,
+            reason
+          });
+        } catch (err) {
+          console.error('[timeout] Punishment kaydedilemedi:', err);
+        }
+
+        const recordIdText = punishmentRecord ? ` | **Ceza No:** #${punishmentRecord.recordId}` : '';
+        return manager.sender.reply(manager.sender.classic(`${member} kullanıcısı **${durationArg}** boyunca susturuldu.\n**Sebep:** ${reason}${recordIdText}`));
       } catch (err) {
         console.error('Timeout hatası:', err);
         return manager.sender.reply(manager.sender.errorEmbed('❌ Kullanıcı susturulurken bir hata oluştu.'));
@@ -81,18 +97,25 @@ export default {
       try {
         await member.timeout(selectedMs, reason);
 
-        await i.update({
-          embeds: [manager.sender.classic(`${member} kullanıcısı **${timeString}** boyunca susturuldu.\n**Sebep:** ${reason}`)],
-          components: []
-        });
+        let punishmentRecord = null;
+        try {
+          punishmentRecord = await Punishment.create({
+            userId: member.id,
+            guildId: message.guild.id,
+            staffId: message.author.id,
+            type: "timeout",
+            duration: timeString,
+            reason
+          });
+        } catch (err) {
+          console.error('[timeout] Punishment kaydedilemedi:', err);
+        }
 
-        await Punishment.create({
-          userId: member.id,
-          guildId: message.guild.id,
-          staffId: message.author.id,
-          type: "timeout",
-          duration: timeString,
-          reason
+        const recordIdText = punishmentRecord ? ` | **Ceza No:** #${punishmentRecord.recordId}` : '';
+
+        await i.update({
+          embeds: [manager.sender.classic(`${member} kullanıcısı **${timeString}** boyunca susturuldu.\n**Sebep:** ${reason}${recordIdText}`)],
+          components: []
         });
         
         collector.stop('success');

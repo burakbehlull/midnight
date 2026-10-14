@@ -62,14 +62,19 @@ export default {
       try {
         await member.roles.add(mutedRole);
         
-        await Punishment.create({
-          userId: member.id,
-          guildId: message.guild.id,
-          staffId: message.author.id,
-          type: "mute",
-          duration: durationArg,
-          reason
-        });
+        let punishmentRecord = null;
+        try {
+          punishmentRecord = await Punishment.create({
+            userId: member.id,
+            guildId: message.guild.id,
+            staffId: message.author.id,
+            type: "mute",
+            duration: durationArg,
+            reason
+          });
+        } catch (err) {
+          console.error('[mute] Punishment kaydedilemedi:', err);
+        }
         
         // Süre sonunda unmute (setTimeout)
         const timeoutId = setTimeout(async () => {
@@ -82,7 +87,8 @@ export default {
         // Timeout'u sakla
         muteTimeouts.set(`${message.guild.id}-${member.id}`, timeoutId);
         
-        return sender.reply(sender.classic(`<@${member.id}> kullanıcısı **${durationArg}** boyunca susturuldu.\n**Sebep:** ${reason}`));
+        const recordIdText = punishmentRecord ? ` | **Ceza No:** #${punishmentRecord.recordId}` : '';
+        return sender.reply(sender.classic(`<@${member.id}> kullanıcısı **${durationArg}** boyunca susturuldu.\n**Sebep:** ${reason}${recordIdText}`));
       } catch (err) {
         console.error(err);
         return sender.reply(sender.errorEmbed('❌ Kullanıcı susturulurken hata oluştu.'));
@@ -127,18 +133,25 @@ export default {
       try {
         await member.roles.add(mutedRole);
 
-        await i.update({
-          embeds: [sender.classic(`<@${member.id}> kullanıcısı **${timeString}** boyunca susturuldu.\n**Sebep:** ${reason}`)],
-          components: []
-        });
+        let punishmentRecord = null;
+        try {
+          punishmentRecord = await Punishment.create({
+            userId: member.id,
+            guildId: message.guild.id,
+            staffId: message.author.id,
+            type: "mute",
+            duration: timeString,
+            reason
+          });
+        } catch (err) {
+          console.error('[mute] Punishment kaydedilemedi:', err);
+        }
 
-        await Punishment.create({
-          userId: member.id,
-          guildId: message.guild.id,
-          staffId: message.author.id,
-          type: "mute",
-          duration: timeString,
-          reason
+        const recordIdText = punishmentRecord ? ` | **Ceza No:** #${punishmentRecord.recordId}` : '';
+
+        await i.update({
+          embeds: [sender.classic(`<@${member.id}> kullanıcısı **${timeString}** boyunca susturuldu.\n**Sebep:** ${reason}${recordIdText}`)],
+          components: []
         });
         
         // Süre sonunda unmute

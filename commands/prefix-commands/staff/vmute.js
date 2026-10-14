@@ -39,14 +39,19 @@ export default {
 
         await target.voice.setMute(true, reason);
         
-        await Punishment.create({
-          userId: target.id,
-          guildId: message.guild.id,
-          staffId: message.author.id,
-          type: "vmute",
-          duration: durationArg,
-          reason
-        });
+        let punishmentRecord = null;
+        try {
+          punishmentRecord = await Punishment.create({
+            userId: target.id,
+            guildId: message.guild.id,
+            staffId: message.author.id,
+            type: "vmute",
+            duration: durationArg,
+            reason
+          });
+        } catch (err) {
+          console.error('[vmute] Punishment kaydedilemedi:', err);
+        }
 
         const timeoutId = setTimeout(async () => {
           if (target.voice.channel && target.voice.serverMute) {
@@ -59,7 +64,8 @@ export default {
 
         vmuteTimeouts.set(`${message.guild.id}-${target.id}`, timeoutId);
 
-        return sender.reply(sender.classic(`${target} kullanıcısı **${durationArg}** boyunca ses kanalında susturuldu.\n**Sebep:** ${reason}`), true);
+        const recordIdText = punishmentRecord ? ` | **Ceza No:** #${punishmentRecord.recordId}` : '';
+        return sender.reply(sender.classic(`${target} kullanıcısı **${durationArg}** boyunca ses kanalında susturuldu.\n**Sebep:** ${reason}${recordIdText}`), true);
       }
 
       const reason = args.slice(1).join(' ') || 'Sebep belirtilmedi.';

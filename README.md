@@ -79,12 +79,14 @@ Create ` config.json ` file and set permission settings:
 | **ban-list** | Ban list | user id | stable |
 | **kick** | Kick the user | user -ticket, id- | stable |
 | **mass-ban** | Mass ban users | users | stable |
+| **unmass-ban** | Mass unban users | users | stable |
 | **vmute** | Throws voice mute on tagged user | user, second -exp. 10m -, reason | stable |
 | **vunmute** | Unmute | user, reason | stable |
 | **mute** | Throws chat mute on tagged user | user, reason | stable |
 | **unmute** | user unmute for chat | user, reason | stable |
 | **nuke** | Refreshes the channel | channel | stable |
 | **snipe** |  Shows last deleted message | .. | stable |
+| **punish-info** |  Show user punish info | .. | stable |
 | **lock** | lock to Chat | .. | stable |
 | **allvmute** | Mutes all user in channel | channel | stable |
 | **allvunmute** | Unmutes all user in channel | channel | stable |

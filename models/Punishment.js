@@ -9,13 +9,13 @@ const punishmentSchema = new mongoose.Schema({
   date: { type: Date, default: Date.now },
   duration: String,
   staffId: String,
-  deleted: { type: Boolean, default: false }, // Soft delete
+  deleted: { type: Boolean, default: false }, 
   deletedAt: Date,
   deletedBy: String,
-  active: { type: Boolean, default: false }, // Ceza aktif mi?
-  expiresAt: Date, // Ceza ne zaman bitiyor?
-  removedAt: Date, // Ceza ne zaman kaldırıldı?
-  removedBy: String // Cezayı kim kaldırdı?
+  active: { type: Boolean, default: false }, 
+  expiresAt: Date,
+  removedAt: Date,
+  removedBy: String 
 });
 
 punishmentSchema.pre('save', async function(next) {
