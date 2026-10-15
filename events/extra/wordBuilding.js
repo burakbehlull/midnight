@@ -251,7 +251,7 @@ export default {
       if (isValid === null) {
         message.react('⚠️');
         await message.reply({
-          content: `⚠️ **TDK sözlüğüne erişilemiyor!** Kelime geçici olarak kabul edildi.\n\n📝 **Kelime:** ${currentWord}\n💡 TDK bağlantısı tekrar kurulana kadar tüm kelimeler kabul edilecek.`,
+          content: `⚠️ **Sözlüğe erişilemiyor!** Kelime geçici olarak kabul edildi.\n\n📝 **Kelime:** ${currentWord}\n💡 TDK bağlantısı tekrar kurulana kadar tüm kelimeler kabul edilecek.`,
           allowedMentions: { repliedUser: false }
         });
         
@@ -299,7 +299,7 @@ export default {
       if (!isValid) {
         message.react('❌');
         const warningMsg = await message.reply({
-          content: `❌ **Geçersiz kelime!** "${currentWord}" TDK sözlüğünde bulunamadı.`,
+          content: `❌ **Geçersiz kelime!** "${currentWord}"Sözlük de bulunamadı.`,
           allowedMentions: { repliedUser: false }
         });
         
