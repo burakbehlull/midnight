@@ -44,17 +44,17 @@ export default {
       const removedBy = punishment.removedBy ? await client.users.fetch(punishment.removedBy).catch(() => null) : null;
 
       const cezaTipleri = {
-        'ban': '🔨 Ban',
-        'forceban': '⚡ Force Ban',
-        'godban': '👑 God Ban',
-        'massban': '💥 Mass Ban',
-        'kick': '👢 Kick',
-        'mute': '🔇 Chat Mute',
-        'vmute': '🔊 Voice Mute',
-        'timeout': '⏱️ Timeout',
-        'jail': '🔒 Jail',
-        'warn': '⚠️ Uyarı',
-        'manual': '📋 Genel Ceza'
+        'ban': 'Ban',
+        'forceban': 'Force Ban',
+        'godban': 'God Ban',
+        'massban': 'Mass Ban',
+        'kick': 'Kick',
+        'mute': 'Chat Mute',
+        'vmute': 'Voice Mute',
+        'timeout': 'Timeout',
+        'jail': 'Jail',
+        'warn': 'Uyarı',
+        'manual': 'Genel Ceza'
       };
 
       const cezaTipi = cezaTipleri[punishment.type] || `📋 ${punishment.type.charAt(0).toUpperCase() + punishment.type.slice(1)}`;
@@ -68,24 +68,24 @@ export default {
 
       let aktifDurum;
       if (punishment.active) {
-        aktifDurum = '**Aktif** - Ceza şu anda geçerli';
+        aktifDurum = '\` Aktif \` **:** \` Ceza şu anda geçerli\`';
       } else if (punishment.removedBy) {
-        aktifDurum = '**Kaldırıldı** - Ceza yetkili tarafından kaldırıldı';
+        aktifDurum = '\` Kaldırıldı \` **:** \` Ceza yetkili tarafından kaldırıldı \`';
       } else if (punishment.expiresAt && new Date(punishment.expiresAt) < new Date()) {
-        aktifDurum = '**Süresi Doldu** - Ceza süresi sona erdi';
+        aktifDurum = '\` Süresi Doldu \` **:** \` Ceza süresi sona erdi \`';
       } else {
-        aktifDurum = '**Pasif** - Ceza aktif değil';
+        aktifDurum = '\` Pasif \` **:** \` Ceza aktif değil \`';
       }
 
       const silindiDurum = punishment.deleted
-        ? `**Silindi** - <t:${Math.floor(punishment.deletedAt?.getTime() / 1000)}:F>`
-        : '**Kayıt Aktif**';
+        ? `\` Silindi\` - \` <t:${Math.floor(punishment.deletedAt?.getTime() / 1000)}:F> \``
+        : '\` Kayıt Aktif \`';
 
       const sure = punishment.duration || 'Kalıcı';
       
       const bitisTarihi = punishment.expiresAt 
         ? `<t:${Math.floor(punishment.expiresAt.getTime() / 1000)}:F> (<t:${Math.floor(punishment.expiresAt.getTime() / 1000)}:R>)`
-        : 'Yok (Kalıcı ceza)';
+        : 'Yok';
 
       const kaldirilmaTarihi = punishment.removedAt
         ? `<t:${Math.floor(punishment.removedAt.getTime() / 1000)}:F> (<t:${Math.floor(punishment.removedAt.getTime() / 1000)}:R>)`
@@ -93,18 +93,16 @@ export default {
 
       const description = 
         `**Ceza No:** \`#${punishment.recordId}\`\n` +
-        `**Ceza Tipi:** ${cezaTipi}${banType}\n` +
+        `**Ceza Tipi:** \`${cezaTipi}${banType}\`\n` +
         `**Verilme Tarihi:** <t:${Math.floor(punishment.date.getTime() / 1000)}:F>\n` +
         `**Süre:** ${sure}\n\n` +
         `**Cezalı Kullanıcı:** ${user ? `<@${user.id}> (\`${user.tag}\`)` : `\`${punishment.userId}\``}\n` +
         `**Cezayı Veren:** ${staff ? `<@${staff.id}> (\`${staff.tag}\`)` : `\`${punishment.staffId}\``}\n\n` +
-        `**Sebep:**\n${punishment.reason || 'Sebep belirtilmemiş'}\n\n` +
-        `━━━━━━━━━━━━━━━━━━━━\n\n` +
-        `**Durum Bilgileri:**\n` +
+        `**Sebep:**\n\`\`\`${punishment.reason || 'Sebep belirtilmemiş'}\`\`\`\n` +
+        `━━━━━━━━━━━━━━━━━━━━\n` +
+        `**Durum Bilgileri:**\n\n` +
         `${aktifDurum}\n` +
-        `${silindiDurum}\n\n` +
-        `**⏱️ Bitiş Tarihi:** ${bitisTarihi}\n` +
-        `**🔓 Kaldırılma Tarihi:** ${kaldirilmaTarihi}\n`;
+        `\`${silindiDurum}\`\n\n`;
 
       const fields = [];
 
