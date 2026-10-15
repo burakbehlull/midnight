@@ -1,4 +1,5 @@
 import Manager from '#managers';
+import { Punishment } from '#models';
 import { PermissionFlagsBits } from 'discord.js';
 import { muteTimeouts } from './mute.js';
 
@@ -29,6 +30,23 @@ export default {
     }
   
     await member.roles.remove(mutedRole);
+
+    await Punishment.updateMany(
+      {
+        userId: member.id,
+        guildId: message.guild.id,
+        type: 'mute',
+        active: true
+      },
+      {
+        $set: {
+          active: false,
+          removedAt: new Date(),
+          removedBy: message.author.id
+        }
+      }
+    );
+
     return sender.reply(sender.classic(`<@${member.id}> adlı kullanıcının susturması kaldırıldı.`));
   }
 };

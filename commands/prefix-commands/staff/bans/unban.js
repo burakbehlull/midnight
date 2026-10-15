@@ -1,5 +1,5 @@
 import Manager from '#managers';
-import { ForceBan } from '#models';
+import { ForceBan, Punishment } from '#models';
 import { PermissionFlagsBits } from 'discord.js';
 
 export default {
@@ -44,6 +44,22 @@ export default {
       if (forceBanRecord) {
         await ForceBan.deleteOne({ userId, guildId: guild.id });
       }
+
+      await Punishment.updateMany(
+        {
+          userId: userId,
+          guildId: guild.id,
+          type: { $in: ['ban', 'massban'] },
+          active: true
+        },
+        {
+          $set: {
+            active: false,
+            removedAt: new Date(),
+            removedBy: message.author.id
+          }
+        }
+      );
 
       await sender.reply(sender.classic(`✅ <@${userId}> adlı kullanıcının banı kaldırıldı.`));
     } catch (err) {

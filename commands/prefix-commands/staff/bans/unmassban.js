@@ -1,5 +1,5 @@
 import Manager from '#managers';
-import { ForceBan } from '#models';
+import { ForceBan, Punishment } from '#models';
 import { PermissionFlagsBits } from 'discord.js';
 
 export default {
@@ -75,6 +75,22 @@ export default {
           await ForceBan.deleteOne({ userId, guildId: message.guild.id });
         }
 
+        await Punishment.updateMany(
+          {
+            userId: userId,
+            guildId: message.guild.id,
+            type: { $in: ['ban', 'massban'] },
+            active: true
+          },
+          {
+            $set: {
+              active: false,
+              removedAt: new Date(),
+              removedBy: message.author.id
+            }
+          }
+        );
+
         successCount++;
       } catch (error) {
         failList.push({ id: userId, reason: error.message || 'Bilinmeyen hata' });
@@ -84,18 +100,16 @@ export default {
 
     const description =
       `**Toplam İşlem:** ${userIds.length}\n` +
-      `✅ **Başarılı:** ${successCount}\n` +
-      `⏭️ **Atlanan:** ${skippedCount}\n` +
-      `❌ **Başarısız:** ${failCount}\n\n` +
-      `💡 **Not:** Unmassban sadece normal ban ve massban açar.\n` +
-      `Force ban ve god ban için **unforceban** ve **ungodban** kullanmalısın.`;
+      `**Başarılı:** ${successCount}\n` +
+      `**Atlanan:** ${skippedCount}\n` +
+      `**Başarısız:** ${failCount}\n\n`;
 
     const fields = [];
     
     if (skippedList.length > 0) {
       const skipText = skippedList.slice(0, 10).map(s => `• \`${s.id}\`: ${s.reason}`).join('\n');
       fields.push({
-        name: `⏭️ Atlanan (${skippedList.length})`,
+        name: `Atlanan (${skippedList.length})`,
         value: skipText + (skippedList.length > 10 ? `\n... (+${skippedList.length - 10} daha)` : ''),
         inline: false
       });

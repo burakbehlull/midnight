@@ -66,13 +66,20 @@ export default {
         else if (punishment.reason.startsWith('[M]')) banType = ' (Mass Ban prefix)';
       }
 
-      const aktifDurum = punishment.active 
-        ? '✅ **Aktif** - Ceza şu anda geçerli' 
-        : '❌ **Pasif** - Ceza sona erdi veya kaldırıldı';
+      let aktifDurum;
+      if (punishment.active) {
+        aktifDurum = '**Aktif** - Ceza şu anda geçerli';
+      } else if (punishment.removedBy) {
+        aktifDurum = '**Kaldırıldı** - Ceza yetkili tarafından kaldırıldı';
+      } else if (punishment.expiresAt && new Date(punishment.expiresAt) < new Date()) {
+        aktifDurum = '**Süresi Doldu** - Ceza süresi sona erdi';
+      } else {
+        aktifDurum = '**Pasif** - Ceza aktif değil';
+      }
 
       const silindiDurum = punishment.deleted
-        ? `🗑️ **Silindi** - <t:${Math.floor(punishment.deletedAt?.getTime() / 1000)}:F>`
-        : '📋 **Kayıt Aktif**';
+        ? `**Silindi** - <t:${Math.floor(punishment.deletedAt?.getTime() / 1000)}:F>`
+        : '**Kayıt Aktif**';
 
       const sure = punishment.duration || 'Kalıcı';
       
@@ -85,15 +92,15 @@ export default {
         : 'Kaldırılmadı';
 
       const description = 
-        `**🆔 Ceza No:** \`#${punishment.recordId}\`\n` +
-        `**📋 Ceza Tipi:** ${cezaTipi}${banType}\n` +
-        `**📅 Verilme Tarihi:** <t:${Math.floor(punishment.date.getTime() / 1000)}:F>\n` +
-        `**⏰ Süre:** ${sure}\n\n` +
-        `**👤 Cezalı Kullanıcı:** ${user ? `<@${user.id}> (\`${user.tag}\`)` : `\`${punishment.userId}\``}\n` +
-        `**🛡️ Cezayı Veren:** ${staff ? `<@${staff.id}> (\`${staff.tag}\`)` : `\`${punishment.staffId}\``}\n\n` +
-        `**📝 Sebep:**\n${punishment.reason || 'Sebep belirtilmemiş'}\n\n` +
+        `**Ceza No:** \`#${punishment.recordId}\`\n` +
+        `**Ceza Tipi:** ${cezaTipi}${banType}\n` +
+        `**Verilme Tarihi:** <t:${Math.floor(punishment.date.getTime() / 1000)}:F>\n` +
+        `**Süre:** ${sure}\n\n` +
+        `**Cezalı Kullanıcı:** ${user ? `<@${user.id}> (\`${user.tag}\`)` : `\`${punishment.userId}\``}\n` +
+        `**Cezayı Veren:** ${staff ? `<@${staff.id}> (\`${staff.tag}\`)` : `\`${punishment.staffId}\``}\n\n` +
+        `**Sebep:**\n${punishment.reason || 'Sebep belirtilmemiş'}\n\n` +
         `━━━━━━━━━━━━━━━━━━━━\n\n` +
-        `**📊 Durum Bilgileri:**\n` +
+        `**Durum Bilgileri:**\n` +
         `${aktifDurum}\n` +
         `${silindiDurum}\n\n` +
         `**⏱️ Bitiş Tarihi:** ${bitisTarihi}\n` +
@@ -103,7 +110,7 @@ export default {
 
       if (punishment.deleted && deletedBy) {
         fields.push({
-          name: '🗑️ Silme Bilgileri',
+          name: 'Silme Bilgileri',
           value: `**Silen:** <@${deletedBy.id}> (\`${deletedBy.tag}\`)\n**Tarih:** <t:${Math.floor(punishment.deletedAt.getTime() / 1000)}:F>`,
           inline: false
         });
@@ -111,7 +118,7 @@ export default {
 
       if (punishment.removedBy && removedBy) {
         fields.push({
-          name: '🔓 Kaldırma Bilgileri',
+          name: 'Kaldırma Bilgileri',
           value: `**Kaldıran:** <@${removedBy.id}> (\`${removedBy.tag}\`)\n**Tarih:** <t:${Math.floor(punishment.removedAt.getTime() / 1000)}:F>`,
           inline: false
         });

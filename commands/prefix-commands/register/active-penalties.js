@@ -59,7 +59,7 @@ export default {
     const isBanned = await message.guild.bans.fetch(userId).catch(() => null);
     if (isBanned && activeCezalar.ban.length === 0) {
       activeCezalar.ban.push({
-        recordId: '?',
+        recordId: null,
         reason: isBanned.reason || 'Discord\'dan banlı',
         date: new Date(),
         duration: 'Kalıcı',
@@ -80,7 +80,7 @@ export default {
         const foundTimeout = activeCezalar.timeout.length > 0;
         if (!foundTimeout) {
           activeCezalar.timeout.push({
-            recordId: '?',
+            recordId: null,
             reason: 'Discord\'dan timeout',
             date: new Date(),
             duration: `${Math.floor((member.communicationDisabledUntilTimestamp - Date.now()) / 60000)} dakika`,
@@ -114,7 +114,7 @@ export default {
 
     if (activeCezalar.ban.length > 0) {
       const banText = activeCezalar.ban.map(b => 
-        `\`#${b.recordId || '?'}\` • ${b.reason}\n` +
+        `${b.recordId ? `\`#${b.recordId}\`` : '`Discord\'dan`'} • ${b.reason}\n` +
         `**Tarih:** ${new Date(b.date).toLocaleDateString()}\n` +
         `**Süre:** ${b.duration || 'Kalıcı'}`
       ).join('\n\n');
@@ -127,7 +127,7 @@ export default {
 
     if (activeCezalar.jail.length > 0) {
       const jailText = activeCezalar.jail.map(j => 
-        `\`#${j.recordId || '?'}\` • ${j.reason}\n` +
+        `${j.recordId ? `\`#${j.recordId}\`` : '`Discord\'dan`'} • ${j.reason}\n` +
         `**Tarih:** ${new Date(j.date).toLocaleDateString()}\n` +
         `**Süre:** ${j.duration || 'Belirtilmemiş'}` +
         (j.expiresAt ? `\n**Bitiş:** ${new Date(j.expiresAt).toLocaleString()}` : '')
@@ -141,7 +141,7 @@ export default {
 
     if (activeCezalar.timeout.length > 0) {
       const timeoutText = activeCezalar.timeout.map(t => 
-        `\`#${t.recordId || '?'}\` • ${t.reason}\n` +
+        `${t.recordId ? `\`#${t.recordId}\`` : '`Discord\'dan`'} • ${t.reason}\n` +
         `**Tarih:** ${new Date(t.date).toLocaleDateString()}\n` +
         `**Süre:** ${t.duration || 'Belirtilmemiş'}` +
         (t.expiresAt ? `\n⏰ **Bitiş:** ${new Date(t.expiresAt).toLocaleString()}` : '')
@@ -155,7 +155,7 @@ export default {
 
     if (activeCezalar.vmute.length > 0) {
       const vmuteText = activeCezalar.vmute.map(v => 
-        `\`#${v.recordId || '?'}\` • ${v.reason}\n` +
+        `${v.recordId ? `\`#${v.recordId}\`` : '`Discord\'dan`'} • ${v.reason}\n` +
         `**Tarih:** ${new Date(v.date).toLocaleDateString()}\n` +
         `**Süre:** ${v.duration || 'Belirtilmemiş'}` +
         (v.expiresAt ? `\n**Bitiş:** ${new Date(v.expiresAt).toLocaleString()}` : '')
@@ -169,7 +169,7 @@ export default {
 
     if (activeCezalar.mute.length > 0) {
       const muteText = activeCezalar.mute.map(m => 
-        `\`#${m.recordId || '?'}\` • ${m.reason}\n` +
+        `${m.recordId ? `\`#${m.recordId}\`` : '`Discord\'dan`'} • ${m.reason}\n` +
         `**Tarih:** ${new Date(m.date).toLocaleDateString()}\n` +
         `**Süre:** ${m.duration || 'Belirtilmemiş'}` +
         (m.expiresAt ? `\n**Bitiş:** ${new Date(m.expiresAt).toLocaleString()}` : '')
@@ -183,7 +183,7 @@ export default {
 
     if (activeCezalar.warn.length > 0) {
       const warnText = activeCezalar.warn.map(w => 
-        `\`#${w.recordId || '?'}\` • ${w.reason}\n` +
+        `${w.recordId ? `\`#${w.recordId}\`` : '`Discord\'dan`'} • ${w.reason}\n` +
         `**Tarih:** ${new Date(w.date).toLocaleDateString()}`
       ).join('\n\n');
       fields.push({ 
@@ -195,7 +195,7 @@ export default {
 
     if (activeCezalar.manual.length > 0) {
       const manualText = activeCezalar.manual.map(m => 
-        `\`#${m.recordId || '?'}\` • ${m.reason}\n` +
+        `${m.recordId ? `\`#${m.recordId}\`` : '`Discord\'dan`'} • ${m.reason}\n` +
         `**Tarih:** ${new Date(m.date).toLocaleDateString()}`
       ).join('\n\n');
       fields.push({ 

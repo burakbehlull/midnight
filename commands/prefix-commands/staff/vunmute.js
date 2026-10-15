@@ -1,4 +1,5 @@
 import Manager from '#managers';
+import { Punishment } from '#models';
 import { PermissionFlagsBits } from 'discord.js';
 import { vmuteTimeouts } from './vmute.js';
 
@@ -31,6 +32,23 @@ export default {
       }
 
       await hedef.voice.setMute(false, "Manuel olarak susturma kaldırıldı");
+
+      await Punishment.updateMany(
+        {
+          userId: hedef.id,
+          guildId: message.guild.id,
+          type: 'vmute',
+          active: true
+        },
+        {
+          $set: {
+            active: false,
+            removedAt: new Date(),
+            removedBy: message.author.id
+          }
+        }
+      );
+
       await sender.reply(sender.classic(`${hedef} kullanıcısının susturması kaldırıldı.`), true);
 
     } catch (err) {

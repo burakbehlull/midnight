@@ -1,6 +1,6 @@
 import { Events, AuditLogEvent, PermissionFlagsBits } from 'discord.js';
 import { modLogger } from '#helpers';
-import { RoleHistory } from '#models';
+import { RoleHistory, Punishment } from '#models';
 
 export default {
   name: Events.GuildMemberUpdate,
@@ -51,6 +51,24 @@ export default {
           e.changes?.some(change => change.key === 'communication_disabled_until' && change.new === null)
         );
         const executor = entry?.executor;
+
+        if (executor) {
+          await Punishment.updateMany(
+            {
+              userId: newMember.id,
+              guildId: guild.id,
+              type: 'timeout',
+              active: true
+            },
+            {
+              $set: {
+                active: false,
+                removedAt: new Date(),
+                removedBy: executor.id
+              }
+            }
+          ).catch(err => console.error('[guildMemberUpdate] Punishment update error:', err));
+        }
 
         await logger.logEvent({
           guild,

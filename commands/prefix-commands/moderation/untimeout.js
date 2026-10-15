@@ -1,6 +1,7 @@
 import { PermissionFlagsBits } from 'discord.js';
 
 import Manager from '#managers';
+import { Punishment } from '#models';
 
 export default {
   name: 'untimeout',
@@ -35,10 +36,27 @@ export default {
 
     try {
       await member.timeout(null, reason);
-        return manager.sender.reply(manager.sender.classic(`${member} kullanıcısının susturma (timeout) cezası kaldırıldı.\n**Sebep:** ${reason}`));
+
+      await Punishment.updateMany(
+        {
+          userId: member.id,
+          guildId: message.guild.id,
+          type: 'timeout',
+          active: true
+        },
+        {
+          $set: {
+            active: false,
+            removedAt: new Date(),
+            removedBy: message.author.id
+          }
+        }
+      );
+
+      return manager.sender.reply(manager.sender.classic(`${member} kullanıcısının susturma (timeout) cezası kaldırıldı.\n**Sebep:** ${reason}`));
     } catch (err) {
       console.error('Untimeout hatası:', err);
-        return manager.sender.reply(manager.sender.errorEmbed('❌ Kullanıcının susturması kaldırılırken bir hata oluştu.'));
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Kullanıcının susturması kaldırılırken bir hata oluştu.'));
     }
   }
 };

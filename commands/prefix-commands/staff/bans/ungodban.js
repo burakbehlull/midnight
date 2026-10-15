@@ -141,32 +141,38 @@ export default {
     } catch {}
 
     try {
-      await Punishment.create({
-        type: 'ungodban',
-        userID: rawId,
-        tag: targetUser?.tag || rawId,
-        admin: message.author.id,
-        reason: `[UN GOD BAN] ${reasonText} | ${successCount}/${bannedGuildCount} sunucuda açıldı`,
-        duration: null,
-        serverID: message.guild.id,
-        successGuilds: successCount,
-        totalGuilds: bannedGuildCount,
-      }).catch(() => {});
+      await Punishment.updateMany(
+        {
+          userId: rawId,
+          guildId: message.guild.id,
+          type: 'godban',
+          active: true
+        },
+        {
+          $set: {
+            active: false,
+            removedAt: new Date(),
+            removedBy: message.author.id
+          }
+        }
+      );
 
       if (forceBanRecord) {
         await ForceBan.deleteOne({ userId: rawId, guildId: message.guild.id });
       }
-    } catch {}
+    } catch (dbErr) {
+      console.error('[ungodban] DB güncelleme hatası:', dbErr);
+    }
 
     const uid = targetUser ? `<@${targetUser.id}>  •  ${targetUser.tag}` : `\`${rawId}\` (kullanıcı hesabı çözümlenemedi)`;
 
     const summary =
-      `👤 **Kullanıcı:** ${uid}\n` +
-      `🧑‍💼 **Kaldıran:** ${message.author.tag}\n` +
-      `📝 **Açıklama:** ${reasonText}\n\n` +
-      `📊 **Sonuç:**\n` +
-      `   ✅ Banı başarıyla kaldırıldı: **${successCount}** sunucu\n` +
-      `   ❌ Başarısız: ${failCount}\n` +
+      `**Kullanıcı:** ${uid}\n` +
+      `**Kaldıran:** ${message.author.tag}\n` +
+      `**Açıklama:** ${reasonText}\n\n` +
+      `**Sonuç:**\n` +
+      `   Banı başarıyla kaldırıldı: **${successCount}** sunucu\n` +
+      `   Başarısız: ${failCount}\n` +
       `Atlanan: ${skippedCount}\n` +
       `Toplam banlı bulunduğu sunucu: ${bannedGuildCount} / ${total}`;
 

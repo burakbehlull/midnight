@@ -98,16 +98,23 @@ export default {
       }
 
       try {
-        await Punishment.create({
-          userId: userId,
-          guildId: message.guild.id,
-          staffId: message.author.id,
-          type: 'unforceban',
-          duration: null,
-          reason,
-        });
+        await Punishment.updateMany(
+          {
+            userId: userId,
+            guildId: message.guild.id,
+            type: 'forceban',
+            active: true
+          },
+          {
+            $set: {
+              active: false,
+              removedAt: new Date(),
+              removedBy: message.author.id
+            }
+          }
+        );
       } catch (dbErr) {
-        console.error('[unforceban] Punishment kaydedilemedi:', dbErr);
+        console.error('[unforceban] Punishment güncellenemedi:', dbErr);
       }
 
       try {
@@ -142,7 +149,7 @@ export default {
         (existingBan.reason ? `\n**Önceki Ban Sebebi:** \`${existingBan.reason}\`\n` : '') +
         `\n📌 **Kaldırma Özellikleri:**\n` +
         `  • Sunucu banı **tamamen** kaldırıldı\n` +
-        `  • 🗃️ Kayıtlara **unforceban** tipiyle işlendi\n` +
+        `  • Kayıtlara **unforceban** tipiyle işlendi\n` +
         `  • ${dmSend ? 'Kullanıcıya **DM bildirimi gönderildi**' : 'Kullanıcıya **DM bildirimi gönderilemedi** (DM kapalı veya bot kullanıcı)'}\n\n`;
 
       const embed = sender.embed({
