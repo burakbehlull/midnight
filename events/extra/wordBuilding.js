@@ -118,6 +118,19 @@ function getFirstChar(word) {
   return letters ? letters[0] : null;
 }
 
+function getRandomWord() {
+  const words = loadWords();
+  const wordsArray = Array.from(words);
+  
+  const validWords = wordsArray.filter(w => {
+    const firstChar = w[0];
+    return firstChar !== 'x' && firstChar !== 'w';
+  });
+  
+  const randomIndex = Math.floor(Math.random() * validWords.length);
+  return validWords[randomIndex] || wordsArray[0];
+}
+
 export default {
   name: Events.MessageCreate,
   async execute(client, message) {
@@ -305,9 +318,37 @@ export default {
         game.lastMessageId = message.id;
         game.usedWords.push(normalizedWord);
         game.totalWords = 1;
-        await game.save();
 
         message.react('✅');
+        
+        const lastCharOfCurrent = getLastChar(currentWord);
+        if (lastCharOfCurrent === 'x' || lastCharOfCurrent === 'ğ' || lastCharOfCurrent === 'w') {
+          const randomWord = getRandomWord();
+          const randomNormalized = normalizeText(randomWord);
+          
+          if (!game.usedWords.includes(randomNormalized)) {
+            game.lastWord = randomWord;
+            game.usedWords.push(randomNormalized);
+            game.totalWords += 1;
+            
+            await game.save();
+            
+            await message.reply({
+              content: 
+                `✅ **İlk kelime kabul edildi!** Oyun başladı!\n\n` +
+                `⚠️ **"${currentWord}"** kelimesi **${lastCharOfCurrent.toUpperCase()}** harfi ile bitiyor.\n` +
+                `Türkçe'de bu harfle başlayan kelime olmadığı için rastgele bir kelime seçildi:\n\n` +
+                `🎲 **Yeni kelime:** ${randomWord}\n` +
+                `📝 **Sonraki kelime ${getLastChar(randomWord)?.toUpperCase()} harfi ile başlamalı**\n\n` +
+                `**Toplam kelime:** ${game.totalWords}`,
+              allowedMentions: { repliedUser: false }
+            });
+            return;
+          }
+        }
+        
+        await game.save();
+        
         await message.reply({
           content: `**İlk kelime kabul edildi!** Oyun başladı!\n\n **Sonraki kelime ${getLastChar(currentWord)?.toUpperCase()} harfi ile başlamalı**`,
           allowedMentions: { repliedUser: false }
@@ -329,10 +370,36 @@ export default {
         game.lastMessageId = message.id;
         game.usedWords.push(normalizedWord);
         game.totalWords += 1;
-        await game.save();
 
         message.react('✅');
         
+        const lastCharOfCurrent = getLastChar(currentWord);
+        if (lastCharOfCurrent === 'x' || lastCharOfCurrent === 'ğ' || lastCharOfCurrent === 'w') {
+          const randomWord = getRandomWord();
+          const randomNormalized = normalizeText(randomWord);
+          
+          if (!game.usedWords.includes(randomNormalized)) {
+            game.lastWord = randomWord;
+            game.usedWords.push(randomNormalized);
+            game.totalWords += 1;
+            
+            await game.save();
+            
+            await message.reply({
+              content: 
+                `✅ **Kelime kabul edildi!**\n\n` +
+                `⚠️ **"${currentWord}"** kelimesi **${lastCharOfCurrent.toUpperCase()}** harfi ile bitiyor.\n` +
+                `Türkçe'de bu harfle başlayan kelime olmadığı için rastgele bir kelime seçildi:\n\n` +
+                `🎲 **Yeni kelime:** ${randomWord}\n` +
+                `📝 **Sonraki kelime ${getLastChar(randomWord)?.toUpperCase()} harfi ile başlamalı**\n\n` +
+                `**Toplam kelime:** ${game.totalWords}`,
+              allowedMentions: { repliedUser: false }
+            });
+            return;
+          }
+        }
+        
+        await game.save();
 
       } else {
         message.react('❌');
