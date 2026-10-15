@@ -77,8 +77,6 @@ async function isValidWord(word) {
     return true;
   }
   
-  
-  let freeDictResult = null;
   try {
     const freeDictController = new AbortController();
     const freeDictTimeout = setTimeout(() => freeDictController.abort(), 5000);
@@ -98,66 +96,20 @@ async function isValidWord(word) {
       if (freeDictData.entries && Array.isArray(freeDictData.entries) && freeDictData.entries.length > 0) {
         return true;
       } else {
-        freeDictResult = false;
+        return false;
       }
     } else {
-      console.log(`[wordgame] ⚠️ FreeDictionaryAPI HTTP Error: ${freeDictResponse.status}`);
-      freeDictResult = null;
+      console.log(`[wordgame] ⚠️ FreeDictionaryAPI HTTP Error: ${freeDictResponse.status} - Beraberlik`);
+      return null;
     }
   } catch (err) {
     if (err.name === 'AbortError') {
-      console.log(`[wordgame] ⚠️ FreeDictionaryAPI Timeout (5s)`);
+      console.log(`[wordgame] ⚠️ FreeDictionaryAPI Timeout (5s) - Beraberlik`);
     } else {
-      console.log(`[wordgame] ⚠️ FreeDictionaryAPI Error: ${err.message}`);
+      console.log(`[wordgame] ⚠️ FreeDictionaryAPI Error: ${err.message} - Beraberlik`);
     }
-    freeDictResult = null;
-  }
-  
-  let tdkResult = null;
-  try {
-    const tdkController = new AbortController();
-    const tdkTimeout = setTimeout(() => tdkController.abort(), 5000);
-    
-    const tdkUrl = `https://sozluk.gov.tr/gts?ara=${encodeURIComponent(word)}`;
-    const tdkResponse = await fetch(tdkUrl, {
-      signal: tdkController.signal,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      }
-    });
-    
-    clearTimeout(tdkTimeout);
-    
-    if (tdkResponse.ok) {
-      const tdkData = await tdkResponse.json();
-      if (Array.isArray(tdkData) && tdkData.length > 0) {
-        return true;
-      } else {
-        tdkResult = false;
-      }
-    } else {
-      console.log(`[wordgame] ⚠️ TDK HTTP Error: ${tdkResponse.status}`);
-      tdkResult = null;
-    }
-  } catch (err) {
-    if (err.name === 'AbortError') {
-      console.log(`[wordgame] ⚠️ TDK Timeout (5s) - Beraberlik`);
-    } else {
-      console.log(`[wordgame] ⚠️ TDK Error: ${err.message} - Beraberlik`);
-    }
-    tdkResult = null;
-  }
-  
-  if (!inWordsTxt && freeDictResult === false && tdkResult === false) {
-    return false;
-  }
-  
-  if (freeDictResult === null || tdkResult === null) {
-    console.log(`[wordgame] ⚠️ API'lere ulaşılamadı, beraberlik: "${word}"`);
     return null;
   }
-  
-  return false;
 }
 
 export default {
@@ -558,13 +510,12 @@ export default {
 
       const isValid = await isValidWord(word);
       
-      // TDK erişilemezse beraberlik
       if (isValid === null) {
-        const tdkErrorEmbed = manager.sender.embed({
+        const apiErrorEmbed = manager.sender.embed({
           color: manager.sender.colors.orange,
-          title: '⚠️ TDK Erişim Hatası - Beraberlik',
+          title: '⚠️ API Erişim Hatası - Beraberlik',
           description: 
-            `TDK sözlüğüne erişilemediği için oyun berabere bitti.\n\n` +
+            `Kelime doğrulama API'sine erişilemediği için oyun berabere bitti.\n\n` +
             `💸 Her iki oyuncuya da **${amount.toLocaleString('tr-TR')}** coin iade edildi.\n\n` +
             `📊 **İstatistikler:**\n` +
             `• Toplam Tur: ${turnCount}\n` +
@@ -575,10 +526,9 @@ export default {
         });
         
         try { 
-          await confirmMsg.edit({ embeds: [tdkErrorEmbed], components: [] }); 
+          await confirmMsg.edit({ embeds: [apiErrorEmbed], components: [] }); 
         } catch (_) {}
         
-        // Parayı iade et
         try {
           await Economy.findOneAndUpdate({ userId: challenger.id }, { $inc: { money: amount } });
           await Economy.findOneAndUpdate({ userId: targetUser.id }, { $inc: { money: amount } });
@@ -592,7 +542,7 @@ export default {
       }
       
       if (!isValid) {
-        userMessage.react('❌'); // await kaldırıldı
+        userMessage.react('❌');
         loser = currentPlayer;
         winner = players[currentPlayerIndex === 0 ? 1 : 0];
         
@@ -602,7 +552,7 @@ export default {
           description: 
             `<@${currentPlayer.id}> geçersiz bir kelime yazdı!\n\n` +
             `**Kelime:** ${word}\n` +
-            `Bu kelime TDK sözlüğünde bulunamadı.\n\n` +
+            `Bu kelime sözlükte bulunamadı.\n\n` +
             `**Kazanan:** <@${winner.id}>\n` +
             `**Ödül:** ${pot.toLocaleString('tr-TR')} coin\n` +
             `**Toplam Kelime:** ${usedWords.size}`,

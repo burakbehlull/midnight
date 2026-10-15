@@ -59,7 +59,6 @@ async function isValidWord(word) {
     return true;
   }
     
-  let freeDictResult = null;
   try {
     const freeDictController = new AbortController();
     const freeDictTimeout = setTimeout(() => freeDictController.abort(), 5000);
@@ -79,65 +78,20 @@ async function isValidWord(word) {
       if (freeDictData.entries && Array.isArray(freeDictData.entries) && freeDictData.entries.length > 0) {
         return true;
       } else {
-        freeDictResult = false;
+        return false;
       }
     } else {
-      console.log(`[wordBuilding] ⚠️ FreeDictionaryAPI HTTP Error: ${freeDictResponse.status}`);
-      freeDictResult = null;
+      console.log(`[wordBuilding] ⚠️ FreeDictionaryAPI HTTP Error: ${freeDictResponse.status} - Beraberlik`);
+      return null;
     }
   } catch (err) {
     if (err.name === 'AbortError') {
-      console.log(`[wordBuilding] ⚠️ FreeDictionaryAPI Timeout (5s)`);
+      console.log(`[wordBuilding] ⚠️ FreeDictionaryAPI Timeout (5s) - Beraberlik`);
     } else {
-      console.log(`[wordBuilding] ⚠️ FreeDictionaryAPI Error: ${err.message}`);
+      console.log(`[wordBuilding] ⚠️ FreeDictionaryAPI Error: ${err.message} - Beraberlik`);
     }
-    freeDictResult = null;
-  }
-  
-  let tdkResult = null;
-  try {
-    const tdkController = new AbortController();
-    const tdkTimeout = setTimeout(() => tdkController.abort(), 5000);
-    
-    const tdkUrl = `https://sozluk.gov.tr/gts?ara=${encodeURIComponent(word)}`;
-    const tdkResponse = await fetch(tdkUrl, {
-      signal: tdkController.signal,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      }
-    });
-    
-    clearTimeout(tdkTimeout);
-    
-    if (tdkResponse.ok) {
-      const tdkData = await tdkResponse.json();
-      if (Array.isArray(tdkData) && tdkData.length > 0) {
-        return true;
-      } else {
-        tdkResult = false;
-      }
-    } else {
-      console.log(`[wordBuilding] ⚠️ TDK HTTP Error: ${tdkResponse.status}`);
-      tdkResult = null;
-    }
-  } catch (err) {
-    if (err.name === 'AbortError') {
-      console.log(`[wordBuilding] ⚠️ TDK Timeout (5s)`);
-    } else {
-      console.log(`[wordBuilding] ⚠️ TDK Error: ${err.message}`);
-    }
-    tdkResult = null;
-  }
-  
-  if (!inWordsTxt && freeDictResult === false && tdkResult === false) {
-    return false;
-  }
-  
-  if (freeDictResult === null || tdkResult === null) {
     return null;
   }
-  
-  return false;
 }
 
 function normalizeText(text) {
