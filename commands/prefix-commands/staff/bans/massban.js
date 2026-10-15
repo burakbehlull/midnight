@@ -54,6 +54,7 @@ export default {
     let successCount = 0;
     let failCount = 0;
     const failList = [];
+    const successList = [];
 
     for (const userId of userIds) {
       try {
@@ -87,16 +88,19 @@ export default {
           reason: `[MASS BAN] ${reason} | Banlayan: ${message.author.tag} (${message.author.id})`,
         });
 
+        let punishmentRecord = null;
         try {
-          await Punishment.create({
+          punishmentRecord = await Punishment.create({
             userId: userId,
             guildId: message.guild.id,
             staffId: message.author.id,
-            type: 'ban',
+            type: 'massban',
             duration: null,
             reason: `[M] ${reason}`,
           });
-        } catch {}
+        } catch (err) {
+          console.error(`[massban] Punishment kaydedilemedi (${userId}):`, err);
+        }
 
         try {
           await ForceBan.findOneAndUpdate(
@@ -113,6 +117,12 @@ export default {
           );
         } catch {}
 
+        const user = await client.users.fetch(userId).catch(() => null);
+        successList.push({ 
+          id: userId, 
+          tag: user ? user.tag : userId,
+          recordId: punishmentRecord?.recordId || '?'
+        });
         successCount++;
       } catch (error) {
         failList.push({ id: userId, reason: error.message || 'Bilinmeyen hata' });
@@ -128,6 +138,18 @@ export default {
       `🔒 Bu banlar **unban** veya **unmassban** ile açılabilir`;
 
     const fields = [];
+    
+    if (successList.length > 0) {
+      const successText = successList.slice(0, 15).map(s => 
+        `• \`${s.tag}\` - Ceza #${s.recordId}`
+      ).join('\n');
+      fields.push({
+        name: `✅ Başarılı Banlar (${successList.length})`,
+        value: successText + (successList.length > 15 ? `\n... (+${successList.length - 15} daha)` : ''),
+        inline: false
+      });
+    }
+    
     if (failList.length > 0) {
       const failText = failList.slice(0, 10).map(f => `• \`${f.id}\`: ${f.reason}`).join('\n');
       fields.push({

@@ -25,8 +25,7 @@ const punishmentSchema = new mongoose.Schema({
 punishmentSchema.pre('save', async function(next) {
   if (this.isNew && !this.recordId) {
     const maxRecord = await this.constructor.findOne({ 
-      guildId: this.guildId, 
-      userId: this.userId 
+      guildId: this.guildId
     }).sort({ recordId: -1 });
     this.recordId = maxRecord?.recordId ? maxRecord.recordId + 1 : 1;
   }
