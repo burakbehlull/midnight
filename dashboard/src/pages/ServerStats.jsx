@@ -56,6 +56,9 @@ const ServerStats = () => {
       } else if (activeTab === 'bans') {
         const res = await api.getGuildBans(guildId)
         setStats(res.data)
+      } else if (activeTab === 'siciller') {
+        const res = await api.getSiciller(guildId, limit)
+        setStats(res.data.siciller)
       } else if (activeTab === 'deleted') {
         // Deleted messages tab handles its own data
         setStats([])
@@ -94,6 +97,7 @@ const ServerStats = () => {
     { id: 'levels', label: 'Seviyeler', icon: '📊' },
     { id: 'invites', label: 'Davetler', icon: '🎟️' },
     { id: 'staff', label: 'Yetkililer', icon: '👮' },
+    { id: 'siciller', label: 'Siciller', icon: '📋' },
     { id: 'roles', label: 'Roller', icon: '🎭' },
     { id: 'bans', label: 'Banlı Kullanıcılar', icon: '🔨' },
     { id: 'channels', label: 'Kanallar', icon: '📺' },
@@ -249,6 +253,17 @@ const ServerStats = () => {
                     <>
                       <th className="px-6 py-4 text-right text-sm font-semibold">Kayıt</th>
                       <th className="px-6 py-4 text-right text-sm font-semibold">Yetkili Başlattı</th>
+                      <th className="px-6 py-4 text-right text-sm font-semibold">Taglı Sayısı</th>
+                    </>
+                  )}
+                  {activeTab === 'siciller' && (
+                    <>
+                      <th className="px-6 py-4 text-center text-sm font-semibold">Ceza No</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold">Ceza Tipi</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold">Yetkili</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold">Sebep</th>
+                      <th className="px-6 py-4 text-center text-sm font-semibold">Tarih</th>
+                      <th className="px-6 py-4 text-center text-sm font-semibold">Durum</th>
                     </>
                   )}
                   {activeTab === 'roles' && (
@@ -486,6 +501,58 @@ const ServerStats = () => {
                         </td>
                         <td className="px-6 py-4 text-right text-purple-400">
                           {stat.startedStaffCount || 0} 👮
+                        </td>
+                        <td className="px-6 py-4 text-right text-blue-400">
+                          {stat.taggedCount || 0} 🏷️
+                        </td>
+                      </>
+                    )}
+                    {activeTab === 'siciller' && (
+                      <>
+                        <td className="px-6 py-4 text-center">
+                          <span className="px-3 py-1 bg-midnight-purple bg-opacity-20 border border-midnight-purple rounded-full font-bold">
+                            #{stat.recordId}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-lg">{stat.typeDisplay}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            {stat.staffAvatar ? (
+                              <img 
+                                src={stat.staffAvatar} 
+                                alt={stat.staffName}
+                                className="w-6 h-6 rounded-full"
+                              />
+                            ) : (
+                              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-midnight-purple to-midnight-pink flex items-center justify-center text-xs font-bold">
+                                {stat.staffName?.charAt(0) || '?'}
+                              </div>
+                            )}
+                            <span className="text-sm">{stat.staffName}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-300">
+                          {stat.reason?.substring(0, 50)}{stat.reason?.length > 50 ? '...' : ''}
+                        </td>
+                        <td className="px-6 py-4 text-center text-sm text-gray-400">
+                          {new Date(stat.date).toLocaleDateString('tr-TR')}
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          {stat.active ? (
+                            <span className="px-3 py-1 bg-red-500 bg-opacity-20 border border-red-500 rounded-full text-red-400 text-sm font-semibold">
+                              🔴 Aktif
+                            </span>
+                          ) : stat.removedBy ? (
+                            <span className="px-3 py-1 bg-green-500 bg-opacity-20 border border-green-500 rounded-full text-green-400 text-sm font-semibold">
+                              ✅ Kaldırıldı
+                            </span>
+                          ) : (
+                            <span className="px-3 py-1 bg-gray-500 bg-opacity-20 border border-gray-500 rounded-full text-gray-400 text-sm font-semibold">
+                              ⚪ Süresi Doldu
+                            </span>
+                          )}
                         </td>
                       </>
                     )}

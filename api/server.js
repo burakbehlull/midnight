@@ -480,6 +480,7 @@ class MidnightAPI {
                 avatar: userInfo.avatar,
                 registerCount: data.registerCount,
                 startedStaffCount: data.startedStaffCount,
+                taggedCount: data.taggedCount || 0,
                 startedAt: data.startedAt
               };
             })
@@ -689,6 +690,85 @@ class MidnightAPI {
 
       } catch (error) {
         console.error('Error fetching deleted messages:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get all punishments (siciller) for a guild
+    this.app.get('/api/guilds/:guildId/siciller', async (req, res) => {
+      try {
+        const { guildId } = req.params;
+        const { limit = 100, offset = 0 } = req.query;
+
+        const guild = this.client.guilds.cache.get(guildId);
+        if (!guild) {
+          return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const totalCount = await Punishment.countDocuments({ guildId });
+        
+        const punishments = await Punishment.find({ guildId })
+          .sort({ recordId: -1 })
+          .skip(parseInt(offset))
+          .limit(parseInt(limit));
+
+        const cezaTipleri = {
+          'ban': '🔨 Ban',
+          'forceban': '⚡ Force Ban',
+          'godban': '👑 God Ban',
+          'massban': '💥 Mass Ban',
+          'kick': '👢 Kick',
+          'mute': '🔇 Mute',
+          'vmute': '🔊 Voice Mute',
+          'timeout': '⏱️ Timeout',
+          'jail': '🔒 Jail',
+          'warn': '⚠️ Uyarı',
+          'manual': '📋 Manuel Ceza'
+        };
+
+        const sicillerWithUsers = await Promise.all(
+          punishments.map(async (p) => {
+            const userInfo = await this.fetchUserSmart(guild, p.userId);
+            const staffInfo = await this.fetchUserSmart(guild, p.staffId);
+            
+            let removedByInfo = null;
+            if (p.removedBy) {
+              removedByInfo = await this.fetchUserSmart(guild, p.removedBy);
+            }
+
+            return {
+              recordId: p.recordId,
+              userId: p.userId,
+              username: userInfo.username,
+              avatar: userInfo.avatar,
+              type: p.type,
+              typeDisplay: cezaTipleri[p.type] || p.type,
+              reason: p.reason,
+              date: p.date,
+              duration: p.duration,
+              staffId: p.staffId,
+              staffName: staffInfo.username,
+              staffAvatar: staffInfo.avatar,
+              active: p.active,
+              deleted: p.deleted,
+              deletedAt: p.deletedAt,
+              expiresAt: p.expiresAt,
+              removedAt: p.removedAt,
+              removedBy: p.removedBy,
+              removedByName: removedByInfo?.username || null
+            };
+          })
+        );
+
+        res.json({
+          total: totalCount,
+          offset: parseInt(offset),
+          limit: parseInt(limit),
+          siciller: sicillerWithUsers
+        });
+
+      } catch (error) {
+        console.error('Error fetching siciller:', error);
         res.status(500).json({ error: error.message });
       }
     });
