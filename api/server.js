@@ -11,6 +11,10 @@ import Punishment from '../models/Punishment.js';
 import InviteModel from '../models/InviteModel.js';
 import Level from '../models/Level.js';
 import DeletedMessage from '../models/DeletedMessage.js';
+import Settings from '../models/Settings.js';
+import GuildPermission from '../models/GuildPermission.js';
+import ModLogConfig from '../models/ModLogConfig.js';
+import CommandSettings from '../models/CommandSettings.js';
 import { ActionGroup, ActionEntry } from '../models/index.js';
 import { errorHandler, notFoundHandler, requestLogger } from './middleware.js';
 
@@ -836,6 +840,283 @@ class MidnightAPI {
         res.status(500).json({ error: error.message });
       }
     });
+
+    // =====================
+    // SETTINGS ENDPOINTS
+    // =====================
+
+    // Get guild settings
+    this.app.get('/api/guilds/:guildId/settings', async (req, res) => {
+      try {
+        const { guildId } = req.params;
+        
+        let settings = await Settings.findOne({ guildId });
+        if (!settings) {
+          settings = new Settings({ guildId });
+          await settings.save();
+        }
+
+        res.json(settings);
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Update guild settings
+    this.app.put('/api/guilds/:guildId/settings', async (req, res) => {
+      try {
+        const { guildId } = req.params;
+        const updates = req.body;
+
+        let settings = await Settings.findOne({ guildId });
+        if (!settings) {
+          settings = new Settings({ guildId, ...updates });
+        } else {
+          Object.assign(settings, updates);
+        }
+        
+        await settings.save();
+        res.json({ success: true, settings });
+      } catch (error) {
+        console.error('Error updating settings:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get guild authority (permissions)
+    this.app.get('/api/guilds/:guildId/authority', async (req, res) => {
+      try {
+        const { guildId } = req.params;
+        
+        let authority = await GuildPermission.findOne({ guildId });
+        if (!authority) {
+          authority = new GuildPermission({ guildId });
+          await authority.save();
+        }
+
+        res.json(authority);
+      } catch (error) {
+        console.error('Error fetching authority:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Update guild authority
+    this.app.put('/api/guilds/:guildId/authority', async (req, res) => {
+      try {
+        const { guildId } = req.params;
+        const updates = req.body;
+
+        let authority = await GuildPermission.findOne({ guildId });
+        if (!authority) {
+          authority = new GuildPermission({ guildId, ...updates });
+        } else {
+          Object.assign(authority, updates);
+        }
+        
+        await authority.save();
+        res.json({ success: true, authority });
+      } catch (error) {
+        console.error('Error updating authority:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get guild modlog config
+    this.app.get('/api/guilds/:guildId/modlog', async (req, res) => {
+      try {
+        const { guildId } = req.params;
+        
+        let modlog = await ModLogConfig.findOne({ guildId });
+        if (!modlog) {
+          modlog = new ModLogConfig({ guildId });
+          await modlog.save();
+        }
+
+        res.json(modlog);
+      } catch (error) {
+        console.error('Error fetching modlog:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Update guild modlog config
+    this.app.put('/api/guilds/:guildId/modlog', async (req, res) => {
+      try {
+        const { guildId } = req.params;
+        const updates = req.body;
+
+        let modlog = await ModLogConfig.findOne({ guildId });
+        if (!modlog) {
+          modlog = new ModLogConfig({ guildId, ...updates });
+        } else {
+          Object.assign(modlog, updates);
+        }
+        
+        await modlog.save();
+        res.json({ success: true, modlog });
+      } catch (error) {
+        console.error('Error updating modlog:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // =====================
+    // END SETTINGS ENDPOINTS
+    // =====================
+
+    // =====================
+    // COMMAND SETTINGS ENDPOINTS
+    // =====================
+
+    // Get all command settings for a guild
+    this.app.get('/api/guilds/:guildId/commands', async (req, res) => {
+      try {
+        const { guildId } = req.params;
+        
+        const commandSettings = await CommandSettings.find({ guildId });
+        res.json(commandSettings);
+      } catch (error) {
+        console.error('Error fetching command settings:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get specific command settings
+    this.app.get('/api/guilds/:guildId/commands/:commandName', async (req, res) => {
+      try {
+        const { guildId, commandName } = req.params;
+        
+        let settings = await CommandSettings.findOne({ guildId, commandName });
+        if (!settings) {
+          // Return default settings
+          settings = {
+            guildId,
+            commandName,
+            channelMode: 'off',
+            allowedChannels: [],
+            blockedChannels: [],
+            roleMode: 'off',
+            allowedRoles: [],
+            blockedRoles: [],
+            userMode: 'off',
+            allowedUsers: [],
+            blockedUsers: [],
+            autoDelete: false,
+            deleteAfter: 0,
+            customCooldown: null,
+            exemptUsers: [],
+            exemptRoles: [],
+            enabled: true
+          };
+        }
+
+        res.json(settings);
+      } catch (error) {
+        console.error('Error fetching command settings:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Update command settings
+    this.app.put('/api/guilds/:guildId/commands/:commandName', async (req, res) => {
+      try {
+        const { guildId, commandName } = req.params;
+        const updates = req.body;
+
+        let settings = await CommandSettings.findOne({ guildId, commandName });
+        if (!settings) {
+          settings = new CommandSettings({ 
+            guildId, 
+            commandName,
+            ...updates 
+          });
+        } else {
+          Object.assign(settings, updates);
+        }
+        
+        await settings.save();
+        res.json({ success: true, settings });
+      } catch (error) {
+        console.error('Error updating command settings:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Delete command settings (reset to default)
+    this.app.delete('/api/guilds/:guildId/commands/:commandName', async (req, res) => {
+      try {
+        const { guildId, commandName } = req.params;
+        
+        await CommandSettings.deleteOne({ guildId, commandName });
+        res.json({ success: true, message: 'Command settings reset to default' });
+      } catch (error) {
+        console.error('Error deleting command settings:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get list of all available commands
+    this.app.get('/api/commands/list', (req, res) => {
+      try {
+        // Bot'tan tüm komutları al (hem prefix hem slash)
+        const allCommands = [];
+        
+        // Prefix komutları ekle
+        if (this.client.prefixCommands) {
+          const seenNames = new Set();
+          for (const [key, cmd] of this.client.prefixCommands.entries()) {
+            // Sadece ana komut adını ekle (alias'ları atla)
+            if (cmd.name === key && !seenNames.has(cmd.name)) {
+              seenNames.add(cmd.name);
+              allCommands.push({
+                name: cmd.name,
+                category: cmd.category || 'other',
+                description: cmd.description || 'Açıklama yok',
+                aliases: cmd.aliases || [],
+                type: cmd.type || 'prefix'
+              });
+            }
+          }
+        }
+
+        // Slash komutları ekle
+        if (this.client.slashCommands) {
+          for (const [name, cmd] of this.client.slashCommands.entries()) {
+            // Prefix'te zaten yoksa ekle (hybrid için)
+            if (!allCommands.find(c => c.name === name)) {
+              allCommands.push({
+                name: cmd.name || name,
+                category: cmd.category || 'other',
+                description: cmd.description || cmd.data?.description || 'Açıklama yok',
+                aliases: cmd.aliases || [],
+                type: cmd.type || 'slash'
+              });
+            }
+          }
+        }
+
+        // Kategoriye göre grupla
+        const grouped = allCommands.reduce((acc, cmd) => {
+          if (!acc[cmd.category]) {
+            acc[cmd.category] = [];
+          }
+          acc[cmd.category].push(cmd);
+          return acc;
+        }, {});
+
+        console.log(`✅ Commands list sent: ${allCommands.length} total commands`);
+        res.json(grouped);
+      } catch (error) {
+        console.error('Error fetching commands list:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // =====================
+    // END COMMAND SETTINGS ENDPOINTS
+    // =====================
 
     // Get channel messages
     this.app.get('/api/guilds/:guildId/channels/:channelId/messages', async (req, res) => {

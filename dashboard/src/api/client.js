@@ -80,6 +80,21 @@ export const api = {
   updateUserMoney: (userId, amount) => 
     apiClient.post(`/users/${userId}/money/update`, { amount }),
 
+  // Settings
+  getSettings: (guildId) => apiClient.get(`/guilds/${guildId}/settings`),
+  updateSettings: (guildId, data) => apiClient.put(`/guilds/${guildId}/settings`, data),
+  getAuthority: (guildId) => apiClient.get(`/guilds/${guildId}/authority`),
+  updateAuthority: (guildId, data) => apiClient.put(`/guilds/${guildId}/authority`, data),
+  getModlog: (guildId) => apiClient.get(`/guilds/${guildId}/modlog`),
+  updateModlog: (guildId, data) => apiClient.put(`/guilds/${guildId}/modlog`, data),
+
+  // Command Settings
+  getCommandsList: () => apiClient.get('/commands/list'),
+  getGuildCommands: (guildId) => apiClient.get(`/guilds/${guildId}/commands`),
+  getCommandSettings: (guildId, commandName) => apiClient.get(`/guilds/${guildId}/commands/${commandName}`),
+  updateCommandSettings: (guildId, commandName, data) => apiClient.put(`/guilds/${guildId}/commands/${commandName}`, data),
+  deleteCommandSettings: (guildId, commandName) => apiClient.delete(`/guilds/${guildId}/commands/${commandName}`),
+
   // Actions (Role Menus)
   getActionGroups: (guildId) => 
     apiClient.get(`/guilds/${guildId}/actions`),

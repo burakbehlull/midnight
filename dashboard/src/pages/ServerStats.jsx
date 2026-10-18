@@ -5,6 +5,7 @@ import UserManagementModal from '../components/UserManagementModal'
 import UserProfileModal from '../components/UserProfileModal'
 import DeletedMessagesTab from '../components/tabs/DeletedMessagesTab'
 import ChannelsTab from '../components/tabs/ChannelsTab'
+import SettingsTab from '../components/tabs/SettingsTab'
 
 const ServerStats = () => {
   const { guildId } = useParams()
@@ -24,6 +25,7 @@ const ServerStats = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [membersData, setMembersData] = useState({ total: 0, members: [] })
   const [membersLoading, setMembersLoading] = useState(false)
+  const [membersOffset, setMembersOffset] = useState(0)
   const [leaveModalOpen, setLeaveModalOpen] = useState(false)
   const [leaveLoading, setLeaveLoading] = useState(false)
 
@@ -67,6 +69,9 @@ const ServerStats = () => {
       } else if (activeTab === 'members') {
         // Members tab handles its own data
         setStats([])
+      } else if (activeTab === 'settings') {
+        // Settings tab handles its own data
+        setStats([])
       } else if (activeTab === 'deleted') {
         // Deleted messages tab handles its own data
         setStats([])
@@ -85,18 +90,28 @@ const ServerStats = () => {
     }
   }
 
-  const fetchMembers = async (search = '') => {
+  const fetchMembers = async (search = '', offset = 0, append = false) => {
     setMembersLoading(true)
     try {
       const res = await api.getGuildMembers(guildId, { 
-        limit, 
-        offset: 0, 
+        limit: 50, 
+        offset, 
         search 
       })
-      setMembersData(res.data)
+      if (append) {
+        setMembersData(prev => ({
+          total: res.data.total,
+          members: [...prev.members, ...res.data.members]
+        }))
+      } else {
+        setMembersData(res.data)
+      }
+      setMembersOffset(offset)
     } catch (error) {
       console.error('Kullanıcılar yüklenemedi:', error)
-      setMembersData({ total: 0, members: [] })
+      if (!append) {
+        setMembersData({ total: 0, members: [] })
+      }
     } finally {
       setMembersLoading(false)
     }
@@ -104,15 +119,22 @@ const ServerStats = () => {
 
   useEffect(() => {
     if (activeTab === 'members' && guild) {
-      fetchMembers(searchQuery)
+      setMembersOffset(0)
+      fetchMembers(searchQuery, 0, false)
     }
-  }, [activeTab, guild, limit])
+  }, [activeTab, guild])
 
   const handleSearch = (e) => {
     e.preventDefault()
     if (activeTab === 'members') {
-      fetchMembers(searchQuery)
+      setMembersOffset(0)
+      fetchMembers(searchQuery, 0, false)
     }
+  }
+
+  const handleLoadMoreMembers = () => {
+    const newOffset = membersOffset + 50
+    fetchMembers(searchQuery, newOffset, true)
   }
 
   const handleLeaveGuild = async () => {
@@ -154,6 +176,7 @@ const ServerStats = () => {
     { id: 'members', label: 'Kullanıcılar', icon: '👥' },
     { id: 'roles', label: 'Roller', icon: '🎭' },
     { id: 'bans', label: 'Banlı Kullanıcılar', icon: '🔨' },
+    { id: 'settings', label: 'Ayarlar', icon: '⚙️' },
     { id: 'channels', label: 'Kanallar', icon: '📺' },
     { id: 'deleted', label: 'Silinen Mesajlar', icon: '🗑️' }
   ]
@@ -279,7 +302,8 @@ const ServerStats = () => {
                 type="button"
                 onClick={() => {
                   setSearchQuery('')
-                  fetchMembers('')
+                  setMembersOffset(0)
+                  fetchMembers('', 0, false)
                 }}
                 className="px-4 py-2 bg-midnight-light rounded-lg hover:bg-midnight-base transition-colors"
               >
@@ -287,16 +311,6 @@ const ServerStats = () => {
               </button>
             )}
           </form>
-          <select
-            value={limit}
-            onChange={(e) => setLimit(Number(e.target.value))}
-            className="bg-midnight-base border border-midnight-light rounded-lg px-4 py-2 focus:outline-none focus:border-midnight-purple"
-          >
-            <option value={10}>10</option>
-            <option value={25}>25</option>
-            <option value={50}>50</option>
-            <option value={100}>100</option>
-          </select>
         </div>
       )}
 
@@ -307,6 +321,9 @@ const ServerStats = () => {
       ) : activeTab === 'channels' ? (
         /* Channels - Separate Component */
         <ChannelsTab guildId={guildId} />
+      ) : activeTab === 'settings' ? (
+        /* Settings - Separate Component */
+        <SettingsTab guildId={guildId} />
       ) : activeTab === 'members' ? (
         /* Members Tab */
         membersLoading ? (
@@ -423,6 +440,29 @@ const ServerStats = () => {
                 </table>
               </div>
             </div>
+
+            {/* Load More Button */}
+            {membersData.members.length < membersData.total && (
+              <div className="mt-6 flex justify-center">
+                <button
+                  onClick={handleLoadMoreMembers}
+                  disabled={membersLoading}
+                  className="px-8 py-3 bg-gradient-to-r from-midnight-purple to-midnight-pink rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
+                >
+                  {membersLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                      <span>Yükleniyor...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>📥</span>
+                      <span>Daha Fazla Yükle (50 Kullanıcı)</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </>
         )
       ) : loading ? (

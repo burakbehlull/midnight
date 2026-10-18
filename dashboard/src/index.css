@@ -80,6 +80,13 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
+/* Inner glass effect for nested elements */
+.glass-inner {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 /* Animations */
 @keyframes fadeIn {
   from {

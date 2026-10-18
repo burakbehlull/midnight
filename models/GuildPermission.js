@@ -25,6 +25,19 @@ const GuildPermissionSchema = new mongoose.Schema({
   isAuthority: { 
     type: Boolean, 
     default: true 
+  },
+  // Yeni field'lar
+  staffRoles: {
+    type: [String],
+    default: []
+  },
+  adminRoles: {
+    type: [String],
+    default: []
+  },
+  safeUsers: {
+    type: [String],
+    default: []
   }
 }); 
 

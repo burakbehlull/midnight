@@ -5,6 +5,13 @@ const modLogConfigSchema = new mongoose.Schema({
   modLogStatus: { type: Boolean, default: false },
   
   generalLogChannel: { type: String, default: null },
+  
+  // Log channels
+  messageLogChannel: { type: String, default: null },
+  memberLogChannel: { type: String, default: null },
+  voiceLogChannel: { type: String, default: null },
+  modLogChannel: { type: String, default: null },
+  
   logs: {
     command: { type: String, default: null },
     joinLeave: { type: String, default: null },
