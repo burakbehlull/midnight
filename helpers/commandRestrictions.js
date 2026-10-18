@@ -134,6 +134,7 @@ function checkCombinedRoleUserRestriction(member, userId, settings) {
   }
 
   const memberRoles = member?.roles?.cache?.map(r => r.id) || [];
+  const guild = member?.guild;
 
   // ========================
   // 1. ADIM: BLACKLIST KONTROLÜ (Önce engel olanları eleyelim)
@@ -205,8 +206,14 @@ function checkCombinedRoleUserRestriction(member, userId, settings) {
   if (!allowed) {
     const parts = [];
     if (roleWhitelistOn) {
-      const roles = settings.allowedRoles.map(id => `<@&${id}>`).join(', ');
-      parts.push(`şu rollerden birine sahip olmalısınız: ${roles}`);
+      // Rol adlarını getir
+      const roleNames = settings.allowedRoles
+        .map(roleId => {
+          const role = guild?.roles?.cache?.get(roleId);
+          return role ? `**${role.name}**` : `<@&${roleId}>`;
+        })
+        .join(', ');
+      parts.push(`şu rollerden birine sahip olmalısınız: ${roleNames}`);
     }
     if (userWhitelistOn) {
       parts.push(`veya izin verilen üyelerden biri olmalısınız`);
