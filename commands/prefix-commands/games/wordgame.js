@@ -403,9 +403,24 @@ export default {
       const words = userMessage.content.match(/[a-zA-ZığüşöçİĞÜŞÖÇ]+/g);
       
       if (!words || words.length === 0) {
-        userMessage.react('❌'); // await kaldırıldı - hızlı olsun
+        userMessage.react('❌');
         const warningMsg = await userMessage.reply({
           content: `❌ Geçersiz mesaj! Lütfen bir kelime yaz.`,
+          allowedMentions: { repliedUser: false }
+        });
+        setTimeout(async () => {
+          try {
+            await userMessage.delete();
+            await warningMsg.delete();
+          } catch (err) {}
+        }, 5000);
+        continue;
+      }
+
+      if (words.length > 1) {
+        userMessage.react('❌');
+        const warningMsg = await userMessage.reply({
+          content: `❌ **Sadece tek kelime yazabilirsin!** Cümle değil, sadece bir kelime yaz.\n\n**Örnek:** \`araba\` ✅ | \`araba çok hızlı\` ❌`,
           allowedMentions: { repliedUser: false }
         });
         setTimeout(async () => {
