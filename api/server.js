@@ -773,6 +773,70 @@ class MidnightAPI {
       }
     });
 
+    // Get guild members with search support
+    this.app.get('/api/guilds/:guildId/members', async (req, res) => {
+      try {
+        const { guildId } = req.params;
+        const { search = '', limit = 50, offset = 0 } = req.query;
+
+        const guild = this.client.guilds.cache.get(guildId);
+        if (!guild) {
+          return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        // Fetch all guild members
+        await guild.members.fetch();
+
+        let members = Array.from(guild.members.cache.values());
+
+        // Filter by search query (username or global name)
+        if (search && search.trim() !== '') {
+          const searchLower = search.toLowerCase().trim();
+          members = members.filter(member => {
+            const username = member.user.username.toLowerCase();
+            const globalName = (member.user.globalName || '').toLowerCase();
+            return username.includes(searchLower) || globalName.includes(searchLower);
+          });
+        }
+
+        // Sort by username
+        members.sort((a, b) => a.user.username.localeCompare(b.user.username));
+
+        const total = members.length;
+        const paginatedMembers = members.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
+
+        const membersData = paginatedMembers.map(member => ({
+          userId: member.user.id,
+          username: member.user.username,
+          globalName: member.user.globalName || null,
+          avatar: member.user.displayAvatarURL({ size: 128 }),
+          bot: member.user.bot,
+          joinedAt: member.joinedTimestamp,
+          roles: Array.from(member.roles.cache.values())
+            .filter(r => r.id !== guild.id) // @everyone hariç
+            .sort((a, b) => b.position - a.position)
+            .slice(0, 5)
+            .map(r => ({
+              id: r.id,
+              name: r.name,
+              color: r.color,
+              position: r.position
+            }))
+        }));
+
+        res.json({
+          total,
+          offset: parseInt(offset),
+          limit: parseInt(limit),
+          members: membersData
+        });
+
+      } catch (error) {
+        console.error('Error fetching members:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
     // Get channel messages
     this.app.get('/api/guilds/:guildId/channels/:channelId/messages', async (req, res) => {
       try {
@@ -1093,6 +1157,30 @@ class MidnightAPI {
       } catch (error) {
         console.error('Error fetching user:', error);
         res.status(404).json({ error: 'User not found' });
+      }
+    });
+
+    // Leave guild (quit server)
+    this.app.post('/api/guilds/:guildId/leave', async (req, res) => {
+      try {
+        const { guildId } = req.params;
+
+        const guild = this.client.guilds.cache.get(guildId);
+        if (!guild) {
+          return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const guildName = guild.name;
+        await guild.leave();
+
+        res.json({ 
+          success: true, 
+          message: `${guildName} sunucusundan başarıyla ayrıldı`
+        });
+
+      } catch (error) {
+        console.error('Error leaving guild:', error);
+        res.status(500).json({ error: error.message });
       }
     });
 

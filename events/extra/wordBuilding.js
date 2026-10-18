@@ -144,6 +144,23 @@ export default {
         return;
       }
 
+      // İlk kontrol: boşluk var mı?
+      if (message.content.includes(' ')) {
+        message.react('❌');
+        const warningMsg = await message.reply({
+          content: `❌ **Sadece tek kelime yazabilirsin!** Cümle değil, sadece bir kelime yaz.\n\n**Örnek:** \`araba\` ✅ | \`araba çok hızlı\` ❌`,
+          allowedMentions: { repliedUser: false }
+        });
+        
+        setTimeout(async () => {
+          try {
+            await message.delete();
+            await warningMsg.delete();
+          } catch (err) {}
+        }, 5000);
+        return;
+      }
+
       const words = message.content.match(/[a-zA-ZığüşöçİĞÜŞÖÇ]+/g);
       
       if (!words || words.length === 0) {

@@ -400,6 +400,23 @@ export default {
       }
 
       const userMessage = collected.first();
+
+      // İLK KONTROL: Boşluk var mı?
+      if (userMessage.content.includes(' ')) {
+        userMessage.react('❌');
+        const warningMsg = await userMessage.reply({
+          content: `❌ **Sadece tek kelime yazabilirsin!** Cümle değil, sadece bir kelime yaz.\n\n**Örnek:** \`araba\` ✅ | \`araba çok hızlı\` ❌`,
+          allowedMentions: { repliedUser: false }
+        });
+        setTimeout(async () => {
+          try {
+            await userMessage.delete();
+            await warningMsg.delete();
+          } catch (err) {}
+        }, 5000);
+        continue;
+      }
+      
       const words = userMessage.content.match(/[a-zA-ZığüşöçİĞÜŞÖÇ]+/g);
       
       if (!words || words.length === 0) {

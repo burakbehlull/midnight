@@ -21,6 +21,11 @@ const ServerStats = () => {
   const [actionResult, setActionResult] = useState(null)
   const [profileModalOpen, setProfileModalOpen] = useState(false)
   const [selectedProfile, setSelectedProfile] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [membersData, setMembersData] = useState({ total: 0, members: [] })
+  const [membersLoading, setMembersLoading] = useState(false)
+  const [leaveModalOpen, setLeaveModalOpen] = useState(false)
+  const [leaveLoading, setLeaveLoading] = useState(false)
 
   useEffect(() => {
     fetchGuildData()
@@ -59,6 +64,9 @@ const ServerStats = () => {
       } else if (activeTab === 'siciller') {
         const res = await api.getSiciller(guildId, limit)
         setStats(res.data.siciller)
+      } else if (activeTab === 'members') {
+        // Members tab handles its own data
+        setStats([])
       } else if (activeTab === 'deleted') {
         // Deleted messages tab handles its own data
         setStats([])
@@ -74,6 +82,51 @@ const ServerStats = () => {
       setStats([])
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchMembers = async (search = '') => {
+    setMembersLoading(true)
+    try {
+      const res = await api.getGuildMembers(guildId, { 
+        limit, 
+        offset: 0, 
+        search 
+      })
+      setMembersData(res.data)
+    } catch (error) {
+      console.error('Kullanıcılar yüklenemedi:', error)
+      setMembersData({ total: 0, members: [] })
+    } finally {
+      setMembersLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (activeTab === 'members' && guild) {
+      fetchMembers(searchQuery)
+    }
+  }, [activeTab, guild, limit])
+
+  const handleSearch = (e) => {
+    e.preventDefault()
+    if (activeTab === 'members') {
+      fetchMembers(searchQuery)
+    }
+  }
+
+  const handleLeaveGuild = async () => {
+    setLeaveLoading(true)
+    try {
+      await api.leaveGuild(guildId)
+      alert('Sunucudan başarıyla ayrıldı! Ana sayfaya yönlendiriliyorsunuz...')
+      navigate('/')
+    } catch (error) {
+      console.error('Sunucudan ayrılma hatası:', error)
+      alert('Hata: ' + (error.response?.data?.error || error.message))
+    } finally {
+      setLeaveLoading(false)
+      setLeaveModalOpen(false)
     }
   }
 
@@ -98,6 +151,7 @@ const ServerStats = () => {
     { id: 'invites', label: 'Davetler', icon: '🎟️' },
     { id: 'staff', label: 'Yetkililer', icon: '👮' },
     { id: 'siciller', label: 'Siciller', icon: '📋' },
+    { id: 'members', label: 'Kullanıcılar', icon: '👥' },
     { id: 'roles', label: 'Roller', icon: '🎭' },
     { id: 'bans', label: 'Banlı Kullanıcılar', icon: '🔨' },
     { id: 'channels', label: 'Kanallar', icon: '📺' },
@@ -156,6 +210,15 @@ const ServerStats = () => {
               <span className="text-xl">🏆</span>
               <span>Liderlik Tablosu</span>
             </button>
+
+            {/* Leave Server Button */}
+            <button
+              onClick={() => setLeaveModalOpen(true)}
+              className="px-6 py-3 bg-red-500 bg-opacity-20 border border-red-500 rounded-lg font-semibold hover:bg-opacity-30 transition-colors flex items-center gap-2 text-red-400"
+            >
+              <span className="text-xl">🚪</span>
+              <span>Sunucudan Ayrıl</span>
+            </button>
           </div>
         </div>
       </div>
@@ -179,7 +242,7 @@ const ServerStats = () => {
       </div>
 
       {/* Limit Selector */}
-      {activeTab !== 'bans' && activeTab !== 'deleted' && (
+      {activeTab !== 'bans' && activeTab !== 'deleted' && activeTab !== 'members' && (
         <div className="mb-6 flex justify-end">
           <select
             value={limit}
@@ -194,6 +257,49 @@ const ServerStats = () => {
         </div>
       )}
 
+      {/* Members Search Bar */}
+      {activeTab === 'members' && (
+        <div className="mb-6 flex gap-4">
+          <form onSubmit={handleSearch} className="flex-1 flex gap-2">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Kullanıcı adına göre ara..."
+              className="flex-1 bg-midnight-base border border-midnight-light rounded-lg px-4 py-2 focus:outline-none focus:border-midnight-purple"
+            />
+            <button
+              type="submit"
+              className="px-6 py-2 bg-gradient-to-r from-midnight-purple to-midnight-pink rounded-lg font-semibold hover:opacity-90 transition-opacity"
+            >
+              🔍 Ara
+            </button>
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery('')
+                  fetchMembers('')
+                }}
+                className="px-4 py-2 bg-midnight-light rounded-lg hover:bg-midnight-base transition-colors"
+              >
+                ✖ Temizle
+              </button>
+            )}
+          </form>
+          <select
+            value={limit}
+            onChange={(e) => setLimit(Number(e.target.value))}
+            className="bg-midnight-base border border-midnight-light rounded-lg px-4 py-2 focus:outline-none focus:border-midnight-purple"
+          >
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+        </div>
+      )}
+
       {/* Stats Content */}
       {activeTab === 'deleted' ? (
         /* Deleted Messages - Separate Component */
@@ -201,6 +307,124 @@ const ServerStats = () => {
       ) : activeTab === 'channels' ? (
         /* Channels - Separate Component */
         <ChannelsTab guildId={guildId} />
+      ) : activeTab === 'members' ? (
+        /* Members Tab */
+        membersLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-midnight-purple"></div>
+          </div>
+        ) : membersData.members.length === 0 ? (
+          <div className="glass rounded-xl p-12 text-center">
+            <p className="text-gray-400 text-lg">
+              {searchQuery ? `"${searchQuery}" için sonuç bulunamadı` : 'Kullanıcı bulunamadı'}
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="glass rounded-xl overflow-hidden mb-4">
+              <div className="px-6 py-4 bg-midnight-base">
+                <p className="text-gray-400">
+                  Toplam {membersData.total} kullanıcıdan {membersData.members.length} tanesi gösteriliyor
+                  {searchQuery && <span className="text-midnight-purple"> (Arama: "{searchQuery}")</span>}
+                </p>
+              </div>
+            </div>
+            <div className="glass rounded-xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-midnight-base">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-sm font-semibold">#</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold">Kullanıcı</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold">Kullanıcı ID</th>
+                      <th className="px-6 py-4 text-center text-sm font-semibold">Katılma Tarihi</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold">Roller</th>
+                      <th className="px-6 py-4 text-center text-sm font-semibold">İşlem</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-midnight-light">
+                    {membersData.members.map((member, index) => (
+                      <tr key={member.userId} className="hover:bg-midnight-base transition-colors">
+                        <td className="px-6 py-4 text-gray-400">#{index + 1}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            {member.avatar ? (
+                              <img 
+                                src={member.avatar} 
+                                alt={member.username}
+                                className="w-10 h-10 rounded-full"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-midnight-purple to-midnight-pink flex items-center justify-center font-bold">
+                                {member.username?.charAt(0) || '?'}
+                              </div>
+                            )}
+                            <div>
+                              <div className="font-medium">{member.username}</div>
+                              {member.globalName && member.globalName !== member.username && (
+                                <div className="text-xs text-gray-400">{member.globalName}</div>
+                              )}
+                              {member.bot && (
+                                <span className="inline-block mt-1 px-2 py-0.5 bg-blue-500 bg-opacity-20 border border-blue-500 rounded text-xs text-blue-400">
+                                  🤖 BOT
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <code className="text-xs bg-midnight-base px-2 py-1 rounded text-gray-400">
+                            {member.userId}
+                          </code>
+                        </td>
+                        <td className="px-6 py-4 text-center text-sm text-gray-400">
+                          {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString('tr-TR') : 'Bilinmiyor'}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-wrap gap-1">
+                            {member.roles && member.roles.length > 0 ? (
+                              <>
+                                {member.roles.slice(0, 3).map((role) => (
+                                  <span
+                                    key={role.id}
+                                    className="text-xs px-2 py-1 rounded"
+                                    style={{ 
+                                      backgroundColor: role.color ? `#${role.color.toString(16).padStart(6, '0')}20` : '#99AAB520',
+                                      color: role.color ? `#${role.color.toString(16).padStart(6, '0')}` : '#99AAB5',
+                                      border: `1px solid ${role.color ? `#${role.color.toString(16).padStart(6, '0')}` : '#99AAB5'}`
+                                    }}
+                                  >
+                                    {role.name}
+                                  </span>
+                                ))}
+                                {member.roles.length > 3 && (
+                                  <span className="text-xs text-gray-400">+{member.roles.length - 3}</span>
+                                )}
+                              </>
+                            ) : (
+                              <span className="text-xs text-gray-500">Rol yok</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <button
+                            onClick={() => {
+                              setSelectedUser(member)
+                              setModalOpen(true)
+                            }}
+                            className="px-4 py-2 bg-midnight-purple bg-opacity-20 border border-midnight-purple rounded-lg hover:bg-opacity-30 transition-colors text-midnight-purple font-semibold"
+                          >
+                            ⚙️ Yönet
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
+        )
       ) : loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-midnight-purple"></div>
@@ -603,6 +827,47 @@ const ServerStats = () => {
         }}
         user={selectedProfile}
       />
+
+      {/* Leave Server Confirmation Modal */}
+      {leaveModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="glass rounded-xl p-8 max-w-md w-full">
+            <h2 className="text-2xl font-bold mb-4 text-red-400">⚠️ Sunucudan Ayrıl</h2>
+            <p className="text-gray-300 mb-6">
+              <strong className="text-white">{guild.name}</strong> sunucusundan ayrılmak istediğinize emin misiniz?
+            </p>
+            <p className="text-sm text-gray-400 mb-6">
+              Bu işlem geri alınamaz. Bot sunucudan çıkacak ve tekrar davet edilmesi gerekecek.
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setLeaveModalOpen(false)}
+                disabled={leaveLoading}
+                className="flex-1 px-6 py-3 bg-midnight-light rounded-lg font-semibold hover:bg-midnight-base transition-colors disabled:opacity-50"
+              >
+                İptal
+              </button>
+              <button
+                onClick={handleLeaveGuild}
+                disabled={leaveLoading}
+                className="flex-1 px-6 py-3 bg-red-500 bg-opacity-20 border border-red-500 rounded-lg font-semibold hover:bg-opacity-30 transition-colors text-red-400 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {leaveLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-red-400"></div>
+                    <span>Ayrılıyor...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>🚪</span>
+                    <span>Ayrıl</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

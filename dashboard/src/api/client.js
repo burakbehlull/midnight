@@ -44,9 +44,10 @@ export const api = {
   uploadBotAvatar: (formData) => apiClient.post('/bot/avatar/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
-  uploadBotBanner: (formData) => apiClient.post('/bot/banner/upload', formData, {
+  uploadBotBanner: (formData) => apiClient.post('/bot/banner/formData', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
+  leaveGuild: (guildId) => apiClient.post(`/guilds/${guildId}/leave`),
 
   // Direct Messages
   getBotDMs: () => apiClient.get('/bot/dms'),
