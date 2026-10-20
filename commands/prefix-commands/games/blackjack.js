@@ -387,7 +387,7 @@ function renderBlackjackTable(state) {
 
 export default {
   name: 'bj',
-  category: 'fun',
+  category: 'games',
   aliases: ['blackjack', '21'],
   usage: '.bj <bahisMiktarı|all>',
   description: 'Blackjack (21) oyna. 21\'e en yakın olan kazanır!',

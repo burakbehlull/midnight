@@ -31,7 +31,7 @@ export default {
 
     const targetArg = args[0];
     if (!targetArg) {
-      return sender.reply(sender.errorEmbed('❌ Kullanıcı etiketle veya ID yaz.\n\nDoğru kullanım:\n`.godban @miguel`'));
+      return sender.reply(sender.errorEmbed('❌ Kullanıcı etiketle veya ID yaz.\n\nDoğru kullanım: `.godban @miguel`'));
     }
 
     let targetUser = null;

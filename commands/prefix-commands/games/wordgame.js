@@ -114,7 +114,7 @@ async function isValidWord(word) {
 
 export default {
   name: 'wordgame',
-  category: 'fun',
+  category: 'games',
   aliases: ['kelimeoyunu', 'kelime', 'wordg'],
   usage: '.wordgame @kullanıcı <miktar>',
   description: 'Rakibine karşı kelime türetme oyunu oyna!',

@@ -6,7 +6,7 @@ const activeGames = new Set();
 
 export default {
   name: 'rusruleti',
-  category: 'fun',
+  category: 'games',
   aliases: ['rr', 'rusruleti', 'rulet'],
   usage: '.rusruleti @kullanıcı <miktar>',
   description: 'Rakibine karşı Rus ruleti oynayın, kazanan tüm parayı alır.',

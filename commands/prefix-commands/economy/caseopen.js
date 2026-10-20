@@ -222,7 +222,7 @@ export default {
 
     const response = await message.reply({
       embeds: [embed],
-      components: [buildButtons(updatedMoney, userId, nonce)]
+      // components: [buildButtons(updatedMoney, userId, nonce)]
     });
 
     const collector = response.createMessageComponentCollector({

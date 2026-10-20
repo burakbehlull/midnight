@@ -90,7 +90,7 @@ function spinReels() {
 
 export default {
   name: 'slots',
-  category: 'fun',
+  category: 'games',
   aliases: ['slot', 's', 'sl'],
   usage: '.slots <bahisMiktarı|all>',
   description: 'Slot makinesi çevir, hayvanlar eşleşirse kazanırsın! all = maksimum bahis.',

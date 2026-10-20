@@ -65,7 +65,7 @@ function buildGridButtons(board, disabled, btnPrefix, turnMark) {
 
 export default {
   name: 'xox',
-  category: 'fun',
+  category: 'games',
   aliases: ['ttt', 'tictactoe', 'tic-tac-toe', 'xo'],
   usage: '.xox @kullanıcı <miktar>',
   description: 'Rakibine karşı XOX (Tic-Tac-Toe) oynayın, kazanan tüm parayı alır.',
