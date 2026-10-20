@@ -28,28 +28,28 @@ const RISKS = {
   dusuk: {
     label: 'Düşük',
     emoji: '🟢',
-    desc: 'Sık küçük kazanç, düşük risk',
+    desc: 'Küçük ama dengeli kazanç (max 5x)',
     color: 'mintGreen',
     counts: [
-      [0, 13], [0.5, 4], [1.2, 6], [1.5, 4], [2, 2], [3, 2], [5, 1],
-    ], 
+      [0, 22], [1.5, 1], [2, 2], [3, 4], [4, 2], [5, 1],
+    ],
   },
   orta: {
     label: 'Orta',
     emoji: '🟡',
-    desc: 'Dengeli kazanç ve risk',
+    desc: 'Orta çarpanlı, dengeli risk (max 7x)',
     color: 'orange',
     counts: [
-      [0, 19], [0.5, 2], [1.2, 4], [1.5, 2], [2, 2], [3, 1], [5, 1], [10, 1],
+      [0, 22], [1.2, 2], [2, 2], [3, 3], [4, 2], [7, 1],
     ],
   },
   yuksek: {
     label: 'Yüksek',
     emoji: '🔴',
-    desc: 'Nadir ama dev kazanç (25x)',
+    desc: 'Nadir ama dev kazanç (max 15x)',
     color: 'liveRed',
     counts: [
-      [0, 24], [0.5, 4], [1, 2], [1.5, 1], [25, 1],
+      [0, 22], [1.2, 2], [1.5, 4], [2, 2], [3, 1], [15, 1],
     ],
   },
 };
@@ -63,8 +63,11 @@ const MULT_COLORS = {
   1.5: { bg: '#00C9A7', fg: '#04352c' },
   2: { bg: '#6BCB77', fg: '#0b2e14' },
   3: { bg: '#FFD93D', fg: '#3d3202' },
+  4: { bg: '#FFB454', fg: '#3d2200' },
   5: { bg: '#FF9F45', fg: '#3d2200' },
+  7: { bg: '#C780FA', fg: '#ffffff' },
   10: { bg: '#C780FA', fg: '#ffffff' },
+  15: { bg: '#FF4D4D', fg: '#ffffff' },
   25: { bg: '#FF4D4D', fg: '#ffffff' },
 };
 
@@ -427,6 +430,7 @@ export default {
         description:
           `${risk.emoji} **Risk:** ${risk.label} — ${risk.desc}\n` +
           `💰 **Bahis:** ${amount.toLocaleString('tr-TR')} coin\n` +
+          `🎲 **Kazanma şansı:** %31 • **Boş dilim:** %69\n` +
           `🎰 **Dilimler:** ${legend}\n\n` +
           (text ?? '🎯 Çark dönüyor...'),
         image: 'attachment://cark.gif',

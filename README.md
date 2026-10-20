@@ -177,6 +177,7 @@ Create ` config.json ` file and set permission settings:
 | **blackjack** | blackjack | bet amount | stable |
 | **mines** | mines game | bet amount | stable |
 | **wheel** | wheel game | bet amount | stable |
+| **dice** | dice duel (7 over/under single, higher roll wins PvP) | bet amount and over/under (1 userly), user and bet amount (userly) | stable |
 | **kiss** | kiss user | user | stable |
 | **slap** | slaps user | user | stable |
 | **hug** | hugs user | user | stable |
