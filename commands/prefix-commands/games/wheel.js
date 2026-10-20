@@ -113,19 +113,6 @@ function roundRectPath(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-/**
- * Tek bir çark karesini verilen ctx'e çizer (tasarım koordinatlarında).
- * @param {object} o
- * @param {number[]} o.wheel       Dilim çarpanları
- * @param {number}   o.rotation    Çarkın dönüş açısı (radyan, saat yönü)
- * @param {object}   o.risk        Seçilen risk nesnesi
- * @param {number}   o.amount      Bahis
- * @param {boolean}  o.highlight   Kazanan dilim vurgulansın mı
- * @param {boolean}  o.banner      Sonuç bandı çizilsin mi
- * @param {number}   [o.winnerIdx] Kazanan dilim indexi
- * @param {number}   [o.payout]    Kazanç
- * @param {number}   [o.net]       Net
- */
 function drawWheelFrame(ctx, { wheel, rotation, risk, amount, highlight = false, banner = false, winnerIdx = -1, payout = 0, net = 0 }) {
   const L = wheel.length;
   const seg = (Math.PI * 2) / L;
@@ -281,12 +268,6 @@ function drawWheelFrame(ctx, { wheel, rotation, risk, amount, highlight = false,
   }
 }
 
-/**
- * Çarkı tek sefer oynayan (loop'suz) GIF olarak üretir.
- * Kazanan dilim önceden belirlenir, çark ona doğru yavaşlayarak oturur,
- * sonra kazanan dilim yanıp söner ve sonuç bandı ekranda kalır.
- * @returns {Promise<{ buffer: Buffer, spinMs: number }>}
- */
 async function buildWheelGif({ wheel, risk, amount, winnerIdx, payout, net, targetRotation }) {
   const canvas = createCanvas(IMG_W, IMG_H);
   const ctx = canvas.getContext('2d');
