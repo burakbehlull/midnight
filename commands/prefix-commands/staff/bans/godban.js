@@ -6,12 +6,13 @@ export default {
   name: 'godban',
   aliases: ['god-ban', 'gban'],
   description: 'Kullanıcıyı botun bulunduğu tüm sunuculardan (ban yetkisi varsa) tek seferde banlar.',
-  usage: 'godban @kullanıcı [sebep]',
+  usage: 'godban @miguel [sebep]',
   cooldown: 60,
   category: 'bans',
 
   permissions: {
-    authorities: [PermissionFlagsBits.Administrator],
+    // authorities: [PermissionFlagsBits.Administrator],
+    enabled: false
   },
 
   async execute(client, message, args) {
@@ -26,15 +27,11 @@ export default {
       return sender.reply(sender.errorEmbed('❌ Bu komut sadece sunucularda kullanılabilir.'));
     }
 
-    if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
-      return sender.reply(sender.errorEmbed('❌ Bu komutu kullanmak için Yönetici yetkisine sahip olmalısın.'));
-    }
-
     const deleteMessageDays = 7;
 
     const targetArg = args[0];
     if (!targetArg) {
-      return sender.reply(sender.errorEmbed('❌ Kullanıcı etiketle veya ID yaz.\n\nDoğru kullanım:\n`.godban @Kullanıcı`\n`.godban 123456789012345678 hile yaptı`'));
+      return sender.reply(sender.errorEmbed('❌ Kullanıcı etiketle veya ID yaz.\n\nDoğru kullanım:\n`.godban @miguel`'));
     }
 
     let targetUser = null;
@@ -67,9 +64,6 @@ export default {
       const owner = message.guild.ownerId;
       if (member.id === owner) {
         return sender.reply(sender.errorEmbed('❌ Sunucu sahibini banlayamazsın.'));
-      }
-      if (message.member.roles && message.member.roles.highest && member.roles && member.roles.highest && message.member.roles.highest.position <= member.roles.highest.position && message.author.id !== owner) {
-        return sender.reply(sender.errorEmbed('❌ Rol hiyerarşisi yetersiz. Bu kullanıcıyı banlayamazsın.'));
       }
     }
 
@@ -137,6 +131,25 @@ export default {
           reason: baseReason,
         });
         successCount++;
+
+        // K2: Ban başarılı olan her sunucuya ForceBan kaydı yazılır ki
+        // o sunucudaki guildBanRemove koruması da devreye girsin.
+        try {
+          await ForceBan.findOneAndUpdate(
+            { userId: targetUser.id, guildId: g.id },
+            {
+              userId: targetUser.id,
+              guildId: g.id,
+              bannedBy: message.author.id,
+              bannedAt: new Date(),
+              reason: reasonText,
+              banType: 'godban',
+            },
+            { upsert: true, new: true }
+          );
+        } catch (dbErr) {
+          console.error(`[godban] ForceBan kaydedilemedi (${g.name}):`, dbErr);
+        }
       } catch (err) {
         failCount++;
         failList.push({ name: g.name, reason: err?.message || String(err).slice(0, 80) });
@@ -153,9 +166,9 @@ export default {
                 `Botun bulunduğu sunucularda global ban aldın.\n\n` +
                 `**Banlayan:** ${message.author.tag} (${message.author.id})\n` +
                 `**Öndeğiğin sebep:** ${reasonText}\n\n` +
-                `✅ Başarıyla banlandığın sunucu: **${successCount}**\n` +
-                `❌ Başarısız: ${failCount}\n` +
-                `⏭️ Atlanan: ${skippedCount}`,
+                `Başarıyla banlandığın sunucu: **${successCount}**\n` +
+                `Başarısız: ${failCount}\n` +
+                `Atlanan: ${skippedCount}`,
               color: 0x7f1d1d,
             })],
           }).catch(() => {});
@@ -179,48 +192,31 @@ export default {
         console.error('[godban] Punishment kaydedilemedi:', err);
       }
 
-      try {
-        await ForceBan.findOneAndUpdate(
-          { userId: targetUser.id, guildId: message.guild.id },
-          {
-            userId: targetUser.id,
-            guildId: message.guild.id,
-            bannedBy: message.author.id,
-            bannedAt: new Date(),
-            reason: reasonText,
-            banType: 'godban',
-          },
-          { upsert: true, new: true }
-        );
-      } catch (err) {
-        console.error('[godban] ForceBan kaydedilemedi:', err);
-      }
-
       const recordIdText = punishmentRecord ? `**Ceza No:** #${punishmentRecord.recordId}\n` : '';
 
       const summary =
-        `👤 **Kullanıcı:** <@${targetUser.id}>  •  ${targetUser.tag}\n` +
-        `🧑‍💼 **Banlayan:** ${message.author.tag}\n` +
+        `**Kullanıcı:** <@${targetUser.id}>  •  ${targetUser.tag}\n` +
+        `**Banlayan:** ${message.author.tag}\n` +
         recordIdText +
-        `📝 **Sebep:** ${reasonText}\n\n` +
-        `📊 **Sonuç:**\n` +
-        `   ✅ Başarılı: **${successCount} / ${total}** sunucuda ban atıldı\n` +
-        `   ❌ Başarısız: ${failCount}\n` +
-        `   ⏭️ Atlanan: ${skippedCount}\n` +
-        `   🧑‍🤝‍🧑 Kullanıcının üye olduğu sunucu: ${memberGuildCount}\n` +
-        `   🧹 Son ${deleteMessageDays} gün mesajları silindi (izin veren sunucularda)\n`
+        `**Sebep:** ${reasonText}\n\n` +
+        `**Sonuç:**\n` +
+        `   Başarılı: **${successCount} / ${total}** sunucuda ban atıldı\n` +
+        `   Başarısız: ${failCount}\n` +
+        `   Atlanan: ${skippedCount}\n` +
+        `   Kullanıcının üye olduğu sunucu: ${memberGuildCount}\n` +
+        `   Son ${deleteMessageDays} gün mesajları silindi (izin veren sunucularda)\n`
     } catch {}
 
     const summary =
-      `👤 **Kullanıcı:** <@${targetUser.id}>  •  ${targetUser.tag}\n` +
-      `🧑‍💼 **Banlayan:** ${message.author.tag}\n` +
-      `📝 **Sebep:** ${reasonText}\n\n` +
-      `📊 **Sonuç:**\n` +
-      `   ✅ Başarılı: **${successCount} / ${total}** sunucuda ban atıldı\n` +
-      `   ❌ Başarısız: ${failCount}\n` +
-      `   ⏭️ Atlanan: ${skippedCount}\n` +
-      `   🧑‍🤝‍🧑 Kullanıcının üye olduğu sunucu: ${memberGuildCount}\n` +
-      `   🧹 Son ${deleteMessageDays} gün mesajları silindi (izin veren sunucularda)`;
+      `**Kullanıcı:** <@${targetUser.id}>  •  ${targetUser.tag}\n` +
+      `**Banlayan:** ${message.author.tag}\n` +
+      `**Sebep:** ${reasonText}\n\n` +
+      `**Sonuç:**\n` +
+      `   Başarılı: **${successCount} / ${total}** sunucuda ban atıldı\n` +
+      `   Başarısız: ${failCount}\n` +
+      `   Atlanan: ${skippedCount}\n` +
+      `   Kullanıcının üye olduğu sunucu: ${memberGuildCount}\n` +
+      `   Son ${deleteMessageDays} gün mesajları silindi (izin veren sunucularda)`;
 
     const fields = [];
     if (failList.length > 0) {

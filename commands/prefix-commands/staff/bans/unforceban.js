@@ -102,7 +102,7 @@ export default {
           {
             userId: userId,
             guildId: message.guild.id,
-            type: 'forceban',
+            type: { $in: ['ban', 'forceban'] },
             active: true
           },
           {

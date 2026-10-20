@@ -11,7 +11,8 @@ export default {
   category: 'bans',
 
   permissions: {
-    authorities: [PermissionFlagsBits.Administrator],
+    // authorities: [PermissionFlagsBits.Administrator],
+    enabled: false
   },
 
   async execute(client, message, args) {
@@ -24,10 +25,6 @@ export default {
 
     if (!message.guild || !message.member) {
       return sender.reply(sender.errorEmbed('❌ Bu komut sadece sunucularda kullanılabilir.'));
-    }
-
-    if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
-      return sender.reply(sender.errorEmbed('❌ Bu komutu kullanmak için Yönetici yetkisine sahip olmalısın.'));
     }
 
     const targetArg = args[0];
@@ -55,6 +52,18 @@ export default {
         `**Ban Türü:** ${banTypeNames[forceBanRecord.banType] || forceBanRecord.banType}\n` +
         `**Doğru Komut:** \`.${correctCommand} ${rawId}\`\n\n` +
         `💡 God ban sadece **ungodban** komutuyla açılabilir.`
+      ));
+    }
+
+    if (forceBanRecord && forceBanRecord.bannedBy !== message.author.id && message.author.id !== message.guild.ownerId) {
+      const bannerUser = await client.users.fetch(forceBanRecord.bannedBy).catch(() => null);
+      const bannerTag = bannerUser ? bannerUser.tag : forceBanRecord.bannedBy;
+
+      return sender.reply(sender.errorEmbed(
+        `❌ **Bu godban'ı sadece banlayan kişi açabilir!**\n\n` +
+        `**Banlayan:** <@${forceBanRecord.bannedBy}> (\`${bannerTag}\`)\n` +
+        `**Tarih:** <t:${Math.floor(forceBanRecord.bannedAt.getTime() / 1000)}:F>\n` +
+        `**Sebep:** ${forceBanRecord.reason}`
       ));
     }
 
@@ -129,8 +138,8 @@ export default {
                 `Botun bulunduğu sunuculardaki global banın kaldırıldı.\n\n` +
                 `**Kaldıran:** ${message.author.tag} (${message.author.id})\n` +
                 `**Açıklama:** ${reasonText}\n\n` +
-                `✅ Başarıyla banın kaldırıldığı sunucu: **${successCount}**\n` +
-                `❌ Başarısız: ${failCount}\n` +
+                `Başarıyla banın kaldırıldığı sunucu: **${successCount}**\n` +
+                `Başarısız: ${failCount}\n` +
                 `Atlanan: ${skippedCount}\n\n` +
                 `Tekrar sunuculara katılabilirsin. Hoş geldin!`,
               color: 0x10b981,
@@ -145,7 +154,7 @@ export default {
         {
           userId: rawId,
           guildId: message.guild.id,
-          type: 'godban',
+          type: { $in: ['ban', 'godban'] },
           active: true
         },
         {
@@ -157,9 +166,8 @@ export default {
         }
       );
 
-      if (forceBanRecord) {
-        await ForceBan.deleteOne({ userId: rawId, guildId: message.guild.id });
-      }
+      // K2: godban tüm sunuculara kayıt yazdığı için kayıtlar her sunucudan temizlenir.
+      await ForceBan.deleteMany({ userId: rawId, banType: 'godban' });
     } catch (dbErr) {
       console.error('[ungodban] DB güncelleme hatası:', dbErr);
     }

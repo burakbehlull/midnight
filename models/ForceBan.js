@@ -27,6 +27,18 @@ const forceBanSchema = new Schema({
     required: true,
     default: 'forceban',
   },
+  guardAttempts: {
+    type: Number,
+    default: 0,
+  },
+  lastGuardAt: {
+    type: Date,
+    default: null,
+  },
+  lastGuardBy: {
+    type: String,
+    default: null,
+  },
 });
 
 forceBanSchema.index({ userId: 1, guildId: 1 }, { unique: true });

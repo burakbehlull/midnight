@@ -60,6 +60,16 @@ export default {
         return sender.reply(sender.errorEmbed('❌ Bu kullanıcıyı banlayamam. Botun yetkisi veya rolü yetersiz olabilir.'));
       }
 
+      const existingProtection = await ForceBan.findOne({ userId: target.id, guildId: message.guild.id });
+      if (existingProtection && (existingProtection.banType === 'forceban' || existingProtection.banType === 'godban')) {
+        const label = existingProtection.banType === 'godban' ? 'GOD BAN' : 'FORCE BAN';
+        const cmd = existingProtection.banType === 'godban' ? 'ungodban' : 'unforceban';
+        return sender.reply(sender.errorEmbed(
+          `❌ **${target.user?.tag || target.id}** şu anda **${label}** koruması altında.\n` +
+          `Bu koruma normal ban komutuyla değiştirilemez. Kaldırmak için \`.${cmd}\` kullanılmalıdır.`
+        ));
+      }
+
       await target.ban({ reason });
 
       let punishmentRecord = null;
