@@ -179,6 +179,8 @@ Create ` config.json ` file and set permission settings:
 | **slap** | slaps user | user | stable |
 | **hug** | hugs user | user | stable |
 | **fuck** | fxck user | user | stable |
+| **mines** | mines game | bet amount | stable |
+
 
 ### events:
 | feature | comment | set command |
