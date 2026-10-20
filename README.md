@@ -175,11 +175,13 @@ Create ` config.json ` file and set permission settings:
 | **wordbuilding** | word-building game | channel | stable |
 | **gofishing** | take fish | bet amount (1 userly), user and bet amount (userly) | stable |
 | **blackjack** | blackjack | bet amount | stable |
+| **mines** | mines game | bet amount | stable |
+| **wheel** | wheel game | bet amount | stable |
 | **kiss** | kiss user | user | stable |
 | **slap** | slaps user | user | stable |
 | **hug** | hugs user | user | stable |
 | **fuck** | fxck user | user | stable |
-| **mines** | mines game | bet amount | stable |
+
 
 
 ### events:
