@@ -178,6 +178,7 @@ Create ` config.json ` file and set permission settings:
 | **mines** | mines game | bet amount | stable |
 | **wheel** | wheel game | bet amount | stable |
 | **dice** | dice duel (7 over/under single, higher roll wins PvP) | bet amount and over/under (1 userly), user and bet amount (userly) | stable |
+| **keno** | keno (pick 10 of 1-80, system draws 20) | bet amount and 10 numbers, or "rastgele" | stable |
 | **kiss** | kiss user | user | stable |
 | **slap** | slaps user | user | stable |
 | **hug** | hugs user | user | stable |
