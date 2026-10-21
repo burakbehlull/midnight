@@ -27,19 +27,54 @@ const CARD_H = 250;
 
 const COLORS = {
   bg: "#0f1117",
-  gradient: ["rgba(20,22,30,0.72)", "rgba(5,6,10,0.90)"],
-  coverFallback: "#1e2230",
   border: "rgba(255,255,255,0.10)",
   title: "#ffffff",
   sub: "#c7cbd8",
   muted: "#8b90a0",
-  pillBg: "rgba(88,101,242,0.20)",
-  pillStroke: "rgba(88,101,242,0.55)",
-  pillText: "#a5b4fc",
-  badgeBg: "rgba(255,255,255,0.07)",
-  badgeStroke: "rgba(255,255,255,0.12)",
   badgeText: "#e1e1e1",
 };
+
+function accentFromImage(image) {
+  if (!image) return { r: 29, g: 185, b: 84 };
+  try {
+    const probe = createCanvas(24, 24);
+    const pc = probe.getContext("2d");
+    pc.drawImage(image, 0, 0, 24, 24);
+    const { data } = pc.getImageData(0, 0, 24, 24);
+
+    let r = 0;
+    let g = 0;
+    let b = 0;
+    let count = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      r += data[i];
+      g += data[i + 1];
+      b += data[i + 2];
+      count++;
+    }
+    r /= count;
+    g /= count;
+    b /= count;
+
+    const avg = (r + g + b) / 3;
+    const boost = (v) => Math.max(0, Math.min(255, Math.round(avg + (v - avg) * 1.7 + 14)));
+    r = boost(r);
+    g = boost(g);
+    b = boost(b);
+
+    const max = Math.max(r, g, b);
+    if (max < 150) {
+      const k = 150 / Math.max(1, max);
+      r = Math.min(255, Math.round(r * k));
+      g = Math.min(255, Math.round(g * k));
+      b = Math.min(255, Math.round(b * k));
+    }
+
+    return { r, g, b };
+  } catch {
+    return { r: 29, g: 185, b: 84 };
+  }
+}
 
 function pad2(n) {
   return String(n).padStart(2, "0");
@@ -141,11 +176,11 @@ async function locateActivity(client, ctx, targetId) {
 }
 
 function drawPlaceholderCover(c, x, y, size, radius, label) {
-  drawRoundedRect(c, x, y, size, size, radius, COLORS.coverFallback, null, 1);
+  drawRoundedRect(c, x, y, size, size, radius, "rgba(255,255,255,0.05)", null, 1);
   const letter = (String(label ?? "?").trim()[0] || "?").toLocaleUpperCase("tr-TR");
   c.save();
   c.fillStyle = COLORS.badgeText;
-  c.font = "bold 90px sans-serif";
+  c.font = "bold 78px sans-serif";
   c.textAlign = "center";
   c.textBaseline = "middle";
   c.fillText(letter, x + size / 2, y + size / 2 + 4);
@@ -156,114 +191,165 @@ async function renderGameCard({ activity, ownerName, cover, small }) {
   const canvas = createCanvas(CARD_W, CARD_H);
   const c = canvas.getContext("2d");
 
+  const accent = accentFromImage(cover);
+  const accentStr = `${accent.r}, ${accent.g}, ${accent.b}`;
 
+  // --- Arka plan: bulanık kapak + aksan rengi tonlaması (Spotify hissi) ---
   c.save();
   c.beginPath();
   c.roundRect(0, 0, CARD_W, CARD_H, 28);
   c.clip();
+
   if (cover) {
-    c.filter = "blur(35px) brightness(0.42)";
-    c.drawImage(cover, -50, -50, CARD_W + 100, CARD_H + 100);
+    c.filter = "blur(48px) brightness(0.42) saturate(1.25)";
+    c.drawImage(cover, -70, -70, CARD_W + 140, CARD_H + 140);
     c.filter = "none";
   } else {
     c.fillStyle = COLORS.bg;
     c.fillRect(0, 0, CARD_W, CARD_H);
   }
-  const grad = c.createLinearGradient(0, 0, CARD_W, CARD_H);
-  grad.addColorStop(0, COLORS.gradient[0]);
-  grad.addColorStop(1, COLORS.gradient[1]);
-  c.fillStyle = grad;
+
+  const shade = c.createLinearGradient(0, 0, CARD_W * 0.85, CARD_H);
+  shade.addColorStop(0, "rgba(8,10,14,0.35)");
+  shade.addColorStop(1, "rgba(4,5,8,0.92)");
+  c.fillStyle = shade;
+  c.fillRect(0, 0, CARD_W, CARD_H);
+
+  const tint = c.createLinearGradient(0, 0, CARD_W * 0.75, CARD_H);
+  tint.addColorStop(0, `rgba(${accentStr}, 0.42)`);
+  tint.addColorStop(1, "rgba(0,0,0,0)");
+  c.fillStyle = tint;
+  c.fillRect(0, 0, CARD_W, CARD_H);
+
+  const sheen = c.createLinearGradient(0, 0, 0, CARD_H);
+  sheen.addColorStop(0, "rgba(255,255,255,0.10)");
+  sheen.addColorStop(0.35, "rgba(255,255,255,0)");
+  c.fillStyle = sheen;
   c.fillRect(0, 0, CARD_W, CARD_H);
   c.restore();
 
   drawRoundedRect(c, 0.75, 0.75, CARD_W - 1.5, CARD_H - 1.5, 28, null, COLORS.border, 1.5);
 
+  // --- Kapak görseli (albüm kapağı gibi) ---
+  const ix = 28;
+  const isz = 168;
+  const iy = (CARD_H - isz) / 2;
 
-  const ix = 25;
-  const iy = 25;
-  const isz = 200;
+  c.save();
+  c.shadowColor = "rgba(0,0,0,0.55)";
+  c.shadowBlur = 26;
+  c.shadowOffsetY = 8;
+  drawRoundedRect(c, ix, iy, isz, isz, 18, "rgba(0,0,0,0.02)", null, 0);
+  c.restore();
+
   if (cover) {
     c.save();
     c.beginPath();
-    c.roundRect(ix, iy, isz, isz, 40);
-    c.fillStyle = COLORS.coverFallback;
-    c.fill();
+    c.roundRect(ix, iy, isz, isz, 18);
     c.clip();
     c.drawImage(cover, ix, iy, isz, isz);
     c.restore();
   } else {
-    drawPlaceholderCover(c, ix, iy, isz, 40, activity.name);
+    drawPlaceholderCover(c, ix, iy, isz, 18, activity.name);
   }
 
+  drawRoundedRect(c, ix + 0.75, iy + 0.75, isz - 1.5, isz - 1.5, 18, null, "rgba(255,255,255,0.14)", 1.5);
+
+  // Kapak üzerindeki küçük görsel (oyun içi durum) — aksan halkası ile
   if (small) {
-    const sr = 72;
-    const cx = ix + isz - sr / 2 - 8;
-    const cy = iy + isz - sr / 2 - 8;
+    const sr = 54;
+    const cx = ix + isz - sr / 2 - 2;
+    const cy = iy + isz - sr / 2 - 2;
     c.save();
     c.beginPath();
-    c.arc(cx, cy, sr / 2, 0, Math.PI * 2);
-    c.closePath();
-    c.fillStyle = "#0b0d13";
+    c.arc(cx, cy, sr / 2 + 3, 0, Math.PI * 2);
+    c.fillStyle = `rgb(${accentStr})`;
     c.fill();
+    c.beginPath();
+    c.arc(cx, cy, sr / 2, 0, Math.PI * 2);
     c.clip();
     c.drawImage(small, cx - sr / 2, cy - sr / 2, sr, sr);
     c.restore();
-    c.beginPath();
-    c.arc(cx, cy, sr / 2, 0, Math.PI * 2);
-    c.strokeStyle = "rgba(255,255,255,0.35)";
-    c.lineWidth = 3;
-    c.stroke();
   }
 
-  const badgeText = `Oynayan: ${truncate(ownerName, 22)}`;
+  // --- Sağ taraf: metinler ---
+  const tx = 224;
+  const right = CARD_W - 28;
+
+  // Oynayan kişi rozeti (sağ üst)
+  const badgeText = `Oynayan: ${truncate(ownerName, 20)}`;
   c.font = "12px sans-serif";
   c.textAlign = "left";
   c.textBaseline = "alphabetic";
-  const badgeW = c.measureText(badgeText).width + 24;
-  const badgeX = CARD_W - badgeW - 25;
-  drawRoundedRect(c, badgeX, 28, badgeW, 28, 12, COLORS.badgeBg, COLORS.badgeStroke, 1);
+  const badgeW = c.measureText(badgeText).width + 26;
+  drawRoundedRect(c, right - badgeW, 22, badgeW, 28, 14, "rgba(255,255,255,0.08)", "rgba(255,255,255,0.14)", 1);
   c.fillStyle = COLORS.badgeText;
-  c.fillText(badgeText, badgeX + 12, 46);
+  c.fillText(badgeText, right - badgeW + 13, 40);
 
-  const tx = 250;
-
-  c.font = "bold 26px sans-serif";
+  // Oyun adı
+  c.font = "bold 30px sans-serif";
   c.fillStyle = COLORS.title;
-  c.fillText(truncate(activity.name, 30), tx, 90);
+  c.fillText(truncate(activity.name, 26), tx, 90);
 
-  let lineY = 116;
-  const detail = activity.details || activity.assets?.largeText;
+  // Detay / durum satırları
+  const detail = activity.details || activity.assets?.largeText || activity.state;
   if (detail) {
     c.font = "bold 15px sans-serif";
     c.fillStyle = COLORS.sub;
-    c.fillText(truncate(detail, 42), tx, lineY);
-    lineY += 22;
-  }
-  if (activity.state) {
-    c.font = "13px sans-serif";
-    c.fillStyle = COLORS.muted;
-    c.fillText(truncate(activity.state, 48), tx, lineY);
+    c.fillText(truncate(detail, 46), tx, 116);
   }
 
+  const state = activity.details && activity.state ? activity.state : null;
+  if (state) {
+    c.font = "13px sans-serif";
+    c.fillStyle = COLORS.muted;
+    c.fillText(truncate(state, 54), tx, 137);
+  }
+
+  // --- Oynanma süresi çubuğu ---
   const startDate = activity.timestamps?.start ? new Date(activity.timestamps.start) : null;
   const playMs = startDate ? Date.now() - startDate.getTime() : null;
   const duration = fmtDuration(playMs);
-  const pillText = duration ? `${duration}` : "00:00";
-  c.font = "bold 15px sans-serif";
-  const pillW = c.measureText(pillText).width + 34;
-  drawRoundedRect(c, tx, 152, pillW, 38, 12, COLORS.pillBg, COLORS.pillStroke, 1);
-  c.fillStyle = COLORS.pillText;
-  c.fillText(pillText, tx + 17, 177);
 
-  const meta = [];
+  const barY = 176;
+  const barW = right - tx;
+  // Son 60 saniyenin ilerleyişi: süre her çağrıda canlı görünsün
+  const progress = playMs != null ? (Math.floor(playMs / 1000) % 60) / 60 : 0;
+
+  drawRoundedRect(c, tx, barY, barW, 5, 2.5, "rgba(255,255,255,0.18)", null, 0);
+  drawRoundedRect(c, tx, barY, Math.max(6, barW * progress), 5, 2.5, `rgb(${accentStr})`, null, 0);
+
+  const knobX = tx + Math.max(6, barW * progress);
+  c.save();
+  c.beginPath();
+  c.arc(knobX, barY + 2.5, 6, 0, Math.PI * 2);
+  c.fillStyle = "#ffffff";
+  c.shadowColor = `rgba(${accentStr}, 0.9)`;
+  c.shadowBlur = 12;
+  c.fill();
+  c.restore();
+
   const startStr = fmtDate(startDate);
-  if (startStr) meta.push(`Başlangıç: ${startStr}`);
-  const party = activity.party?.size;
-  if (party?.current) meta.push(`Oyuncu: ${party.current}${party.max ? `/${party.max}` : ""}`);
-  if (activity.assets?.smallText) meta.push(truncate(activity.assets.smallText, 26));
   c.font = "12px sans-serif";
   c.fillStyle = COLORS.muted;
-  c.fillText(truncate(meta.join("   •   "), 62), tx, 216);
+  c.fillText(startStr ? `Başlangıç: ${startStr}` : "Şu an oynuyor", tx, barY + 22);
+
+  c.font = "bold 12px sans-serif";
+  c.fillStyle = duration ? COLORS.sub : COLORS.muted;
+  c.textAlign = "right";
+  c.fillText(duration ?? "00:00", right, barY + 22);
+
+  // --- Alt bilgi satırı ---
+  const meta = [];
+  const party = activity.party?.size;
+  if (party?.current) meta.push(`Oyuncu ${party.current}${party.max ? `/${party.max}` : ""}`);
+  if (activity.assets?.smallText) meta.push(truncate(activity.assets.smallText, 28));
+  meta.push(activity.type === ActivityType.Playing ? "Oynuyor" : "Etkinlik");
+
+  c.font = "12px sans-serif";
+  c.fillStyle = COLORS.muted;
+  c.textAlign = "left";
+  c.fillText(truncate(meta.join("   •   "), 62), tx, 226);
 
   return canvas.encode("png");
 }
