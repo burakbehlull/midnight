@@ -173,6 +173,7 @@ Create ` config.json ` file and set permission settings:
 | **xox** | shows server rules  | user, bet amount | stable |
 | **wordgame** | two user bet game 1 and 2 word letter mode | user, bet amount | stable |
 | **wordbuilding** | word-building game | channel | stable |
+| **wordbomb** | word bomb duel (type a valid word starting with the given syllable, pass the bomb) | user and bet amount | stable |
 | **gofishing** | take fish | bet amount (1 userly), user and bet amount (userly) | stable |
 | **blackjack** | blackjack | bet amount | stable |
 | **mines** | mines game | bet amount | stable |
