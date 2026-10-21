@@ -25,6 +25,7 @@ import {
 
 import * as actionRolesHelper from "./actionRolesHelper.js"
 import * as gifResolver from "./gifResolver.js"
+import * as gameIcons from "./gameIcons.js"
 
 
 export {
@@ -37,6 +38,7 @@ export {
 	cosmeticsHelper,
 	actionRolesHelper,
 	gifResolver,
+	gameIcons,
 	Button, Modal,
 	
 	fetchPartialNeed,

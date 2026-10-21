@@ -167,6 +167,7 @@ Create ` config.json ` file and set permission settings:
 | command | comment | values | situation |
 | ------ | ------ | ------ | ------ |
 | **spotify** | .. | me, user | stable |
+| **game** | shows the game the user is currently playing as a card (icon, game name, playtime) | me, user | stable |
 | **ship** | ships | user | stable |
 | **slot** | game | bet amount | stable |
 | **rulet** | shows server rules  | user, bet amount | stable |

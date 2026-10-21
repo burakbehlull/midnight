@@ -3,8 +3,10 @@ import { Economy } from '#models';
 import { misc } from '#helpers';
 import { createCanvas } from '@napi-rs/canvas';
 import { AttachmentBuilder } from 'discord.js';
+import gifenc from 'gifenc';
 
 const { delay, drawRoundedRect } = misc;
+const { GIFEncoder, quantize, applyPalette } = gifenc;
 
 const MIN_BET = 50;
 const MAX_BET = 50000;
@@ -54,11 +56,23 @@ const CELL_GAP = 8;
 const TABLE_W = 820;
 const TABLE_H = 800;
 
-function renderKenoBoard(state) {
+const SCALE = 0.7;
+const IMG_W = Math.round(TABLE_W * SCALE);
+const IMG_H = Math.round(TABLE_H * SCALE);
+const PALETTE_SIZE = 128;
+
+const SHUFFLE_FRAMES = 6;
+const SHUFFLE_DELAY = 85;
+const REVEAL_DELAY = 140;
+const PULSES = 4;
+const PULSE_DELAY = 170;
+const HOLD_MS = 3200;
+
+function drawKenoFrame(ctx, state) {
   const {
     picks = [], drawn = [], amount = 0,
-    revealed = false, matches = 0, payout = 0,
-    jackpot = false, status = null, result = null, resultType = 'lose',
+    revealed = false, matches = 0, active = null,
+    pulse = false, result = null, resultType = 'lose',
   } = state;
 
   const W = TABLE_W;
@@ -68,8 +82,9 @@ function renderKenoBoard(state) {
   const startX = (W - boardW) / 2;
   const startY = 150;
 
-  const canvas = createCanvas(W, H);
-  const ctx = canvas.getContext('2d');
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, IMG_W, IMG_H);
+  ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
 
   ctx.save();
   const frameGrad = ctx.createLinearGradient(0, 0, 0, H);
@@ -94,7 +109,7 @@ function renderKenoBoard(state) {
   ctx.setLineDash([]);
   ctx.restore();
 
-  // Başlık
+
   ctx.save();
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
@@ -109,7 +124,9 @@ function renderKenoBoard(state) {
   ctx.restore();
 
   drawLabel(ctx, 150, 96, `BAHİS: ${fmt(amount)}`, 'rgba(15,23,42,0.9)', '#1e293b');
-  const matchText = revealed ? `EŞLEŞME: ${matches}/${PICK_COUNT}` : 'ÇEKİLİYOR...';
+  const matchText = revealed
+    ? `EŞLEŞME: ${matches}/${PICK_COUNT}`
+    : `ÇEKİLİYOR: ${drawn.length}/${DRAW_COUNT}`;
   drawLabel(
     ctx, W - 170, 96, matchText,
     revealed ? (matches >= 5 ? '#15803d' : matches > 0 ? '#1d4ed8' : '#7f1d1d') : '#334155',
@@ -127,7 +144,9 @@ function renderKenoBoard(state) {
     const y = startY + r * (CELL + CELL_GAP);
 
     const isPick = pickSet.has(num);
-    const isDrawn = revealed && drawSet.has(num);
+    const isDrawn = drawSet.has(num);
+    const isActive = active === num;
+    const isGlowing = isActive || (pulse && isPick && isDrawn);
 
     let fill = 'rgba(7,54,32,0.9)';
     let stroke = '#0b3a22';
@@ -148,7 +167,10 @@ function renderKenoBoard(state) {
     }
 
     ctx.save();
-    if (isPick && isDrawn) {
+    if (isGlowing) {
+      ctx.shadowColor = isPick && isDrawn ? 'rgba(34,197,94,1)' : 'rgba(253,224,71,1)';
+      ctx.shadowBlur = isActive ? 26 : 18;
+    } else if (isPick && isDrawn) {
       ctx.shadowColor = 'rgba(34,197,94,0.85)';
       ctx.shadowBlur = 14;
     } else if (isDrawn) {
@@ -157,6 +179,16 @@ function renderKenoBoard(state) {
     }
     drawRoundedRect(ctx, x, y, CELL, CELL, 12, fill, stroke, isPick ? 3 : 2);
     ctx.restore();
+
+    if (isActive) {
+      ctx.save();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 4;
+      ctx.shadowColor = 'rgba(255,255,255,0.9)';
+      ctx.shadowBlur = 16;
+      drawRoundedRect(ctx, x - 4, y - 4, CELL + 8, CELL + 8, 16, null, '#ffffff', 4);
+      ctx.restore();
+    }
 
     ctx.fillStyle = textColor;
     ctx.font = `bold ${isPick ? 28 : 26}px Arial`;
@@ -167,19 +199,70 @@ function renderKenoBoard(state) {
 
   if (result) {
     drawBanner(ctx, W / 2 - 320, 706, 640, result, resultType);
-  } else if (status) {
-    ctx.save();
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 26px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0,0,0,0.5)';
-    ctx.shadowBlur = 6;
-    ctx.fillText(status, W / 2, 748);
-    ctx.restore();
+  }
+}
+
+function renderKenoBoard(state) {
+  const canvas = createCanvas(IMG_W, IMG_H);
+  const ctx = canvas.getContext('2d');
+  drawKenoFrame(ctx, state);
+  return canvas.toBuffer('image/png');
+}
+
+async function buildKenoGif({ picks, drawn, amount, matches, result, resultType }) {
+  const canvas = createCanvas(IMG_W, IMG_H);
+  const ctx = canvas.getContext('2d');
+
+  const frames = [];
+
+  // 1) Karıştırma: sayılar hızlıca yanıp söner
+  for (let i = 0; i < SHUFFLE_FRAMES; i++) {
+    const rand = pickRandom(DRAW_COUNT);
+    frames.push({
+      drawn: rand,
+      active: rand[i * 3 % rand.length],
+      delay: SHUFFLE_DELAY,
+    });
   }
 
-  return canvas.toBuffer('image/png');
+  // 2) Sayılar tek tek çekilir
+  for (let i = 1; i <= drawn.length; i++) {
+    frames.push({
+      drawn: drawn.slice(0, i),
+      active: drawn[i - 1],
+      delay: REVEAL_DELAY,
+    });
+  }
+
+  for (let i = 0; i < PULSES; i++) {
+    frames.push({ drawn, active: null, pulse: i % 2 === 0, delay: PULSE_DELAY });
+  }
+
+
+  frames.push({
+    drawn, active: null, revealed: true, matches, result, resultType,
+    delay: HOLD_MS,
+  });
+
+  const spinMs = frames.reduce((a, f) => a + f.delay, 0);
+
+  const last = frames[frames.length - 1];
+  drawKenoFrame(ctx, { picks, amount, ...last });
+  const palette = quantize(ctx.getImageData(0, 0, IMG_W, IMG_H).data, PALETTE_SIZE, { format: 'rgb565' });
+
+  const gif = GIFEncoder();
+  for (let i = 0; i < frames.length; i++) {
+    const fr = frames[i];
+    drawKenoFrame(ctx, { picks, amount, ...fr });
+    const index = applyPalette(ctx.getImageData(0, 0, IMG_W, IMG_H).data, palette, 'rgb565');
+    gif.writeFrame(index, IMG_W, IMG_H, i === 0
+      ? { palette, delay: fr.delay, repeat: -1 }
+      : { delay: fr.delay });
+    if (i % 4 === 0) await delay(0);
+  }
+  gif.finish();
+
+  return { buffer: Buffer.from(gif.bytes()), spinMs };
 }
 
 function drawLabel(ctx, cx, y, text, fill, stroke) {
@@ -352,19 +435,6 @@ export default {
       const won = payout > amount;
       const xpGain = won ? 12 : 3;
 
-      try {
-        await Economy.findOneAndUpdate(
-          { userId },
-          { $inc: { money: payout, xp: xpGain } },
-          { new: true }
-        );
-      } catch (e) {
-        console.error('[keno] Ödeme hatası:', e);
-      }
-
-      const latest = await Economy.findOne({ userId }).catch(() => null);
-      const balance = latest?.money ?? 0;
-
       let resultText = null;
       let resultType = 'lose';
       if (isJackpot) {
@@ -382,34 +452,98 @@ export default {
       }
 
       const legend = '🔵 Seçtiğin sayılar • 🟠 Çekilen sayılar • 🟢 Tutan sayılar';
+      const picksText = picks.map((n) => String(n).padStart(2, '0')).join(' ');
       const content =
-        `🎯 <@${userId}> **KENO** • Bahis: **${fmt(amount)}** coin\n` +
+        `<@${userId}> **KENO** • Bahis: **${fmt(amount)}** coin\n` +
         `${legend}\n` +
-        `📋 Seçimin: \`${picks.map((n) => String(n).padStart(2, '0')).join(' ')}\``;
+        `Seçimin: \`${picksText}\``;
 
-      const finalState = {
-        picks, drawn, amount,
-        revealed: true, matches, payout,
-        jackpot: isJackpot,
-        result: resultText,
-        resultType,
-      };
-
-      let imageOk = true;
-      let gameMsg;
+      // Animasyonlu çekiliş GIF'i
+      let gifBuffer = null;
+      let spinMs = 0;
       try {
-        gameMsg = await message.channel.send({
-          content,
-          files: [kenoAttachment({ picks, amount, revealed: false, status: 'Sayılar çekiliyor...' })],
+        const built = await buildKenoGif({
+          picks, drawn, amount, matches,
+          result: resultText, resultType,
         });
+        gifBuffer = built.buffer;
+        spinMs = built.spinMs;
       } catch (e) {
-        imageOk = false;
-        console.error('[keno] Tahta gönderilemedi:', e?.message || e);
+        console.error('[keno] GIF oluşturulamadı:', e?.message || e);
       }
 
-      if (!imageOk) {
+      const resultEmbed = (balance) => manager.sender.embed({
+        color: isJackpot
+          ? manager.sender.colors.purple
+          : resultType === 'win' ? manager.sender.colors.green
+            : resultType === 'push' ? manager.sender.colors.orange
+              : manager.sender.colors.liveRed,
+        title: isJackpot
+          ? 'KENO — JACKPOT!'
+          : won ? '🎉 KENO — KAZANDIN!'
+            : resultType === 'push' ? '😐 KENO — BERABERE'
+              : 'KENO — KAYBETTİN',
+        description:
+          `💰 Bahis: **${fmt(amount)}** coin\n` +
+          `Eşleşme: **${matches}/${PICK_COUNT}**\n` +
+          `Ödeme: **${payout > 0 ? `+${fmt(payout)}` : '0'}** coin\n` +
+          `Bakiye: **${fmt(balance)}** coin\n\n` +
+          `${resultText}\n\n` +
+          `Seçimin: \`${picksText}\`\n` +
+          `${legend}`,
+        image: 'attachment://keno.gif',
+        footer: { text: 'Keno • 1-80 arası 10 sayı, 20 sayı çekilir' },
+      });
+
+      const spinEmbed = manager.sender.embed({
+        color: manager.sender.colors.purple,
+        title: '🎯 KENO — ÇEKİLİŞ',
+        description:
+          `Bahis: **${fmt(amount)}** coin\n` +
+          `Seçimin: \`${picksText}\`\n` +
+          `**${DRAW_COUNT}** sayı çekiliyor...\n\n` +
+          `${legend}`,
+        image: 'attachment://keno.gif',
+        footer: { text: 'Keno • 1-80 arası 10 sayı, 20 sayı çekilir' },
+      });
+
+      let gameMsg = null;
+      let usedGif = false;
+
+      if (gifBuffer) {
         try {
-          gameMsg = await message.channel.send({ embeds: [buildTextEmbed(manager, { picks, drawn, matches, amount, payout, resultText, resultType, balance, jackpot: isJackpot })] });
+          gameMsg = await message.channel.send({
+            content,
+            embeds: [spinEmbed],
+            files: [new AttachmentBuilder(gifBuffer, { name: 'keno.gif' })],
+          });
+          usedGif = true;
+        } catch (e) {
+          console.error('[keno] GIF mesajı gönderilemedi:', e?.message || e);
+        }
+      }
+
+      if (!gameMsg) {
+        try {
+          gameMsg = await message.channel.send({
+            content,
+            files: [kenoAttachment({
+              picks, drawn, amount,
+              revealed: true, matches, payout,
+              result: resultText, resultType,
+            })],
+          });
+        } catch (e) {
+          console.error('[keno] Tahta gönderilemedi:', e?.message || e);
+        }
+      }
+
+      if (!gameMsg) {
+        try {
+          const latest = await Economy.findOne({ userId }).catch(() => null);
+          gameMsg = await message.channel.send({
+            embeds: [buildTextEmbed(manager, { picks, drawn, matches, amount, payout, resultText, resultType, balance: latest?.money ?? 0, jackpot: isJackpot })],
+          });
         } catch (e2) {
           console.error('[keno] Mesaj gönderilemedi:', e2?.message || e2);
           await refund();
@@ -418,20 +552,28 @@ export default {
         }
       }
 
-      if (!imageOk) return;
-
-      await delay(1200);
-
-      try {
-        await gameMsg.edit({
-          content,
-          files: [kenoAttachment(finalState)],
-        });
-      } catch (e) {
-        console.error('[keno] Sonuç görseli güncellenemedi, metne düşülüyor:', e?.message || e);
+      if (payout > 0 || xpGain > 0) {
         try {
-          await message.channel.send({ embeds: [buildTextEmbed(manager, { picks, drawn, matches, amount, payout, resultText, resultType, balance, jackpot: isJackpot })] });
-        } catch (_) {}
+          await Economy.findOneAndUpdate(
+            { userId },
+            { $inc: { money: payout, xp: xpGain } },
+            { new: true }
+          );
+        } catch (e) {
+          console.error('[keno] Ödeme hatası:', e);
+        }
+      }
+
+      const latest = await Economy.findOne({ userId }).catch(() => null);
+      const balance = latest?.money ?? 0;
+
+      if (usedGif) {
+        await delay(spinMs);
+        try {
+          await gameMsg.edit({ embeds: [resultEmbed(balance)] });
+        } catch (e) {
+          console.error('[keno] Sonuç embed güncellenemedi:', e?.message || e);
+        }
       }
     } finally {
       activeGames.delete(userId);
@@ -462,12 +604,12 @@ function buildTextEmbed(manager, { picks, drawn, matches, amount, payout, result
 
   return manager.sender.embed({
     color,
-    title: jackpot ? '🎉 KENO — JACKPOT!' : '🎯 KENO SONUCU',
+    title: jackpot ? 'KENO — JACKPOT!' : 'KENO SONUCU',
     description:
-      `💰 Bahis: **${fmt(amount)}** coin\n` +
-      `🎯 Eşleşme: **${matches}/${PICK_COUNT}**\n` +
-      `💸 Ödeme: **${payout > 0 ? `+${fmt(payout)}` : '0'}** coin\n` +
-      `💼 Bakiye: **${fmt(balance)}** coin\n\n` +
+      `Bahis: **${fmt(amount)}** coin\n` +
+      `Eşleşme: **${matches}/${PICK_COUNT}**\n` +
+      `Ödeme: **${payout > 0 ? `+${fmt(payout)}` : '0'}** coin\n` +
+      `Bakiye: **${fmt(balance)}** coin\n\n` +
       `${resultText}\n\n` +
       `${lines.join('\n')}\n\n` +
       `🔵 Seçimin • 🟠 Çekilen • ✅ Tutan`,
