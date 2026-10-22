@@ -51,6 +51,7 @@ Create ` config.json ` file and set permission settings:
 | **client-load** | Client emoji load | emoji, emoji name | stable |
 | **client-list** | Client emoji load | emoji | stable |
 | **eval** | command test | text | stable |
+| **gif** | Converts the uploaded photo into a GIF (works in DM and guilds) | attachment | stable |
 
 ### contents: General User
 | command | comment | values | situation |

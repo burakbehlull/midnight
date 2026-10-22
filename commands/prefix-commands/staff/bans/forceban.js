@@ -5,7 +5,7 @@ import { PermissionFlagsBits } from 'discord.js';
 export default {
   name: 'forceban',
   description: 'Kullanıcıyı sunucudan force ban atar. Normal bana göre: son 7 gün mesaj siler, DM bildirir.',
-  aliases: ['force-ban', 'fban'],
+  aliases: ['force-ban', 'fban', 'infaz'],
   usage: 'forceban <@user / userID> [sebep]',
   cooldown: 15,
   category: 'bans',
