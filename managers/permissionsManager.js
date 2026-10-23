@@ -86,21 +86,6 @@ class PermissionsManager {
     if (cmdRoleOk) return true;
     if (cmdAuthOk) return true;
 
-    /*
-    console.log('[perm-deny]', {
-      guild: this.guild?.id,
-      user: this.user?.id,
-      memberVar: Boolean(this.member),
-      authorities: Array.isArray(authorities) ? authorities.map(String) : String(authorities),
-      isAuthority: this.permissionSettings?.isAuthority,
-      isOwners: this.permissionSettings?.isOwners,
-      isRole: this.permissionSettings?.isRole,
-      perms: this.member?.permissions?.toArray?.() ?? 'YOK',
-      memberRoles: this.member?.roles?.cache?.map(r => `${r.name}:${r.id}`) ?? 'YOK',
-      guildRolesCache: this.guild?.roles?.cache?.size
-    });
-    */
-
     return false;
   }
 

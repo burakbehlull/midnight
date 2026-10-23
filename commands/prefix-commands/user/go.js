@@ -23,17 +23,20 @@ export default {
       if (!message.member.voice.channel) return manager.sender.reply(manager.sender.errorEmbed("❌ Önce bir ses kanalına girmen gerekiyor."));
 
       const btn = new Button();
-      btn.add(`git-accept-${message.author.id}`, "✅ Kabul Et", btn.style.Success);
-      btn.add(`git-deny-${message.author.id}`, "❌ Reddet", btn.style.Danger);
+      btn.add(`git-accept-${message.author.id}`, "Kabul Et", btn.style.Success);
+      btn.add(`git-deny-${message.author.id}`, "Reddet", btn.style.Danger);
       const row = btn.build();
 
 	  const sentEmbed = manager.sender.classic(`${targetUser} \n ${message.author} senin yanına gelmek istiyor. Kabul ediyor musun?`)
-      await message.channel.send({
-        embeds: [sentEmbed],
-        components: [row]
-      }).catch(() => {
+      let sentMessage;
+      try {
+        sentMessage = await message.channel.send({
+          embeds: [sentEmbed],
+          components: [row]
+        });
+      } catch {
         return manager.sender.reply(manager.sender.errorEmbed("❌ İstek gönderilemedi."));
-      });
+      }
 
       const filter = (i) =>
         i.user.id === targetUser.id &&
@@ -45,20 +48,20 @@ export default {
         await interaction.deferUpdate();
         if (interaction.customId === `git-accept-${message.author.id}`) {
           await message.member.voice.setChannel(targetUser.voice.channel);
-		  const embed = manager.sender.classic(`${message.author} başarıyla yanına taşındı.`)
-          await interaction.followUp({ embeds: [embed], ephemeral: true });
+          const embed = manager.sender.classic(`${targetUser} isteği kabul etti.\n${message.author} yanına taşındı.`)
+          await sentMessage.edit({ embeds: [embed], components: [] }).catch(() => {});
         } else {
-		  const embed = manager.sender.errorEmbed(`❌ ${message.author} isteği reddedildi.`)
-          await interaction.followUp({ embeds: [embed], ephemeral: true });
+          const embed = manager.sender.errorEmbed(`❌ ${targetUser} isteği reddetti.\n${message.author} taşınmadı.`)
+          await sentMessage.edit({ embeds: [embed], components: [] }).catch(() => {});
         }
         collector.stop();
       });
 
-      collector.on("end", (_, reason) => {
-		const embed = manager.sender.errorEmbed("⏰ İstek zaman aşımına uğradı.")
-        if (reason === "time") {
-          targetUser.send({embeds: [embed]});
-        }
+      collector.on("end", async (_, reason) => {
+        if (reason !== "time") return;
+        const embed = manager.sender.errorEmbed("⏰ İstek zaman aşımına uğradı.")
+        await sentMessage.edit({ embeds: [embed], components: [] }).catch(() => {});
+        targetUser.send({ embeds: [embed] }).catch(() => {});
       });
 
     } catch (err) {

@@ -23,8 +23,8 @@ export default {
       if (!message.member.voice.channel) return manager.sender.reply(manager.sender.errorEmbed("❌ Önce bir ses kanalına girmen gerekiyor."));
 
       const btn = new Button();
-      btn.add(`cek-accept-${message.author.id}`, "✅ Kabul Et", btn.style.Success);
-      btn.add(`cek-deny-${message.author.id}`, "❌ Reddet", btn.style.Danger);
+      btn.add(`cek-accept-${message.author.id}`, "Kabul Et", btn.style.Success);
+      btn.add(`cek-deny-${message.author.id}`, "Reddet", btn.style.Danger);
       const row = btn.build();
 
 	    const sentEmbed = manager.sender.classic(`${target}, ${message.author} seni bulunduğu odaya çekmek istiyor. Kabul ediyor musun?`)
@@ -43,13 +43,13 @@ export default {
         await interaction.deferUpdate();
         if (interaction.customId === `cek-accept-${message.author.id}`) {
           await target.voice.setChannel(message.member.voice.channel);
-		  const IEmbed = manager.sender.classic(`${target} başarıyla ${message.author}'ın yanına çekildi.`)
+		  const IEmbed = manager.sender.classic(`${target} isteği kabul etti.\n${message.author}'ın odasına çekildi.`)
           await interaction.editReply({
             embeds: [IEmbed],
             components: []
           });
         } else {
-		  const IEmbed = manager.sender.classic(`❌ ${target}, ${message.author}'ın çekme isteğini reddetti.`)
+		  const IEmbed = manager.sender.errorEmbed(`❌ ${target} isteği reddetti.\n${message.author}'ın odasına çekilmedi.`)
 			
           await interaction.editReply({
             embeds: [IEmbed],
