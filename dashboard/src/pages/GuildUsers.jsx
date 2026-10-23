@@ -32,6 +32,7 @@ export default function GuildUsers() {
   const [search, setSearch] = useState('')
   const [searchDebounced, setSearchDebounced] = useState('')
   const [page, setPage] = useState(0)
+  const [loadError, setLoadError] = useState(null)
 
   // İşlemler state
   const [actionLoading, setActionLoading] = useState(false)
@@ -49,7 +50,7 @@ export default function GuildUsers() {
   }, [search])
 
   // Ana veri çekme
-  const fetchData = async () => {
+  const fetchData = async (forceRefresh = false) => {
     try {
       setLoading(true)
       const [guildsRes, membersRes, rolesRes] = await Promise.all([
@@ -57,7 +58,8 @@ export default function GuildUsers() {
         api.getGuildMembers(guildId, {
           limit: PAGE_SIZE,
           offset: page * PAGE_SIZE,
-          search: searchDebounced
+          search: searchDebounced,
+          refresh: forceRefresh
         }),
         api.getGuildRoles(guildId)
       ])
@@ -67,8 +69,11 @@ export default function GuildUsers() {
       setMembers(membersRes.data.members || [])
       setTotal(membersRes.data.total || 0)
       setRoles(rolesRes.data || [])
+      setLoadError(null)
     } catch (error) {
-      toast.error('Kullanıcılar yüklenemedi: ' + (error.response?.data?.error || error.message))
+      const message = error.response?.data?.error || error.message
+      setLoadError(message)
+      toast.error('Kullanıcılar yüklenemedi: ' + message)
     } finally {
       setLoading(false)
     }
@@ -110,7 +115,7 @@ export default function GuildUsers() {
         toast.success('Rol başarıyla kaldırıldı')
       }
       closeModal()
-      await fetchData()
+      await fetchData(true)
     } catch (error) {
       toast.error('İşlem başarısız: ' + (error.response?.data?.error || error.message))
     } finally {
@@ -126,7 +131,7 @@ export default function GuildUsers() {
       await api.banUser(guildId, modalMember.id, formData.reason)
       toast.success('Kullanıcı banlandı')
       closeModal()
-      await fetchData()
+      await fetchData(true)
     } catch (error) {
       toast.error('Banlanamadı: ' + (error.response?.data?.error || error.message))
     } finally {
@@ -142,7 +147,7 @@ export default function GuildUsers() {
       await api.kickUser(guildId, modalMember.id, formData.reason)
       toast.success('Kullanıcı sunucudan atıldı')
       closeModal()
-      await fetchData()
+      await fetchData(true)
     } catch (error) {
       toast.error('Atılamadı: ' + (error.response?.data?.error || error.message))
     } finally {
@@ -167,7 +172,7 @@ export default function GuildUsers() {
         toast.success('Timeout kaldırıldı')
       }
       closeModal()
-      await fetchData()
+      await fetchData(true)
     } catch (error) {
       toast.error('Timeout işlemi başarısız: ' + (error.response?.data?.error || error.message))
     } finally {
@@ -246,7 +251,7 @@ export default function GuildUsers() {
             )}
           </div>
           <button
-            onClick={fetchData}
+            onClick={() => fetchData(true)}
             className="px-4 py-2 bg-midnight-base hover:bg-midnight-light rounded-lg transition-colors"
           >
             🔄 Yenile
@@ -258,8 +263,14 @@ export default function GuildUsers() {
       {members.length === 0 ? (
         <EmptyState
           icon="👥"
-          title="Kullanıcı Bulunamadı"
-          description={search ? 'Aramanızla eşleşen kullanıcı yok.' : 'Bu sunucuda üye bulunmamaktadır.'}
+          title={loadError ? 'Kullanıcılar Yüklenemedi' : 'Kullanıcı Bulunamadı'}
+          description={
+            loadError
+              ? `API hatası: ${loadError}`
+              : search
+                ? 'Aramanızla eşleşen kullanıcı yok.'
+                : 'Bu sunucuda üye bulunmamaktadır.'
+          }
         />
       ) : (
         <div className="glass rounded-xl overflow-hidden">
@@ -290,7 +301,11 @@ export default function GuildUsers() {
                           <div className="font-semibold truncate">
                             {m.displayName || m.globalName || m.username}
                           </div>
-                          <div className="text-xs text-gray-400 truncate">{m.username}#{m.discriminator || '0000'}</div>
+                          <div className="text-xs text-gray-400 truncate">
+                            {m.discriminator && m.discriminator !== '0'
+                              ? `${m.username}#${m.discriminator}`
+                              : `@${m.username}`}
+                          </div>
                           <div className="flex gap-1 mt-0.5 flex-wrap">
                             {m.isOwner && <span className="px-1.5 py-0.5 text-[10px] rounded bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">👑 SAHİP</span>}
                             {!m.isOwner && m.isAdmin && <span className="px-1.5 py-0.5 text-[10px] rounded bg-red-500/20 text-red-400 border border-red-500/30">ADMİN</span>}

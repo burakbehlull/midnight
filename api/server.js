@@ -51,6 +51,108 @@ const upload = multer({
   }
 });
 
+
+const memberListCache = new Map();
+const MEMBERS_CACHE_TTL = 30 * 1000;
+const MEMBERS_FETCH_COOLDOWN = 60 * 1000;
+
+const TR_FOLD = { ı: 'i', ş: 's', ğ: 'g', ü: 'u', ö: 'o', ç: 'c' };
+
+
+function normalizeSearch(value) {
+  return String(value ?? '')
+    .replace(/İ/g, 'i')
+    .replace(/I/g, 'ı')
+    .toLowerCase()
+    .replace(/[ışğüöç]/g, (char) => TR_FOLD[char])
+    .replace(/#/g, '')
+    .trim();
+}
+
+function memberSearchText(entry) {
+  return normalizeSearch(
+    [entry.username, entry.displayName, entry.globalName, entry.id, entry.tag]
+      .filter(Boolean)
+      .join(' ')
+  );
+}
+
+function buildMemberEntry(member, guild) {
+  const highestRole = member.roles?.highest;
+  const roles = Array.from(member.roles?.cache?.values() ?? [])
+    .filter((role) => role.id !== guild.id)
+    .sort((a, b) => b.position - a.position)
+    .slice(0, 5)
+    .map((role) => ({
+      id: role.id,
+      name: role.name,
+      color: role.color,
+      hexColor: role.hexColor,
+      position: role.position
+    }));
+
+  return {
+    id: member.user.id,
+    userId: member.user.id,
+    username: member.user.username,
+    globalName: member.user.globalName || null,
+    displayName: member.displayName || member.user.globalName || member.user.username,
+    discriminator: member.user.discriminator || '0',
+    tag: member.user.tag || member.user.username,
+    bot: member.user.bot,
+    avatar: member.user.displayAvatarURL({ size: 128 }),
+    guildAvatar: member.avatarURL ? member.avatarURL({ size: 128 }) : null,
+    joinedAt: member.joinedAt ? member.joinedAt.toISOString() : null,
+    joinedTimestamp: member.joinedTimestamp || 0,
+    createdAt: member.user.createdAt ? member.user.createdAt.toISOString() : null,
+    highestRole: highestRole && highestRole.id !== guild.id
+      ? {
+          id: highestRole.id,
+          name: highestRole.name,
+          color: highestRole.color,
+          hexColor: highestRole.hexColor
+        }
+      : null,
+    roles,
+    isOwner: guild.ownerId === member.user.id,
+    isAdmin: member.permissions?.has('Administrator') || false,
+    isModerator: member.permissions?.has('BanMembers') || member.permissions?.has('KickMembers') || false,
+    timedOutUntil: member.communicationDisabledUntilTimestamp || null
+  };
+}
+
+function getGuildMemberList(guild, force = false) {
+  const cached = memberListCache.get(guild.id);
+  if (cached && !force && Date.now() - cached.at < MEMBERS_CACHE_TTL) {
+    return Promise.resolve(cached.list);
+  }
+
+
+  const incomplete = guild.members.cache.size < guild.memberCount;
+  const cooledDown = Date.now() - (cached?.lastFetchAt ?? 0) > MEMBERS_FETCH_COOLDOWN;
+  const needsGateway = (incomplete && cooledDown) || guild.members.cache.size === 0;
+
+  return (needsGateway ? guild.members.fetch().catch(() => null) : Promise.resolve(null))
+    .then(() => {
+      const list = Array.from(guild.members.cache.values())
+        .map((member) => buildMemberEntry(member, guild))
+        .sort((a, b) => {
+          if (a.isOwner !== b.isOwner) return a.isOwner ? -1 : 1;
+          if (a.isAdmin !== b.isAdmin) return a.isAdmin ? -1 : 1;
+          if (a.isModerator !== b.isModerator) return a.isModerator ? -1 : 1;
+          return (b.joinedTimestamp || 0) - (a.joinedTimestamp || 0);
+        });
+
+      memberListCache.set(guild.id, {
+        at: Date.now(),
+        list,
+        lastFetchAt: needsGateway ? Date.now() : cached?.lastFetchAt ?? 0
+      });
+
+      return list;
+    });
+}
+
 class MidnightAPI {
   constructor(client) {
     this.client = client;
@@ -777,66 +879,39 @@ class MidnightAPI {
       }
     });
 
-    // Get guild members with search support
+    // List guild members (cache-first; arama + sayfalama)
     this.app.get('/api/guilds/:guildId/members', async (req, res) => {
       try {
         const { guildId } = req.params;
-        const { search = '', limit = 50, offset = 0 } = req.query;
+        const { search = '', limit = 50, offset = 0, refresh = '' } = req.query;
 
         const guild = this.client.guilds.cache.get(guildId);
         if (!guild) {
           return res.status(404).json({ error: 'Guild not found' });
         }
 
-        // Fetch all guild members
-        await guild.members.fetch();
+        const memberList = await getGuildMemberList(guild, refresh === '1' || refresh === 'true');
 
-        let members = Array.from(guild.members.cache.values());
+        // Arama: kullanıcı adı, görünen ad, global ad, ID ve etiket
+        const query = normalizeSearch(search);
+        const filtered = query
+          ? memberList.filter((entry) => memberSearchText(entry).includes(query))
+          : memberList;
 
-        // Filter by search query (username or global name)
-        if (search && search.trim() !== '') {
-          const searchLower = search.toLowerCase().trim();
-          members = members.filter(member => {
-            const username = member.user.username.toLowerCase();
-            const globalName = (member.user.globalName || '').toLowerCase();
-            return username.includes(searchLower) || globalName.includes(searchLower);
-          });
-        }
-
-        // Sort by username
-        members.sort((a, b) => a.user.username.localeCompare(b.user.username));
-
-        const total = members.length;
-        const paginatedMembers = members.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
-
-        const membersData = paginatedMembers.map(member => ({
-          userId: member.user.id,
-          username: member.user.username,
-          globalName: member.user.globalName || null,
-          avatar: member.user.displayAvatarURL({ size: 128 }),
-          bot: member.user.bot,
-          joinedAt: member.joinedTimestamp,
-          roles: Array.from(member.roles.cache.values())
-            .filter(r => r.id !== guild.id) // @everyone hariç
-            .sort((a, b) => b.position - a.position)
-            .slice(0, 5)
-            .map(r => ({
-              id: r.id,
-              name: r.name,
-              color: r.color,
-              position: r.position
-            }))
-        }));
+        const numLimit = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 1000);
+        const numOffset = Math.max(parseInt(offset, 10) || 0, 0);
+        const paginated = filtered.slice(numOffset, numOffset + numLimit);
 
         res.json({
-          total,
-          offset: parseInt(offset),
-          limit: parseInt(limit),
-          members: membersData
+          total: filtered.length,
+          returned: paginated.length,
+          offset: numOffset,
+          limit: numLimit,
+          members: paginated
         });
 
       } catch (error) {
-        console.error('Error fetching members:', error);
+        console.error('Error listing members:', error);
         res.status(500).json({ error: error.message });
       }
     });
@@ -941,7 +1016,7 @@ class MidnightAPI {
       }
     });
 
-    // Update guild modlog config
+
     this.app.put('/api/guilds/:guildId/modlog', async (req, res) => {
       try {
         const { guildId } = req.params;
@@ -1518,101 +1593,6 @@ class MidnightAPI {
 
       } catch (error) {
         console.error('Error replying to DM:', error);
-        res.status(500).json({ error: error.message });
-      }
-    });
-
-    // List guild members with pagination/search
-    this.app.get('/api/guilds/:guildId/members', async (req, res) => {
-      try {
-        const { guildId } = req.params;
-        const { limit = 100, offset = 0, search = '' } = req.query;
-
-        const guild = this.client.guilds.cache.get(guildId);
-        if (!guild) {
-          return res.status(404).json({ error: 'Guild not found' });
-        }
-
-        const members = await guild.members.fetch().catch(() => null);
-        if (!members) {
-          return res.status(500).json({ error: 'Members could not be fetched' });
-        }
-
-        let memberList = members
-          .filter(m => !m.user.bot)
-          .map(member => {
-            const highestRole = member.roles.highest;
-            const topRoles = Array.from(member.roles.cache.values())
-              .filter(r => r.id !== guild.id)
-              .sort((a, b) => b.position - a.position)
-              .slice(0, 5)
-              .map(r => ({
-                id: r.id,
-                name: r.name,
-                color: r.color,
-                hexColor: r.hexColor,
-                position: r.position
-              }));
-
-            return {
-              id: member.user.id,
-              username: member.user.username,
-              globalName: member.user.globalName || member.user.username,
-              displayName: member.displayName || member.user.globalName || member.user.username,
-              avatar: member.user.displayAvatarURL({ size: 128 }),
-              guildAvatar: member.avatarURL ? member.avatarURL({ size: 128 }) : null,
-              tag: member.user.tag,
-              discriminator: member.user.discriminator,
-              joinedAt: member.joinedAt?.toISOString() || null,
-              joinedTimestamp: member.joinedTimestamp || 0,
-              createdAt: member.user.createdAt.toISOString(),
-              highestRole: highestRole && highestRole.id !== guild.id ? {
-                id: highestRole.id,
-                name: highestRole.name,
-                color: highestRole.color,
-                hexColor: highestRole.hexColor
-              } : null,
-              roles: topRoles,
-              isOwner: guild.ownerId === member.user.id,
-              isAdmin: member.permissions?.has('Administrator') || false,
-              isModerator: member.permissions?.has('BanMembers') || member.permissions?.has('KickMembers') || false,
-              timedOutUntil: member.communicationDisabledUntilTimestamp || null
-            };
-          });
-
-        if (search && search.trim()) {
-          const q = search.trim().toLowerCase();
-          memberList = memberList.filter(m =>
-            m.username.toLowerCase().includes(q) ||
-            m.displayName.toLowerCase().includes(q) ||
-            (m.globalName && m.globalName.toLowerCase().includes(q)) ||
-            m.id.includes(q) ||
-            m.tag.toLowerCase().includes(q)
-          );
-        }
-
-        memberList.sort((a, b) => {
-          if (b.isOwner !== a.isOwner) return b.isOwner - a.isOwner;
-          if (b.isAdmin !== a.isAdmin) return b.isAdmin - a.isAdmin;
-          if (b.isModerator !== a.isModerator) return b.isModerator - a.isModerator;
-          return b.joinedTimestamp - a.joinedTimestamp;
-        });
-
-        const total = memberList.length;
-        const numLimit = Math.min(parseInt(limit), 1000);
-        const numOffset = parseInt(offset);
-        const paginated = memberList.slice(numOffset, numOffset + numLimit);
-
-        return res.json({
-          total,
-          returned: paginated.length,
-          limit: numLimit,
-          offset: numOffset,
-          members: paginated
-        });
-
-      } catch (error) {
-        console.error('Error listing members:', error);
         res.status(500).json({ error: error.message });
       }
     });
