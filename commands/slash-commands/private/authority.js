@@ -122,7 +122,7 @@ export default {
     const manager = new Manager(client, { action: interaction })
 
     const ctrl = await manager.authority.checkOwnerAndBotOwners();
-    if (!ctrl) return message.reply({ content: '❌ Bu komutu kullanmak owner olmalısın.', ephemeral: true });
+    if (!ctrl) return interaction.reply({ content: '❌ Bu komutu kullanmak owner olmalısın.', ephemeral: true });
 
     const subcommandGroup = interaction.options.getSubcommandGroup(false);
     const subcommand = interaction.options.getSubcommand();

@@ -35,7 +35,6 @@ class PermissionsManager {
     } 
   }
 
-  // Klasik genel kontrol
   async control(...authorityFlags) {
     await this.loadSettings();
 
@@ -80,11 +79,27 @@ class PermissionsManager {
 
     const cmdUserOk = Array.isArray(user) && user.length > 0 && user.includes(this.user.id);
     const cmdRoleOk = Array.isArray(roles) && roles.length > 0 && this.member?.roles?.cache?.some(r => roles.includes(r.id));
-    const cmdAuthOk = authFlagEnabled && Array.isArray(authorities) && authorities.length > 0 && this.member?.permissions?.has(authorities);
+    const cmdAuthOk = authFlagEnabled && Array.isArray(authorities) && authorities.length > 0 &&
+      Boolean(this.member) && this.member.permissions.any(authorities);
 
     if (cmdUserOk) return true;
     if (cmdRoleOk) return true;
     if (cmdAuthOk) return true;
+
+    /*
+    console.log('[perm-deny]', {
+      guild: this.guild?.id,
+      user: this.user?.id,
+      memberVar: Boolean(this.member),
+      authorities: Array.isArray(authorities) ? authorities.map(String) : String(authorities),
+      isAuthority: this.permissionSettings?.isAuthority,
+      isOwners: this.permissionSettings?.isOwners,
+      isRole: this.permissionSettings?.isRole,
+      perms: this.member?.permissions?.toArray?.() ?? 'YOK',
+      memberRoles: this.member?.roles?.cache?.map(r => `${r.name}:${r.id}`) ?? 'YOK',
+      guildRolesCache: this.guild?.roles?.cache?.size
+    });
+    */
 
     return false;
   }
@@ -111,9 +126,12 @@ class PermissionsManager {
 
   async isAuthority(...authorities) {
     if (!this.permissionSettings || !this.permissionSettings.isAuthority) return false;
-    if (!authorities.length) return false;
+    if (!this.member) return false;
 
-    return this.member?.permissions?.has(authorities);
+    const flags = authorities.flat(Infinity).filter(Boolean);
+    if (!flags.length) return false;
+
+    return this.member.permissions.any(flags);
   }
   
   async isGuildOwner() {
