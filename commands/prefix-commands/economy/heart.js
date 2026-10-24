@@ -5,6 +5,8 @@ import { emoji } from '#data';
 export default {
   name: 'heart',
   description: 'Birine kalp gönder.',
+  aliases: ["kalp"],
+
   usage: '.heart @kullanıcı',
   category: 'economy',
   

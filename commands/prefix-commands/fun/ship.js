@@ -5,7 +5,7 @@ import Manager from '#managers';
 export default {
     name: "ship",
     usage: "ship [@kullanıcı / ID / Random]",
-    aliases: ["ships", "kalp"],
+    aliases: ["ships"],
     description: 'Ship yapma komutu',
     category: "fun",
     
