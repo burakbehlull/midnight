@@ -1,4 +1,5 @@
 import { ApplicationIntegrationType, InteractionContextType, SlashCommandBuilder, MessageFlags } from 'discord.js';
+import Manager from '#managers';
 
 export default {
     data: new SlashCommandBuilder()
@@ -21,12 +22,15 @@ export default {
         ]),
         
     async execute(client, interaction) {
-        if (interaction.user.id !== "470548458072440842") {
-            return interaction.reply({ 
-                content: '❌ Bu komutu kullanmak için yetkiniz yok.', 
-                flags: MessageFlags.Ephemeral 
-            });
-        }
+
+        const manager = new Manager(client, { action: interaction })
+        const ctrl = await manager.authority.checkOwnerAndBotOwners();
+
+        if (!ctrl) return interaction.reply({ 
+             content: '❌ Bu komutu kullanmak için yetkiniz yok.', 
+            flags: MessageFlags.Ephemeral 
+        });
+        
 
         const mesaj = interaction.options.getString('mesaj');
 		
