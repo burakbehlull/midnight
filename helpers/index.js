@@ -26,6 +26,7 @@ import {
 import * as actionRolesHelper from "./actionRolesHelper.js"
 import * as gifResolver from "./gifResolver.js"
 import * as gameIcons from "./gameIcons.js"
+import * as settingsPanel from "./settingsPanel.js"
 
 
 export {
@@ -39,6 +40,7 @@ export {
 	actionRolesHelper,
 	gifResolver,
 	gameIcons,
+	settingsPanel,
 	Button, Modal,
 	
 	fetchPartialNeed,

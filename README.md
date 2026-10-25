@@ -133,9 +133,6 @@ Create ` config.json ` file and set permission settings:
 ### contents: Setting and Setup
 | command | comment | values | situation |
 | ------ | ------ | ------ | ------ |
-| **settings** | Adjusts bot settings | options, role, channel,  user, value | stable |
-| **authority** | Adjusts authorities settings | options, role, user, value | stable |
-| **modlog** | Adjusts modlog settings | options, role, value | stable |
 | **komutpanel** | authority ones command systems | .. | stable |
 | **ticket-setup** | creates embed tickets | .. | stable |
 | **room-setup** | private room creater | .. | stable |
@@ -181,6 +178,8 @@ Create ` config.json ` file and set permission settings:
 | **mines** | mines game | bet amount | stable |
 | **wheel** | wheel game | bet amount | stable |
 | **dice** | dice duel (7 over/under single, higher roll wins PvP) | bet amount and over/under (1 userly), user and bet amount (userly) | stable |
+| **hilo** | predict whether the next card will be high or low | bet amount | stable |
+
 | **keno** | keno (pick 10 of 1-80, system draws 20) | bet amount and 10 numbers, or "rastgele" | stable |
 | **kiss** | kiss user | user | stable |
 | **slap** | slaps user | user | stable |
