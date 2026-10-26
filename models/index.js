@@ -24,6 +24,9 @@ import MarketItem from "./MarketItem.js"
 import UserPortfolio from "./UserPortfolio.js"
 import NicknameHistory from "./NicknameHistory.js"
 import BoosterRole from "./BoosterRole.js"
+import Bank from "./Bank.js"
+import BankAccount from "./BankAccount.js"
+import BankLoan from "./BankLoan.js"
 
 
 import DirectMessage from "./DirectMessage.js"
@@ -58,6 +61,9 @@ export {
 	UserPortfolio,
 	NicknameHistory,
 	BoosterRole,
+	Bank,
+	BankAccount,
+	BankLoan,
 	DirectMessage,
 	RoleHistory,
 	ActionGroup,

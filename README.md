@@ -160,6 +160,9 @@ Create ` config.json ` file and set permission settings:
 | **send** | users send money | user, money | stable |
 | **envanter** | users envanter | .. | stable |
 | **profile** | users profile | .. | stable |
+| **kripto** | crypto/stock exchange (prices, buy/sell, portfolio, history) | .. | stable |
+| **bank** | bank panel: bank picker (registered banks listed first), demand deposit/withdraw, term deposit (7/14/21/30-day buttons with payout preview), loans (daily interest, overdue x4), per-user history; `.bank` starts a bank setup request | bank name (when opening) | stable |
+| **mybank** | your registered accounts + the bank you manage (CEO/partner); "Bankamı Yönet" opens the management panel (status, deposits/loans, account balances, adjustable rates) | .. | stable |
 
 ### contents: Fun and Game
 | command | comment | values | situation |
@@ -180,6 +183,7 @@ Create ` config.json ` file and set permission settings:
 | **wheel** | wheel game | bet amount | stable |
 | **dice** | dice duel (7 over/under single, higher roll wins PvP) | bet amount and over/under (1 userly), user and bet amount (userly) | stable |
 | **hilo** | predict whether the next card will be high or low | bet amount | stable |
+| **bingo** | bingo / tombola (1-90 drawn, system rolls a random 3x3 card shown as buttons, optional "Sayı Gir" button to enter your own numbers, first to complete a line takes the pot) | bet amount | stable |
 
 | **keno** | keno (pick 10 of 1-80, system draws 20) | bet amount and 10 numbers, or "rastgele" | stable |
 | **kiss** | kiss user | user | stable |

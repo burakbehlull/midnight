@@ -12,6 +12,7 @@ import * as Loaders from "./loaders.js"
 import Utils from "./utils.js"
 import * as marketHelper from "./marketHelper.js"
 import * as cosmeticsHelper from "./cosmeticsHelper.js"
+import * as bankHelper from "./bankHelper.js"
 
 import { checkCommandRestrictions, handleAutoDelete } from "./commandRestrictions.js"
 import {
@@ -37,6 +38,7 @@ export {
 	Utils,
 	marketHelper,
 	cosmeticsHelper,
+	bankHelper,
 	actionRolesHelper,
 	gifResolver,
 	gameIcons,
