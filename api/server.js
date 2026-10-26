@@ -16,6 +16,10 @@ import GuildPermission from '../models/GuildPermission.js';
 import ModLogConfig from '../models/ModLogConfig.js';
 import CommandSettings from '../models/CommandSettings.js';
 import { ActionGroup, ActionEntry } from '../models/index.js';
+import Bank from '../models/Bank.js';
+import BankAccount from '../models/BankAccount.js';
+import BankLoan from '../models/BankLoan.js';
+import { getBankTotals, computeBankValue } from '../helpers/bankHelper.js';
 import { errorHandler, notFoundHandler, requestLogger } from './middleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -151,6 +155,24 @@ function getGuildMemberList(guild, force = false) {
 
       return list;
     });
+}
+
+async function resolveUserNames(client, ids) {
+  const map = {};
+  const unique = [...new Set(ids.filter(Boolean))];
+  await Promise.all(
+    unique.map(async (id) => {
+      const user = await client.users.fetch(id).catch(() => null);
+      map[id] = user
+        ? {
+            username: user.username,
+            globalName: user.globalName || null,
+            avatar: user.displayAvatarURL({ size: 64 })
+          }
+        : null;
+    })
+  );
+  return map;
 }
 
 class MidnightAPI {
@@ -1275,6 +1297,215 @@ class MidnightAPI {
 
       } catch (error) {
         console.error('Error fetching global economy:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // ---------- BANKS ----------
+
+    // List all banks with totals
+    this.app.get('/api/banks', async (req, res) => {
+      try {
+        const banks = await Bank.find({}).sort({ isCentral: -1, createdAt: 1 });
+
+        const data = await Promise.all(
+          banks.map(async (bank) => {
+            const [totals, value] = await Promise.all([
+              getBankTotals(bank.bankId),
+              computeBankValue(bank)
+            ]);
+            return {
+              bankId: bank.bankId,
+              name: bank.name,
+              emoji: bank.emoji,
+              ownerId: bank.ownerId,
+              ownerName: bank.isCentral ? 'Midnight Yönetimi' : bank.ownerName,
+              partners: bank.partners || [],
+              partnerNames: bank.partnerNames || [],
+              capital: bank.capital || 0,
+              reserve: bank.reserve || 0,
+              isCentral: !!bank.isCentral,
+              status: bank.status,
+              rates: bank.rates || {},
+              createdAt: bank.createdAt,
+              value: value.value,
+              accountCount: totals.accountCount,
+              depositTotal: totals.depositTotal,
+              termTotal: totals.termTotal,
+              loanCount: totals.loanCount,
+              loanTotal: totals.loanTotal,
+              loanPrincipal: totals.loanPrincipal
+            };
+          })
+        );
+
+        res.json(data);
+      } catch (error) {
+        console.error('Error fetching banks:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Single bank detail (accounts, loans, transactions)
+    this.app.get('/api/banks/:bankId', async (req, res) => {
+      try {
+        const bank = await Bank.findOne({ bankId: req.params.bankId });
+        if (!bank) return res.status(404).json({ error: 'Banka bulunamadı' });
+
+        const totals = await getBankTotals(bank.bankId);
+        const value = await computeBankValue(bank);
+
+        const history = [];
+        for (const acc of totals.accounts) {
+          for (const h of acc.history || []) {
+            history.push({ userId: acc.userId, type: h.type, amount: h.amount, note: h.note, time: h.time });
+          }
+        }
+        history.sort((a, b) => new Date(b.time) - new Date(a.time));
+
+        const flow = { depositIn: 0, withdrawOut: 0, termIn: 0, loanOut: 0, loanRepaid: 0 };
+        for (const h of history) {
+          if (h.type === 'deposit') flow.depositIn += h.amount || 0;
+          else if (h.type === 'withdraw') flow.withdrawOut += h.amount || 0;
+          else if (h.type === 'term_open') flow.termIn += h.amount || 0;
+          else if (h.type === 'loan_take') flow.loanOut += h.amount || 0;
+          else if (h.type === 'loan_pay') flow.loanRepaid += h.amount || 0;
+        }
+
+        const sortedAccounts = [...totals.accounts].sort((a, b) => (b.balance || 0) - (a.balance || 0));
+
+        const names = await resolveUserNames(this.client, [
+          ...sortedAccounts.map((a) => a.userId),
+          ...totals.loans.map((l) => l.userId)
+        ]);
+
+        res.json({
+          bank: {
+            bankId: bank.bankId,
+            name: bank.name,
+            emoji: bank.emoji,
+            ownerId: bank.ownerId,
+            ownerName: bank.isCentral ? 'Midnight Yönetimi' : bank.ownerName,
+            partners: bank.partners || [],
+            partnerNames: bank.partnerNames || [],
+            capital: bank.capital || 0,
+            reserve: bank.reserve || 0,
+            isCentral: !!bank.isCentral,
+            status: bank.status,
+            rates: bank.rates || {},
+            createdAt: bank.createdAt
+          },
+          value,
+          totals: {
+            accountCount: totals.accountCount,
+            depositTotal: totals.depositTotal,
+            termTotal: totals.termTotal,
+            loanCount: totals.loanCount,
+            loanTotal: totals.loanTotal,
+            loanPrincipal: totals.loanPrincipal
+          },
+          flow,
+          accounts: sortedAccounts.map((a) => ({
+            userId: a.userId,
+            displayName: names[a.userId]?.globalName || names[a.userId]?.username || a.userId,
+            avatar: names[a.userId]?.avatar || null,
+            balance: a.balance || 0,
+            termTotal: (a.deposits || []).reduce((s, d) => s + (d.amount || 0), 0),
+            deposits: (a.deposits || []).map((d) => ({
+              amount: d.amount,
+              dailyRate: d.dailyRate,
+              days: d.days,
+              maturesAt: d.maturesAt,
+              payout: d.payout
+            }))
+          })),
+          loans: totals.loans.map((l) => ({
+            loanId: l.loanId,
+            userId: l.userId,
+            displayName: names[l.userId]?.globalName || names[l.userId]?.username || l.userId,
+            principal: l.principal,
+            owed: l.owed,
+            dailyRate: l.dailyRate,
+            days: l.days,
+            takenAt: l.takenAt,
+            dueDate: l.dueDate,
+            overdue: !!l.overdue,
+            status: l.status
+          })),
+          transactions: history.slice(0, 100).map((h) => ({
+            ...h,
+            displayName: names[h.userId]?.globalName || names[h.userId]?.username || h.userId
+          }))
+        });
+      } catch (error) {
+        console.error('Error fetching bank detail:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Update bank interest rates
+    this.app.put('/api/banks/:bankId/rates', async (req, res) => {
+      try {
+        const bank = await Bank.findOne({ bankId: req.params.bankId });
+        if (!bank) return res.status(404).json({ error: 'Banka bulunamadı' });
+
+        const allowed = ['d7', 'd14', 'd21', 'd30', 'loan', 'overdueMultiplier'];
+        for (const key of allowed) {
+          if (req.body[key] === undefined) continue;
+          const num = Number(req.body[key]);
+          if (!Number.isFinite(num)) return res.status(400).json({ error: `${key} geçersiz.` });
+
+          if (key === 'overdueMultiplier') {
+            bank.rates.overdueMultiplier = Math.min(20, Math.max(1, num));
+          } else {
+            bank.rates[key] = Math.min(100, Math.max(0, Math.round(num * 10) / 10));
+          }
+        }
+
+        bank.markModified('rates');
+        await bank.save();
+
+        res.json({ success: true, rates: bank.rates });
+      } catch (error) {
+        console.error('Error updating bank rates:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Delete a bank (central bank is protected)
+    this.app.delete('/api/banks/:bankId', async (req, res) => {
+      try {
+        const bank = await Bank.findOne({ bankId: req.params.bankId });
+        if (!bank) return res.status(404).json({ error: 'Banka bulunamadı' });
+        if (bank.isCentral) return res.status(400).json({ error: 'Midnight Merkez Bankası silinemez.' });
+
+        const accounts = await BankAccount.find({ bankId: bank.bankId });
+
+        let refunded = 0;
+        for (const acc of accounts) {
+          const balance = acc.balance || 0;
+          const term = (acc.deposits || []).reduce((s, d) => s + (d.amount || 0), 0);
+          const total = balance + term;
+          if (total <= 0) continue;
+          await Economy.findOneAndUpdate(
+            { userId: acc.userId },
+            { $inc: { money: total } },
+            { upsert: true }
+          ).catch(() => {});
+          refunded += total;
+        }
+
+        await BankAccount.deleteMany({ bankId: bank.bankId });
+        await BankLoan.deleteMany({ bankId: bank.bankId });
+        await Bank.deleteOne({ bankId: bank.bankId });
+
+        res.json({
+          success: true,
+          refunded,
+          message: `${bank.name} silindi. ${refunded} coin kullanıcılara iade edildi.`
+        });
+      } catch (error) {
+        console.error('Error deleting bank:', error);
         res.status(500).json({ error: error.message });
       }
     });

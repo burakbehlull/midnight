@@ -6,6 +6,7 @@ import AdminPanel from './pages/AdminPanel'
 import ServerStats from './pages/ServerStats'
 import Leaderboard from './pages/Leaderboard'
 import GlobalEconomy from './pages/GlobalEconomy'
+import Banks from './pages/Banks'
 import BotSettings from './pages/BotSettings'
 import GuildUsers from './pages/GuildUsers'
 import Actions from './pages/Actions'
@@ -42,6 +43,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/economy/global" element={<GlobalEconomy />} />
+          <Route path="/banks" element={<Banks />} />
           <Route path="/bot/settings" element={<BotSettings />} />
           <Route path="/stats/:guildId" element={<ServerStats />} />
           <Route path="/leaderboard/:guildId" element={<Leaderboard />} />

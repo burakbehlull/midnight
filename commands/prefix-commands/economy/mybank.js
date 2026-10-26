@@ -6,7 +6,7 @@ import {
   ComponentType,
   ButtonStyle
 } from 'discord.js';
-import { startBankCreation } from './banka.js';
+import { startBankCreation } from './bank.js';
 
 const {
   getAccountsOf,

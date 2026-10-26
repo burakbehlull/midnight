@@ -14,6 +14,11 @@ Modern web panel for Midnight Discord Bot.
   - Message & voice activity
   - Invite tracking
   - Staff performance
+- 🏦 **Banks**: Global banking overview
+  - All banks with reserve, value, deposits and loans
+  - Manage Midnight Central Bank interest rates (term 7/14/21/30 days, loan, overdue multiplier)
+  - Deposit/withdraw flow, per-account balances, active loans and full transaction history
+  - Delete other banks (user funds are refunded to wallets)
 
 ## Installation
 

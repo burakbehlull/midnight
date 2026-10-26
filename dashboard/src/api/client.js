@@ -36,6 +36,12 @@ export const api = {
   getGlobalEconomy: (limit = 100) => 
     apiClient.get('/economy/global', { params: { limit } }),
 
+  // Banks
+  getBanks: () => apiClient.get('/banks'),
+  getBankDetail: (bankId) => apiClient.get(`/banks/${bankId}`),
+  updateBankRates: (bankId, rates) => apiClient.put(`/banks/${bankId}/rates`, rates),
+  deleteBank: (bankId) => apiClient.delete(`/banks/${bankId}`),
+
   // Bot Settings
   getBotInfo: () => apiClient.get('/bot/info'),
   getGuildsWithInvites: () => apiClient.get('/bot/guilds/invites'),

@@ -36,6 +36,16 @@ const Layout = ({ children }) => {
             </Link>
 
             <Link
+              to="/banks"
+              className={`block px-4 py-3 rounded-lg transition-colors ${isActive('/banks')}`}
+            >
+              <span className="flex items-center gap-3">
+                <span className="text-xl">🏦</span>
+                <span>Bankalar</span>
+              </span>
+            </Link>
+
+            <Link
               to="/bot/settings"
               className={`block px-4 py-3 rounded-lg transition-colors ${isActive('/bot/settings')}`}
             >
