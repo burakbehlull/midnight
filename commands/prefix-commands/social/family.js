@@ -6,7 +6,7 @@ export default {
   description: 'Aile yapını, evlatlarını ve anne-babanı gösterir.',
   aliases: ['aile'],
   usage: '.family [@kullanıcı]',
-  category: 'economy',
+  category: 'social',
   
   permissions: {
     enabled: false

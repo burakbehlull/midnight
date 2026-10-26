@@ -356,7 +356,7 @@ export default {
   description: "Kullanıcının profilini resim olarak gösterir, alt yazı/about/arka plan ayarlar.",
   usage: ".profile [@kullanıcı] veya .profile subtitle <metin> veya .profile about <metin> veya .profile bg <url>",
   aliases: ["profil", "p"],
-  category: "economy",
+  category: "social",
   permissions: { enabled: false },
 
   async execute(client, message, args = []) {

@@ -9,7 +9,7 @@ export default {
   description: 'Bir kullanıcı ile evlen ya da evlilik durumunu gör.',
   aliases: ['evlen', 'evli'],
   usage: '.marry [@kullanıcı] [yüzükId]',
-  category: 'economy',
+  category: 'social',
 
   permissions: {
     enabled: false

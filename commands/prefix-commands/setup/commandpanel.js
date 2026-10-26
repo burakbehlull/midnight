@@ -19,7 +19,7 @@ export default {
   description: 'Komut ayarlarını yönetir (kanal, rol, üye kısıtlamaları)',
   usage: '.komutpanel',
   aliases: ['kpanel', 'komutayar', 'commandpanel'],
-  category: 'extra',
+  category: 'setup',
 
   async execute(client, message) {
     
@@ -98,6 +98,7 @@ export default {
       { label: 'Economy Komutları', value: 'economy', emoji: '💰', exists: commandsByCategory.has('economy') },
       { label: 'Moderasyon Komutları', value: 'moderation', emoji: '⚖️', exists: commandsByCategory.has('moderation') },
       { label: 'Alt Moderasyon Komutları', value: 'submoderation', emoji: '⚖️', exists: commandsByCategory.has('submoderation') },
+      { label: 'Social Komutları', value: 'social', emoji: '👥​', exists: commandsByCategory.has('social') },
       { label: 'Ban Komutları', value: 'bans', emoji: '⚖️', exists: commandsByCategory.has('bans') },
       { label: 'Kayıt Komutları', value: 'register', emoji: '📝', exists: commandsByCategory.has('register') },
       { label: 'Level Komutları', value: 'level', emoji: '📊', exists: commandsByCategory.has('level') },

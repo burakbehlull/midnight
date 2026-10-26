@@ -8,7 +8,7 @@ export default {
   description: 'Evli bir cift olarak evlat edin.',
   aliases: ['evlatlık', 'evlat', 'foster', 'evlatedin'],
   usage: '.fosterling @kullanıcı',
-  category: 'economy',
+  category: 'social',
 
   permissions: {
     enabled: false

@@ -7,7 +7,7 @@ export default {
   description: 'Evli bir çift olarak evladını aileden uzaklaştır.',
   aliases: ['evlatat', 'dismiss', 'kov'],
   usage: '.fosterdismiss @kullanıcı',
-  category: 'economy',
+  category: 'social',
 
   permissions: {
     enabled: false

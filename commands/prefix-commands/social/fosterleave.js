@@ -7,7 +7,7 @@ export default {
   description: 'Aileden ayrıl.',
   aliases: ['ailedenayrıl', 'ailedenayril', 'leavefamily', 'ailedencık', 'ailedencik'],
   usage: '.fosterleave',
-  category: 'economy',
+  category: 'social',
 
   permissions: {
     enabled: false

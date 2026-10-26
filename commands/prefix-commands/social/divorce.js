@@ -8,7 +8,7 @@ export default {
   description: 'Eşinden boşan.',
   aliases: ['boşan', 'ayrıl'],
   usage: '.divorce',
-  category: 'economy',
+  category: 'social',
 
   permissions: {
     enabled: false
