@@ -172,6 +172,7 @@ Create ` config.json ` file and set permission settings:
 ### contents: Fun and Game
 | command | comment | values | situation |
 | ------ | ------ | ------ | ------ |
+| **gamestat** | user and top stats | me, user | stable |
 | **spotify** | .. | me, user | stable |
 | **game** | shows the game the user is currently playing as a card (icon, game name, playtime) | me, user | stable |
 | **ship** | ships | user | stable |
@@ -194,6 +195,7 @@ Create ` config.json ` file and set permission settings:
 | **slap** | slaps user | user | stable |
 | **hug** | hugs user | user | stable |
 | **fuck** | fxck user | user | stable |
+
 
 
 
