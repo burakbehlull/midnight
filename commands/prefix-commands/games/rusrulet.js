@@ -1,6 +1,6 @@
 import Manager from '#managers';
 import { Economy } from '#models';
-import { Button, misc } from '#helpers';
+import { Button, misc, gameStatsHelper } from '#helpers';
 
 const activeGames = new Set();
 
@@ -296,6 +296,9 @@ async function startGame(manager, message, confirmMsg, challenger, targetUser, a
       } catch (e) {
         console.error('[rusruleti] Para yatırma hatası:', e);
       }
+
+      gameStatsHelper.recordGame(message.guild.id, winnerId, 'rusruleti', { play: 1, win: 1, won: pot - amount });
+      gameStatsHelper.recordGame(message.guild.id, dead.id, 'rusruleti', { play: 1, loss: 1, lost: amount });
     }
 
     activeGames.delete(challenger.id);

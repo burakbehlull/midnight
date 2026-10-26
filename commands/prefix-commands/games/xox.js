@@ -1,6 +1,6 @@
 import Manager from '#managers';
 import { Economy } from '#models';
-import { Button, misc } from '#helpers';
+import { Button, misc, gameStatsHelper } from '#helpers';
 
 const { delay } = misc;
 
@@ -303,6 +303,9 @@ export default {
         console.error('[xox] Pes ödeme hatası:', e);
       }
 
+      gameStatsHelper.recordGame(message.guild.id, winnerPlayer.id, 'xox', { play: 1, win: 1, won: pot - amount });
+      gameStatsHelper.recordGame(message.guild.id, resigned.id, 'xox', { play: 1, loss: 1, lost: amount });
+
       const resignedEmbed = manager.sender.embed({
         color: manager.sender.colors.orange,
         title: '🏳️ XOX Oyunu - Pes Edildi!',
@@ -325,6 +328,9 @@ export default {
         console.error('[xox] Kazanan ödeme hatası:', e);
       }
 
+      gameStatsHelper.recordGame(message.guild.id, winner.id, 'xox', { play: 1, win: 1, won: pot - amount });
+      if (loserId) gameStatsHelper.recordGame(message.guild.id, loserId, 'xox', { play: 1, loss: 1, lost: amount });
+
       const winEmbed = manager.sender.embed({
         color: manager.sender.colors.green,
         title: '🎉 XOX - Kazanan!',
@@ -342,6 +348,9 @@ export default {
       } catch (e) {
         console.error('[xox] Beraberlik para iadesi hatası:', e);
       }
+
+      gameStatsHelper.recordGame(message.guild.id, challenger.id, 'xox', { play: 1, draw: 1 });
+      gameStatsHelper.recordGame(message.guild.id, targetUser.id, 'xox', { play: 1, draw: 1 });
 
       const drawEmbed = manager.sender.embed({
         color: manager.sender.colors.orange,

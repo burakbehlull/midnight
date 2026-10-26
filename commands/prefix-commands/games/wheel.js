@@ -1,6 +1,6 @@
 import Manager from '#managers';
 import { Economy } from '#models';
-import { misc } from '#helpers';
+import { misc, gameStatsHelper } from '#helpers';
 import { AttachmentBuilder } from 'discord.js';
 import { createCanvas } from '@napi-rs/canvas';
 import gifenc from 'gifenc';
@@ -459,6 +459,15 @@ export default {
           console.error('[cark] Ödeme hatası:', e);
         }
       }
+
+      gameStatsHelper.recordGame(message.guild.id, userId, 'wheel', {
+        play: 1,
+        win: net > 0 ? 1 : 0,
+        loss: net < 0 ? 1 : 0,
+        draw: net === 0 ? 1 : 0,
+        won: net > 0 ? net : 0,
+        lost: net < 0 ? -net : 0,
+      });
 
       let title;
       let color;

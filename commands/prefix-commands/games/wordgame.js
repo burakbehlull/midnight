@@ -1,6 +1,6 @@
 import Manager from '#managers';
 import { Economy } from '#models';
-import { Button } from '#helpers';
+import { Button, gameStatsHelper } from '#helpers';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -644,6 +644,9 @@ export default {
       } catch (e) {
         console.error('[wordgame] Ödül verme hatası:', e);
       }
+
+      gameStatsHelper.recordGame(message.guild.id, winner.id, 'wordgame', { play: 1, win: 1, won: pot - amount });
+      gameStatsHelper.recordGame(message.guild.id, loser.id, 'wordgame', { play: 1, loss: 1, lost: amount });
 
       const winEmbed = manager.sender.embed({
         color: manager.sender.colors.green,

@@ -1,5 +1,6 @@
 import { Events } from 'discord.js';
 import { Settings, WordBuildingGame } from "#models";
+import { gameStatsHelper } from '#helpers';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -296,6 +297,7 @@ export default {
           game.usedWords.push(normalizedWord);
           game.totalWords = 1;
           await game.save();
+          gameStatsHelper.recordGame(message.guild.id, message.author.id, 'wordbuilding', { words: 1 });
           return;
         }
         
@@ -310,6 +312,7 @@ export default {
           game.usedWords.push(normalizedWord);
           game.totalWords += 1;
           await game.save();
+          gameStatsHelper.recordGame(message.guild.id, message.author.id, 'wordbuilding', { words: 1 });
         } else {
           message.react('❌');
           const warningMsg = await message.reply({
@@ -353,6 +356,7 @@ export default {
         game.totalWords = 1;
 
         message.react('✅');
+        gameStatsHelper.recordGame(message.guild.id, message.author.id, 'wordbuilding', { words: 1 });
         
         const lastCharOfCurrent = getLastChar(currentWord);
         if (lastCharOfCurrent === 'x' || lastCharOfCurrent === 'ğ' || lastCharOfCurrent === 'w') {
@@ -405,6 +409,7 @@ export default {
         game.totalWords += 1;
 
         message.react('✅');
+        gameStatsHelper.recordGame(message.guild.id, message.author.id, 'wordbuilding', { words: 1 });
         
         const lastCharOfCurrent = getLastChar(currentWord);
         if (lastCharOfCurrent === 'x' || lastCharOfCurrent === 'ğ' || lastCharOfCurrent === 'w') {

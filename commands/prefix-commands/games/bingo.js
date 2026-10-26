@@ -1,6 +1,6 @@
 import Manager from '#managers';
 import { Economy } from '#models';
-import { Button, Modal, misc } from '#helpers';
+import { Button, Modal, misc, gameStatsHelper } from '#helpers';
 import { createCanvas } from '@napi-rs/canvas';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, AttachmentBuilder } from 'discord.js';
 import gifenc from 'gifenc';
@@ -877,8 +877,10 @@ export default {
         for (const c of cards) {
           if (winnerIds.has(c.id)) {
             await Economy.findOneAndUpdate({ userId: c.id }, { $inc: { money: share, xp: 25 } }, { new: true });
+            gameStatsHelper.recordGame(message.guild.id, c.id, 'bingo', { play: 1, win: 1, won: share - amount });
           } else {
             await Economy.findOneAndUpdate({ userId: c.id }, { $inc: { xp: 5 } }, { new: true });
+            gameStatsHelper.recordGame(message.guild.id, c.id, 'bingo', { play: 1, loss: 1, lost: amount });
           }
         }
       } catch (e) {

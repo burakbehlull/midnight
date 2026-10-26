@@ -1,6 +1,6 @@
 import Manager from '#managers';
 import { Economy } from '#models';
-import { Button, misc } from '#helpers';
+import { Button, misc, gameStatsHelper } from '#helpers';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { createCanvas } from '@napi-rs/canvas';
@@ -914,6 +914,9 @@ export default {
       } catch (e) {
         console.error('[wordbomb] Ödül verme hatası:', e);
       }
+
+      gameStatsHelper.recordGame(message.guild.id, winner.id, 'wordbomb', { play: 1, win: 1, won: pot - amount });
+      gameStatsHelper.recordGame(message.guild.id, loser.id, 'wordbomb', { play: 1, loss: 1, lost: amount });
 
       const boomState = {
         syllable, amount, pot,

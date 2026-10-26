@@ -1,6 +1,6 @@
 import Manager from '#managers';
 import { Economy } from '#models';
-import { Button } from '#helpers';
+import { Button, gameStatsHelper } from '#helpers';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 
 const MIN_BET = 50;
@@ -283,6 +283,15 @@ async function runSinglePlayer(client, message, manager, { userId, amount, mines
       console.error('[mines] Ödeme hatası:', e);
     }
 
+    gameStatsHelper.recordGame(message.guild.id, userId, 'mines', {
+      play: 1,
+      win: payout > amount ? 1 : 0,
+      loss: payout < amount ? 1 : 0,
+      draw: payout === amount ? 1 : 0,
+      won: payout > amount ? payout - amount : 0,
+      lost: payout < amount ? amount - payout : 0,
+    });
+
     resultText = `🎉 **${mult}x** ile çekildin! Kazanç: **+${fmt(payout)} coin**` +
       (auto ? ' _(süre doldu, otomatik çekildi)_' : '');
     try {
@@ -302,6 +311,7 @@ async function runSinglePlayer(client, message, manager, { userId, amount, mines
     revealed.add(idx);
 
     resultText = `💥 Mayına bastın! Kaybettin: **-${fmt(amount)} coin**`;
+    gameStatsHelper.recordGame(message.guild.id, userId, 'mines', { play: 1, loss: 1, lost: amount });
     try {
       await replyMsg.edit({
         embeds: [buildEmbed({ color: manager.sender.colors.liveRed, title: '💥 MAYINA BASTIN!' })],
@@ -590,6 +600,9 @@ async function startDuel({ manager, offerMsg, challenger, target, amount, mines,
     const winnerId = loserId === challenger.id ? target.id : challenger.id;
     const wEco = await winnerPayout(winnerId);
 
+    gameStatsHelper.recordGame(offerMsg.guild?.id, winnerId, 'mines', { play: 1, win: 1, won: pool - amount });
+    gameStatsHelper.recordGame(offerMsg.guild?.id, loserId, 'mines', { play: 1, loss: 1, lost: amount });
+
     await offerMsg.edit({
       embeds: [buildEmbed({
         color: manager.sender.colors.liveRed,
@@ -618,6 +631,9 @@ async function startDuel({ manager, offerMsg, challenger, target, amount, mines,
       try { await Economy.findOneAndUpdate({ userId: challenger.id }, { $inc: { money: amount } }, {}); } catch (_) {}
       try { await Economy.findOneAndUpdate({ userId: target.id }, { $inc: { money: amount } }, {}); } catch (_) {}
 
+      gameStatsHelper.recordGame(offerMsg.guild?.id, challenger.id, 'mines', { play: 1, draw: 1 });
+      gameStatsHelper.recordGame(offerMsg.guild?.id, target.id, 'mines', { play: 1, draw: 1 });
+
       await offerMsg.edit({
         embeds: [buildEmbed({
           color: manager.sender.colors.gold,
@@ -631,6 +647,9 @@ async function startDuel({ manager, offerMsg, challenger, target, amount, mines,
     } else {
       const winnerId = s1 > s2 ? challenger.id : target.id;
       const wEco = await winnerPayout(winnerId);
+
+      gameStatsHelper.recordGame(offerMsg.guild?.id, winnerId, 'mines', { play: 1, win: 1, won: pool - amount });
+      gameStatsHelper.recordGame(offerMsg.guild?.id, winnerId === challenger.id ? target.id : challenger.id, 'mines', { play: 1, loss: 1, lost: amount });
 
       await offerMsg.edit({
         embeds: [buildEmbed({
@@ -695,6 +714,9 @@ async function startDuel({ manager, offerMsg, challenger, target, amount, mines,
     const loserId = turn;
     const winnerId = loserId === challenger.id ? target.id : challenger.id;
     const wEco = await winnerPayout(winnerId);
+
+    gameStatsHelper.recordGame(offerMsg.guild?.id, winnerId, 'mines', { play: 1, win: 1, won: pool - amount });
+    gameStatsHelper.recordGame(offerMsg.guild?.id, loserId, 'mines', { play: 1, loss: 1, lost: amount });
 
     await offerMsg.edit({
       embeds: [buildEmbed({

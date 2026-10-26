@@ -1,6 +1,6 @@
 import Manager from '#managers';
 import { Economy } from '#models';
-import { misc } from '#helpers';
+import { misc, gameStatsHelper } from '#helpers';
 
 const { delay } = misc;
 
@@ -254,9 +254,18 @@ export default {
     } else if (noMatch) {
       color = manager.sender.colors.liveRed;
       resultText =
-        `💸 **Hiç eşleşmedi!** Tüm bahisini kaybettin.\n` +
+        `💸 **Hiç eşleşmedi!** Tüm bahsini kaybettin.\n` +
         `Kayıp: **${net.toLocaleString('tr-TR')}** coin`;
     }
+
+    gameStatsHelper.recordGame(message.guild.id, userId, 'slots', {
+      play: 1,
+      win: net > 0 ? 1 : 0,
+      loss: net < 0 ? 1 : 0,
+      draw: net === 0 ? 1 : 0,
+      won: net > 0 ? net : 0,
+      lost: net < 0 ? -net : 0,
+    });
 
     const hasWin = allSame || pairHit;
     const anyGain = hasWin && net >= 0;

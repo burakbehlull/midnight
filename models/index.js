@@ -35,6 +35,7 @@ import ActionGroup from "./ActionGroup.js"
 import ActionEntry from "./ActionEntry.js"
 import WordBuildingGame from "./WordBuildingGame.js"
 import VoiceSession from "./VoiceSession.js"
+import GameStat from "./GameStat.js"
 
 
 export {
@@ -69,5 +70,6 @@ export {
 	ActionGroup,
 	ActionEntry,
 	WordBuildingGame,
-	VoiceSession
+	VoiceSession,
+	GameStat
 }

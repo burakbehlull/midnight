@@ -1,6 +1,6 @@
 import Manager from '#managers';
 import { Economy } from '#models';
-import { Button, misc } from '#helpers';
+import { Button, misc, gameStatsHelper } from '#helpers';
 
 const { delay } = misc;
 
@@ -353,6 +353,15 @@ async function runSinglePlayer(client, message, manager, { challenger, betAmount
       ).catch(() => {});
     }
 
+    gameStatsHelper.recordGame(message.guild.id, challenger.id, 'gofishing', {
+      play: 1,
+      win: net > 0 ? 1 : 0,
+      loss: net < 0 ? 1 : 0,
+      draw: net === 0 ? 1 : 0,
+      won: net > 0 ? net : 0,
+      lost: net < 0 ? -net : 0,
+    });
+
     const tierColor = TIER_COLORS[tier] === 'darkRed' ? 0x991b1b : 
                       TIER_COLORS[tier] === 'mintGreen' ? 0x10b981 :
                       TIER_COLORS[tier] === 'blue' ? 0x3b82f6 :
@@ -607,8 +616,15 @@ async function runTwoPlayer(client, message, manager, { challenger, target, betA
     if (tie) {
       try { await Economy.findOneAndUpdate({ userId: challenger.id }, { $inc: { money: betAmount } }, {}); } catch {}
       try { await Economy.findOneAndUpdate({ userId: target.id }, { $inc: { money: betAmount } }, {}); } catch {}
+
+      gameStatsHelper.recordGame(message.guild.id, challenger.id, 'gofishing', { play: 1, draw: 1 });
+      gameStatsHelper.recordGame(message.guild.id, target.id, 'gofishing', { play: 1, draw: 1 });
     } else if (winner) {
       try { await Economy.findOneAndUpdate({ userId: winner.id }, { $inc: { money: pool, xp: 25 } }, {}); } catch {}
+
+      const gofishLoser = winner.id === challenger.id ? target.id : challenger.id;
+      gameStatsHelper.recordGame(message.guild.id, winner.id, 'gofishing', { play: 1, win: 1, won: pool - betAmount });
+      gameStatsHelper.recordGame(message.guild.id, gofishLoser, 'gofishing', { play: 1, loss: 1, lost: betAmount });
     }
 
     const wEco = winner ? await Economy.findOne({ userId: winner.id }).catch(() => null) : null;

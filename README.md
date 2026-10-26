@@ -51,7 +51,6 @@ Create ` config.json ` file and set permission settings:
 | **client-load** | Client emoji load | emoji, emoji name | stable |
 | **client-list** | Client emoji load | emoji | stable |
 | **eval** | command test | text | stable |
-| **gif** | Converts the uploaded photo into a GIF (works in DM and guilds) | attachment | stable |
 
 ### contents: General User
 | command | comment | values | situation |
@@ -67,6 +66,8 @@ Create ` config.json ` file and set permission settings:
 | **server-banner** | gets server banner | .. | stable |
 | **device** | Shows user device | user | stable |
 | **use** | Spotify, etc.. theme change | spotify, item | stable |
+| **gif** | Converts the uploaded photo into a GIF (works in DM and guilds) | attachment | stable |
+
 
 ### contents: Mod
 | command | comment | values | situation |
@@ -148,21 +149,25 @@ Create ` config.json ` file and set permission settings:
 | **cash** | users cash | .. | stable |
 | **cookie** | users give to cookie daily | user | stable |
 | **buy** | buy item | item id | stable |
-| **fosterling** | adoption order | user | stable |
-| **fosterleave** | user leave | .. | stable |
-| **fosterdismiss** | kick user | user | stable |
-| **family** | show family | .. | stable |
 | **sell** | sell item | item id, amount | stable |
 | **daily** | daily moeny | .. | stable |
 | **heart** | users give to heart daily | .. | stable |
-| **marry** | users marries | user, ring item id | stable |
-| **divorce** | user divorce | .. | stable |
 | **send** | users send money | user, money | stable |
 | **envanter** | users envanter | .. | stable |
-| **profile** | users profile | .. | stable |
 | **kripto** | crypto/stock exchange (prices, buy/sell, portfolio, history) | .. | stable |
 | **bank** | bank panel: bank picker (registered banks listed first), demand deposit/withdraw, term deposit (7/14/21/30-day buttons with payout preview), loans (daily interest, overdue x4), per-user history; `.bank` starts a bank setup request | bank name (when opening) | stable |
 | **mybank** | your registered accounts + the bank you manage (CEO/partner); "Bankamı Yönet" opens the management panel (status, deposits/loans, account balances, adjustable rates) | .. | stable |
+
+### contents: Social
+| command | comment | values | situation |
+| ------ | ------ | ------ | ------ |
+| **profile** | users profile | .. | stable |
+| **family** | show family | .. | stable |
+| **marry** | users marries | user, ring item id | stable |
+| **divorce** | user divorce | .. | stable |
+| **fosterling** | adoption order | user | stable |
+| **fosterleave** | user leave | .. | stable |
+| **fosterdismiss** | kick user | user | stable |
 
 ### contents: Fun and Game
 | command | comment | values | situation |
@@ -184,7 +189,6 @@ Create ` config.json ` file and set permission settings:
 | **dice** | dice duel (7 over/under single, higher roll wins PvP) | bet amount and over/under (1 userly), user and bet amount (userly) | stable |
 | **hilo** | predict whether the next card will be high or low | bet amount | stable |
 | **bingo** | bingo / tombola (1-90 drawn, system rolls a random 3x3 card shown as buttons, optional "Sayı Gir" button to enter your own numbers, first to complete a line takes the pot) | bet amount | stable |
-
 | **keno** | keno (pick 10 of 1-80, system draws 20) | bet amount and 10 numbers, or "rastgele" | stable |
 | **kiss** | kiss user | user | stable |
 | **slap** | slaps user | user | stable |

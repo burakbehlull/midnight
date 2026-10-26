@@ -1,6 +1,6 @@
 import Manager from '#managers';
 import { Economy } from '#models';
-import { misc } from '#helpers';
+import { misc, gameStatsHelper } from '#helpers';
 import { createCanvas } from '@napi-rs/canvas';
 import { AttachmentBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js';
 
@@ -657,6 +657,14 @@ export default {
         } else {
           try { await Economy.findOneAndUpdate({ userId }, { $inc: { xp: 1 } }, { new: true }); } catch (_) {}
         }
+
+        gameStatsHelper.recordGame(message.guild.id, userId, 'kazikazan', {
+          play: 1,
+          win: win ? 1 : 0,
+          loss: win ? 0 : 1,
+          won: win ? net : 0,
+          lost: win ? 0 : amount,
+        });
 
         const latest = await Economy.findOne({ userId }).catch(() => null);
         const balance = latest?.money ?? 0;

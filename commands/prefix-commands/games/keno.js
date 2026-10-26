@@ -1,6 +1,6 @@
 import Manager from '#managers';
 import { Economy } from '#models';
-import { misc } from '#helpers';
+import { misc, gameStatsHelper } from '#helpers';
 import { createCanvas } from '@napi-rs/canvas';
 import { AttachmentBuilder } from 'discord.js';
 import gifenc from 'gifenc';
@@ -563,6 +563,15 @@ export default {
           console.error('[keno] Ödeme hatası:', e);
         }
       }
+
+      gameStatsHelper.recordGame(message.guild.id, userId, 'keno', {
+        play: 1,
+        win: payout > amount ? 1 : 0,
+        loss: payout < amount ? 1 : 0,
+        draw: payout === amount ? 1 : 0,
+        won: payout > amount ? payout - amount : 0,
+        lost: payout < amount ? amount - payout : 0,
+      });
 
       const latest = await Economy.findOne({ userId }).catch(() => null);
       const balance = latest?.money ?? 0;

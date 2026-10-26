@@ -13,6 +13,7 @@ import Utils from "./utils.js"
 import * as marketHelper from "./marketHelper.js"
 import * as cosmeticsHelper from "./cosmeticsHelper.js"
 import * as bankHelper from "./bankHelper.js"
+import * as gameStatsHelper from "./gameStatsHelper.js"
 
 import { checkCommandRestrictions, handleAutoDelete } from "./commandRestrictions.js"
 import {
@@ -39,6 +40,7 @@ export {
 	marketHelper,
 	cosmeticsHelper,
 	bankHelper,
+	gameStatsHelper,
 	actionRolesHelper,
 	gifResolver,
 	gameIcons,

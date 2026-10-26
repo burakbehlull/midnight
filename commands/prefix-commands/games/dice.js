@@ -1,6 +1,6 @@
 import Manager from '#managers';
 import { Economy } from '#models';
-import { Button, misc } from '#helpers';
+import { Button, misc, gameStatsHelper } from '#helpers';
 import { createCanvas } from '@napi-rs/canvas';
 import { AttachmentBuilder } from 'discord.js';
 
@@ -481,6 +481,15 @@ async function runSinglePlayer(client, message, manager, { userId, amount, mode 
     }
     charged = false;
 
+    gameStatsHelper.recordGame(message.guild.id, userId, 'dice', {
+      play: 1,
+      win: net > 0 ? 1 : 0,
+      loss: net < 0 ? 1 : 0,
+      draw: net === 0 ? 1 : 0,
+      won: net > 0 ? net : 0,
+      lost: net < 0 ? -net : 0,
+    });
+
     const latest = await Economy.findOne({ userId }).catch(() => null);
     const balanceLine = `💼 Yeni Bakiye: **${fmt(latest?.money ?? 0)}** coin`;
     const rollLine = `🎲 **${diceStr(roll.a, roll.b)} = ${roll.sum}**`;
@@ -835,6 +844,9 @@ async function startDuel({ manager, offerMsg, challenger, target, amount, cleanu
     try { await Economy.findOneAndUpdate({ userId: challenger.id }, { $inc: { money: amount } }, {}); } catch (_) {}
     try { await Economy.findOneAndUpdate({ userId: target.id }, { $inc: { money: amount } }, {}); } catch (_) {}
 
+    gameStatsHelper.recordGame(offerMsg.guild?.id, challenger.id, 'dice', { play: 1, draw: 1 });
+    gameStatsHelper.recordGame(offerMsg.guild?.id, target.id, 'dice', { play: 1, draw: 1 });
+
     resultText = `BERABERLİK! ${p1.sum} - ${p2.sum}`;
     resultType = 'push';
     title = '🤝 BERABERLİK!';
@@ -858,6 +870,9 @@ async function startDuel({ manager, offerMsg, challenger, target, amount, cleanu
     } catch (e) {
       console.error('[zar-2p] Ödeme hatası:', e);
     }
+
+    gameStatsHelper.recordGame(offerMsg.guild?.id, winner.id, 'dice', { play: 1, win: 1, won: pool - amount });
+    gameStatsHelper.recordGame(offerMsg.guild?.id, loser.id, 'dice', { play: 1, loss: 1, lost: amount });
 
     resultText = `KAZANAN: ${truncate(winner.username, 16)}`;
     resultType = 'win';

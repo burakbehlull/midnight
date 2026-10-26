@@ -1,6 +1,6 @@
 import Manager from '#managers';
 import { Economy } from '#models';
-import { misc } from '#helpers';
+import { misc, gameStatsHelper } from '#helpers';
 
 const { delay } = misc;
 
@@ -125,6 +125,14 @@ export default {
         `Tüm bahisini kaybettin.\n` +
         `Kayıp: **${net.toLocaleString('tr-TR')}** coin`;
     }
+
+    gameStatsHelper.recordGame(message.guild.id, userId, 'coinflip', {
+      play: 1,
+      win: winSide ? 1 : 0,
+      loss: winSide ? 0 : 1,
+      won: winSide ? amount : 0,
+      lost: winSide ? 0 : amount,
+    });
 
     let updatedMoney;
     try {

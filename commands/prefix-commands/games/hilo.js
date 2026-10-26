@@ -1,6 +1,6 @@
 import Manager from '#managers';
 import { Economy } from '#models';
-import { Button, misc } from '#helpers';
+import { Button, misc, gameStatsHelper } from '#helpers';
 import { createCanvas } from '@napi-rs/canvas';
 import { AttachmentBuilder } from 'discord.js';
 
@@ -513,6 +513,15 @@ async function runGame(client, message, manager, { userId, amount }) {
       } else {
         try { await Economy.findOneAndUpdate({ userId }, { $inc: { xp: 2 } }, { new: true }); } catch (_) {}
       }
+
+      gameStatsHelper.recordGame(message.guild.id, userId, 'hilo', {
+        play: 1,
+        win: payout > amount ? 1 : 0,
+        loss: payout < amount ? 1 : 0,
+        draw: payout === amount ? 1 : 0,
+        won: payout > amount ? payout - amount : 0,
+        lost: payout < amount ? amount - payout : 0,
+      });
 
       const latest = await Economy.findOne({ userId }).catch(() => null);
       const net = payout - amount;

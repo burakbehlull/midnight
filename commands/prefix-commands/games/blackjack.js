@@ -1,6 +1,6 @@
 import Manager from '#managers';
 import { Economy } from '#models';
-import { misc, Button } from '#helpers';
+import { misc, Button, gameStatsHelper } from '#helpers';
 import { createCanvas } from '@napi-rs/canvas';
 import { AttachmentBuilder } from 'discord.js';
 
@@ -605,6 +605,14 @@ export default {
           console.error('[blackjack] Ödeme hatası:', e);
         }
       }
+      gameStatsHelper.recordGame(message.guild.id, userId, 'blackjack', {
+        play: 1,
+        win: resultType === 'win' ? 1 : 0,
+        loss: resultType === 'lose' ? 1 : 0,
+        draw: resultType === 'push' ? 1 : 0,
+        won: resultType === 'win' ? (winnings - amount) : 0,
+        lost: resultType === 'lose' ? amount : 0,
+      });
       gameOver = true;
       await tryEdit();
       activeGames.delete(userId);
@@ -703,6 +711,7 @@ export default {
       resultType = 'lose';
       result = `SÜRE DOLDU! -${amount.toLocaleString('tr-TR')}`;
       await tryEdit();
+      gameStatsHelper.recordGame(message.guild.id, userId, 'blackjack', { play: 1, loss: 1, lost: amount });
       activeGames.delete(userId);
     });
   },
