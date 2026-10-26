@@ -176,6 +176,7 @@ Create ` config.json ` file and set permission settings:
 | **gofishing** | take fish | bet amount (1 userly), user and bet amount (userly) | stable |
 | **blackjack** | blackjack | bet amount | stable |
 | **mines** | mines game | bet amount | stable |
+| **scratchcard** | scratchcard game | bet amount | stable |
 | **wheel** | wheel game | bet amount | stable |
 | **dice** | dice duel (7 over/under single, higher roll wins PvP) | bet amount and over/under (1 userly), user and bet amount (userly) | stable |
 | **hilo** | predict whether the next card will be high or low | bet amount | stable |
