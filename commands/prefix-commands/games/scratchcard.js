@@ -84,6 +84,7 @@ function hasOtherWin(grid, lineIndex) {
   return false;
 }
 
+
 function buildWinGrid(symbolKey, lineIndex) {
   const line = LINE_CELLS[lineIndex];
   const others = Object.keys(SYMBOLS).filter((k) => k !== symbolKey);
@@ -98,7 +99,7 @@ function buildWinGrid(symbolKey, lineIndex) {
     if (!hasOtherWin(grid, lineIndex)) return grid;
   }
 
- 
+
   const perm = shuffle(others);
   const offset = randomInt(others.length);
   for (const idx of empty) {
@@ -320,6 +321,7 @@ function drawBanner(ctx, x, y, width, text, type = 'win') {
   const palette = {
     win: { fill: '#2e7d32', stroke: '#1b5e20', glow: '#4caf50', text: '#ffffff' },
     lose: { fill: '#c62828', stroke: '#8b0000', glow: '#f44336', text: '#ffffff' },
+    info: { fill: '#1e3a8a', stroke: '#1d4ed8', glow: '#3b82f6', text: '#ffffff' },
   };
   const p = palette[type] || palette.lose;
   const h = 64;
@@ -352,11 +354,54 @@ const GRID_H = CELL_H * 3 + GAP * 2;
 const GRID_X = (CARD_W - GRID_W) / 2;
 const GRID_Y = 172;
 
-function renderCard({ amount, grid, win, line, net }) {
+function drawCover(ctx, x, y, w, h) {
+  const radius = 18;
+
+  const grad = ctx.createLinearGradient(x, y, x + w, y + h);
+  grad.addColorStop(0, '#2c3557');
+  grad.addColorStop(0.5, '#1a2138');
+  grad.addColorStop(1, '#0d1326');
+  drawRoundedRect(ctx, x, y, w, h, radius, grad, 'rgba(245,200,66,0.35)', 2);
+
+
+  ctx.save();
+  ctx.beginPath();
+  drawRoundedRect(ctx, x + 3, y + 3, w - 6, h - 6, radius - 3);
+  ctx.clip();
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = 3;
+  for (let i = -h; i < w; i += 16) {
+    ctx.beginPath();
+    ctx.moveTo(x + i, y);
+    ctx.lineTo(x + i + h, y + h);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+ 
+  ctx.save();
+  const gloss = ctx.createLinearGradient(x, y, x, y + h * 0.5);
+  gloss.addColorStop(0, 'rgba(255,255,255,0.10)');
+  gloss.addColorStop(1, 'rgba(255,255,255,0)');
+  drawRoundedRect(ctx, x + 4, y + 4, w - 8, h * 0.45, radius * 0.7, gloss);
+  ctx.restore();
+
+ 
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = 'bold 66px Arial Black, Arial';
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.fillText('?', x + w / 2 + 3, y + h / 2 + 6);
+  ctx.fillStyle = 'rgba(245,200,66,0.55)';
+  ctx.fillText('?', x + w / 2, y + h / 2 + 4);
+  ctx.restore();
+}
+
+function renderCard({ amount, grid, win, line, net, revealed = null, finished = true }) {
   const canvas = createCanvas(CARD_W, CARD_H);
   const ctx = canvas.getContext('2d');
 
-  
   const frame = ctx.createLinearGradient(0, 0, 0, CARD_H);
   frame.addColorStop(0, '#241640');
   frame.addColorStop(0.55, '#16122a');
@@ -371,7 +416,6 @@ function renderCard({ amount, grid, win, line, net }) {
   ctx.fillRect(24, 24, CARD_W - 48, CARD_H - 48);
   ctx.restore();
 
-  
   ctx.save();
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
@@ -383,21 +427,31 @@ function renderCard({ amount, grid, win, line, net }) {
   ctx.restore();
 
   drawPill(ctx, 176, 104, `BAHİS: ${fmt(amount)}`, 'rgba(15,23,42,0.9)', '#1e293b', { fontSize: 19 });
-  drawPill(
-    ctx, CARD_W - 176, 104,
-    win ? '3 AYNI = KAZANÇ' : '3 AYNI YOK',
-    win ? '#1d4ed8' : '#334155',
-    win ? '#1e3a8a' : '#0f172a',
-    { fontSize: 19 }
-  );
+  if (finished) {
+    drawPill(
+      ctx, CARD_W - 176, 104,
+      win ? '3 AYNI = KAZANÇ' : '3 AYNI YOK',
+      win ? '#1d4ed8' : '#334155',
+      win ? '#1e3a8a' : '#0f172a',
+      { fontSize: 19 }
+    );
+  } else {
+    drawPill(ctx, CARD_W - 176, 104, 'KAZIYORSUN...', '#334155', '#0f172a', { fontSize: 19 });
+  }
 
-  
+
   for (let i = 0; i < 9; i++) {
     const r = Math.floor(i / 3);
     const c = i % 3;
     const x = GRID_X + c * (CELL_W + GAP);
     const y = GRID_Y + r * (CELL_H + GAP);
-    const isWin = win && line && line.includes(i);
+    const isOpen = !revealed || revealed[i];
+    const isWin = finished && win && line && line.includes(i);
+
+    if (!isOpen) {
+      drawCover(ctx, x, y, CELL_W, CELL_H);
+      continue;
+    }
 
     ctx.save();
     if (isWin) {
@@ -418,9 +472,14 @@ function renderCard({ amount, grid, win, line, net }) {
     drawSymbol(ctx, grid[i], x + CELL_W / 2, y + CELL_H / 2, 150);
   }
 
- 
-  const bannerText = win ? `KAZANDIN!  +${fmt(net)}` : `KAYBETTİN!  -${fmt(amount)}`;
-  drawBanner(ctx, GRID_X, GRID_Y + GRID_H + 26, GRID_W, bannerText, win ? 'win' : 'lose');
+  
+  if (finished) {
+    const bannerText = win ? `KAZANDIN!  +${fmt(net)}` : `KAYBETTİN!  -${fmt(amount)}`;
+    drawBanner(ctx, GRID_X, GRID_Y + GRID_H + 26, GRID_W, bannerText, win ? 'win' : 'lose');
+  } else {
+    const opened = revealed ? revealed.filter(Boolean).length : 0;
+    drawBanner(ctx, GRID_X, GRID_Y + GRID_H + 26, GRID_W, `KAZIYORSUN...  ${opened}/9`, 'info');
+  }
 
   return canvas.toBuffer('image/png');
 }
@@ -436,11 +495,10 @@ function emojiGrid(grid) {
 
 function buildScratchRows(userId, revealed, grid) {
   const rows = [];
-  for (let r = 0; r < 2; r++) {
+  for (let r = 0; r < 3; r++) {
     const row = new ActionRowBuilder();
-    const count = r === 0 ? 5 : 4;
-    for (let c = 0; c < count; c++) {
-      const idx = r * 5 + c;
+    for (let c = 0; c < 3; c++) {
+      const idx = r * 3 + c;
       const btn = new ButtonBuilder()
         .setCustomId(`kk_${userId}_${idx}`)
         .setStyle(ButtonStyle.Primary)
@@ -457,6 +515,8 @@ function buildScratchRows(userId, revealed, grid) {
   }
   return rows;
 }
+
+
 
 export default {
   name: 'kazikazan',
@@ -543,24 +603,38 @@ export default {
 
       const revealed = new Array(9).fill(false);
 
-      const scratchEmbed = manager.sender.embed({
-        color: manager.sender.colors.purple,
-        title: '🎫 KAZI KAZAN',
-        description:
-          `**Oyuncu:** <@${userId}> • **Bahis:** \`${fmt(amount)}\` coin\n\n` +
-          `Aşağıdaki **9 hücreyi** tek tek kazı! 🔎\n` +
-          `Aynı çizgide (yatay / dikey / çapraz) **3 aynı sembol** gelirse sembolün çarpanı kadar kazanırsın.\n\n` +
-          `🍒 **2x** • 🔔 **3x** • 💎 **8x** • 7️⃣ **20x** • 💰 **100x**`,
-        footer: { text: 'Hücrelere tıklayarak kazı • 2 dakika içinde bitir' },
-      });
+ 
+      const makeCard = (finished) => {
+        try {
+          const openedCount = revealed.filter(Boolean).length;
+       
+          const filename = finished 
+            ? `kazikazan_${userId}_final.png` 
+            : `kazikazan_${userId}_${openedCount}_${Date.now()}.png`;
+          
+          return new AttachmentBuilder(
+            renderCard({ amount, grid, win, line, net, revealed, finished }),
+            { name: filename }
+          );
+        } catch (e) {
+          console.error('[kazikazan] Kart üretilemedi:', e?.message || e);
+          return null;
+        }
+      };
+
+      const headerText = () =>
+        `<@${userId}> **KAZI KAZAN** • Bahis: **${fmt(amount)}** coin • Kazınan: **${revealed.filter(Boolean).length}/9**`;
+
+      const firstPayload = {
+        content: `${headerText()}\nHücreleri kazımak için butonlara tıkla! 🔎`,
+        components: buildScratchRows(userId, revealed, grid),
+      };
+      const firstCard = makeCard(false);
+      if (firstCard) firstPayload.files = [firstCard];
 
       let gameMsg;
       try {
-        gameMsg = await message.channel.send({
-          content: `🎫 <@${userId}> **KAZI KAZAN** • Bahis: **${fmt(amount)}** coin`,
-          embeds: [scratchEmbed],
-          components: buildScratchRows(userId, revealed, grid),
-        });
+        gameMsg = await message.channel.send(firstPayload);
       } catch (e) {
         console.error('[kazikazan] Oyun mesajı gönderilemedi:', e?.message || e);
         await refund();
@@ -570,7 +644,7 @@ export default {
 
       let resolved = false;
 
-      const finish = async () => {
+      const finish = async (interaction = null) => {
         resolved = true;
         charged = false;
 
@@ -589,15 +663,15 @@ export default {
 
         const resultText = win
           ? `${SYMBOLS[symbol].emoji} **3 x ${SYMBOLS[symbol].label}** eşleşti!\n` +
-            `🎯 Çarpan: **${mult}x**\n` +
-            `💰 Kazanç: **${fmt(winnings)}** coin (**${net >= 0 ? '+' : ''}${fmt(net)}** NET)\n` +
-            `✨ XP: +${xpGain}`
-          : `💸 Eşleşen üçlü çıkmadı.\n` +
+            `Çarpan: **${mult}x**\n` +
+            `Kazanç: **${fmt(winnings)}** coin (**${net >= 0 ? '+' : ''}${fmt(net)}** NET)\n` +
+            `XP: +${xpGain}`
+          : `Eşleşen üçlü çıkmadı.\n` +
             `Kayıp: **-${fmt(amount)}** coin`;
 
         const finalEmbed = manager.sender.embed({
           color: win ? manager.sender.colors.green : manager.sender.colors.liveRed,
-          title: win ? '🎉 KAZANDIN!' : '💸 KAYBETTİN',
+          title: win ? 'KAZANDIN!' : 'KAYBETTİN',
           description:
             `**Oyuncu:** <@${userId}> • **Bahis:** \`${fmt(amount)}\` coin\n` +
             `\`\`\`\n${emojiGrid(grid)}\n\`\`\`\n` +
@@ -606,20 +680,20 @@ export default {
         });
 
         const payload = {
-          content: `🎫 <@${userId}> **KAZI KAZAN** • Bahis: **${fmt(amount)}** coin`,
+          content: `<@${userId}> **KAZI KAZAN** • Bahis: **${fmt(amount)}** coin`,
           embeds: [finalEmbed],
           components: [],
+          files: [], 
         };
+        const card = makeCard(true);
+        if (card) payload.files = [card];
 
         try {
-          const buffer = renderCard({ amount, grid, win, line, net });
-          payload.files = [new AttachmentBuilder(buffer, { name: 'kazikazan.png' })];
-        } catch (e) {
-          console.error('[kazikazan] Kart görseli üretilemedi, metne düşülüyor:', e?.message || e);
-        }
-
-        try {
-          await gameMsg.edit(payload);
+          if (interaction && interaction.replied === false) {
+            await interaction.update(payload);
+          } else {
+            await gameMsg.edit(payload);
+          }
         } catch (e) {
           console.error('[kazikazan] Sonuç gönderilemedi:', e?.message || e);
           try { await gameMsg.edit({ ...payload, files: [] }); } catch (_) {}
@@ -645,19 +719,27 @@ export default {
         revealed[idx] = true;
         const allRevealed = revealed.every(Boolean);
 
-        try { await interaction.deferUpdate(); } catch (_) {}
-
         if (allRevealed) {
           resolved = true;
           try { collector.stop('done'); } catch (_) {}
-          await finish();
+          await finish(interaction);
           return;
         }
 
+        const payload = {
+          content: headerText(),
+          components: buildScratchRows(userId, revealed, grid),
+          files: [], 
+        };
+        const card = makeCard(false);
+        if (card) payload.files = [card];
+
         try {
-          await gameMsg.edit({ components: buildScratchRows(userId, revealed, grid) });
+        
+          await interaction.update(payload);
         } catch (e) {
           console.error('[kazikazan] Kazıma güncellenemedi:', e?.message || e);
+          try { await gameMsg.edit(payload); } catch (_) {}
         }
       });
 
