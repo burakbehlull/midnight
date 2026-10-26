@@ -52,7 +52,7 @@ export default {
     const btn1 = new Button();
     btn1.add('roomnamebtn', 'Oda Adı', btn1.style.Secondary);
     btn1.add('roomlimitbtn', 'Limit', btn1.style.Secondary);
-    btn1.add('roomlockbtn', 'Kilitle', btn1.style.Secondary);
+    btn1.add('roomlockbtn', 'Kilitle / Aç', btn1.style.Secondary);
     btn1.add('adduserbtn', 'Kullanıcı Ekle', btn1.style.Primary);
 
     const btn2 = new Button();

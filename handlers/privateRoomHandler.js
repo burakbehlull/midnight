@@ -31,6 +31,10 @@ export async function handleVoiceRoomCreate(oldState, newState) {
         ]
       });
 
+      await cloned.permissionOverwrites
+        .edit(newState.guild.roles.everyone, { Connect: false })
+        .catch(() => {});
+
       await Room.create({
         id: cloned.id,
         ownerId: newState.member.id,
@@ -49,9 +53,14 @@ export async function handleVoiceRoomCreate(oldState, newState) {
         const member = newState.member;
         if (member.id !== isRoom.ownerId) {
           const channel = newState.channel;
-          const hasConnectPermission = channel.permissionsFor(member).has(PermissionsBitField.Flags.Connect);
-          if (!hasConnectPermission) {
-            await member.voice.setChannel(null);
+          const canConnect = channel
+            .permissionsFor(member)
+            ?.has(PermissionsBitField.Flags.Connect);
+
+          if (!canConnect) {
+            await member.voice
+              .disconnect('Özel odaya izinsiz giriş')
+              .catch(() => {});
           }
         }
       }
