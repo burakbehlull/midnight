@@ -26,6 +26,12 @@ export default {
     }
 
     if (!member) return manager.sender.reply(manager.sender.errorEmbed('❌ Geçerli bir kullanıcı bulunamadı.'));
+    
+    const canMod = await manager.permissions.canModerate(message.author, member.user);
+    if (!canMod) {
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Bu kullanıcıya işlem yapamazsınız. Rolünüz onunkinden yüksek değil.'));
+    }
+    
     if (!member.moderatable) return manager.sender.reply(manager.sender.errorEmbed('❌ Bu kullanıcının susturması kaldırılamıyor (Yetkisi yüksek veya yetkim yetersiz).'));
 
     if (!member.communicationDisabledUntil || member.communicationDisabledUntil < Date.now()) {

@@ -13,7 +13,8 @@ export default {
   },
   
   async execute(client, message, args) {
-    const sender = new Manager(client, { action: message }).sender;
+    const manager = new Manager(client, { action: message });
+    const sender = manager.sender;
 
     if (!message.guild || !message.member) {
       return sender.reply(sender.errorEmbed('❌ Bu komut sadece sunucularda kullanılabilir.'));
@@ -31,8 +32,9 @@ export default {
 
       const reason = args.slice(1).join(' ') || 'Sebep belirtilmedi.';
 
-      if (target.id === message.author.id) {
-        return sender.reply(sender.errorEmbed('❌ Kendini sunucudan atamazsın.'));
+      const canMod = await manager.permissions.canModerate(message.author, target.user);
+      if (!canMod) {
+        return sender.reply(sender.errorEmbed('❌ Bu kullanıcıya işlem yapamazsınız. Rolünüz onunkinden yüksek değil.'));
       }
 
       const botMember = message.guild.members.cache.get(client.user.id);
@@ -44,15 +46,6 @@ export default {
       if (botMember.roles.highest.position <= target.roles.highest.position) {
         return sender.reply(sender.errorEmbed('❌ Botun rolü, atacağın kişiden yüksek olmalı.'));
       }
-
-      if (message.member.roles.highest.position <= target.roles.highest.position) {
-        return sender.reply(sender.errorEmbed('❌ Senden yüksek veya eşit yetkideki birini atamazsın.'));
-      }
-
-      if (target.id === message.guild.ownerId) {
-        return sender.reply(sender.errorEmbed('❌ Sunucu sahibini atamazsın.'));
-      }
-
 
       if (!target.kickable) {
         return sender.reply(sender.errorEmbed('❌ Bu kullanıcıyı sunucudan atamam. Botun yetkisi veya rolü yetersiz olabilir.'));

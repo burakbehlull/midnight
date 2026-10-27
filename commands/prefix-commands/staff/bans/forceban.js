@@ -15,7 +15,8 @@ export default {
   },
 
   async execute(client, message, args) {
-    const sender = new Manager(client, { action: message }).sender;
+    const manager = new Manager(client, { action: message });
+    const sender = manager.sender;
 
     if (!message.guild || !message.member) {
       return sender.reply(sender.errorEmbed('❌ Bu komut sadece sunucularda kullanılabilir.'));
@@ -46,8 +47,11 @@ export default {
 
       const reason = args.slice(1).join(' ') || 'Force ban - Sebep belirtilmedi.';
 
-      if (user.id === message.author.id) {
-        return sender.reply(sender.errorEmbed('❌ Kendini force banlayamazsın.'));
+      if (member) {
+        const canMod = await manager.permissions.canModerate(message.author, user);
+        if (!canMod) {
+          return sender.reply(sender.errorEmbed('❌ Bu kullanıcıya işlem yapamazsınız. Rolünüz onunkinden yüksek değil.'));
+        }
       }
 
       if (user.bot && user.id === client.user.id) {
@@ -61,14 +65,8 @@ export default {
       }
 
       if (member) {
-        if (member.id === message.guild.ownerId) {
-          return sender.reply(sender.errorEmbed('❌ Sunucu sahibini force banlayamazsın.'));
-        }
         if (botMember.roles.highest.position <= member.roles.highest.position) {
           return sender.reply(sender.errorEmbed('❌ Botun rolü, force banlayacağın kişiden yüksek olmalı.'));
-        }
-        if (message.member.roles.highest.position <= member.roles.highest.position && message.author.id !== message.guild.ownerId) {
-          return sender.reply(sender.errorEmbed('❌ Senden yüksek veya eşit yetkideki birini force banlayamazsın.'));
         }
         if (!member.bannable) {
           return sender.reply(sender.errorEmbed('❌ Bu kullanıcı bu sunucuda banlanamaz (rol hiyerarşisi yetersiz veya Discord koruması var).'));

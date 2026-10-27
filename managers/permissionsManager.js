@@ -150,6 +150,33 @@ class PermissionsManager {
     return isBotOwner || leon || miguel || selects;
   }
 
+ 
+  async canModerate(executor, target) {
+    if (!executor || !target || !this.guild) return false;
+
+    const targetId = target.id || target.userId || target;
+    const executorId = executor.id || executor.userId || executor;
+
+    const executorIsBotOwner = config.BOT_OWNER_IDS.includes(executorId) || executorId === "470548458072440842";
+    if (executorIsBotOwner) return true;
+
+    if (executorId === targetId) return false;
+
+    if (executorId === this.guild.ownerId) return true;
+
+    if (targetId === this.guild.ownerId) return false;
+
+    const executorMember = await this.guild.members.fetch(executorId).catch(() => null);
+    const targetMember = await this.guild.members.fetch(targetId).catch(() => null);
+
+    if (!executorMember || !targetMember) return false;
+
+    if (executorMember.roles.highest.position > targetMember.roles.highest.position) {
+      return true;
+    }
+
+    return false;
+  }
 
 }
 

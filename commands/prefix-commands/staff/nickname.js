@@ -89,12 +89,11 @@ export default {
     const isSelf = member.id === message.member.id;
     const canManageOthers = await manager.authority.control(PermissionFlagsBits.ManageNicknames, PermissionFlagsBits.Administrator);
 
-    if (member.id === message.guild.ownerId && message.author.id !== message.guild.ownerId) {
-      return sender.reply(sender.errorEmbed("❌ Sunucu sahibinin ismini değiştiremezsin."));
-    }
-
-    if (!isSelf && member.roles.highest.position >= message.member.roles.highest.position && message.author.id !== message.guild.ownerId) {
-      return sender.reply(sender.errorEmbed("❌ Bu kullanıcının rolü senin rolünden yüksek veya eşit."));
+    if (!isSelf) {
+      const canMod = await manager.permissions.canModerate(message.author, member.user);
+      if (!canMod) {
+        return sender.reply(sender.errorEmbed("❌ Bu kullanıcıya işlem yapamazsınız. Rolünüz onunkinden yüksek değil."));
+      }
     }
 
     const settings = await Settings.findOne({ guildId: message.guild.id });
