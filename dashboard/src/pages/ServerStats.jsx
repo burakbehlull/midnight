@@ -6,6 +6,7 @@ import UserProfileModal from '../components/UserProfileModal'
 import DeletedMessagesTab from '../components/tabs/DeletedMessagesTab'
 import ChannelsTab from '../components/tabs/ChannelsTab'
 import SettingsTab from '../components/tabs/SettingsTab'
+import GameStatsTab from '../components/tabs/GameStatsTab'
 
 const ServerStats = () => {
   const { guildId } = useParams()
@@ -77,6 +78,9 @@ const ServerStats = () => {
         setStats([])
       } else if (activeTab === 'channels') {
         // Channels tab handles its own data
+        setStats([])
+      } else if (activeTab === 'gamestats') {
+        // Game stats tab handles its own data
         setStats([])
       } else {
         const res = await api.getGuildStats(guildId, activeTab, limit)
@@ -174,6 +178,7 @@ const ServerStats = () => {
     { id: 'staff', label: 'Yetkililer', icon: '👮' },
     { id: 'siciller', label: 'Siciller', icon: '📋' },
     { id: 'members', label: 'Kullanıcılar', icon: '👥' },
+    { id: 'gamestats', label: 'Oyun İstatistikleri', icon: '🎮' },
     { id: 'roles', label: 'Roller', icon: '🎭' },
     { id: 'bans', label: 'Banlı Kullanıcılar', icon: '🔨' },
     { id: 'settings', label: 'Ayarlar', icon: '⚙️' },
@@ -265,7 +270,7 @@ const ServerStats = () => {
       </div>
 
       {/* Limit Selector */}
-      {activeTab !== 'bans' && activeTab !== 'deleted' && activeTab !== 'members' && (
+      {activeTab !== 'bans' && activeTab !== 'deleted' && activeTab !== 'members' && activeTab !== 'gamestats' && (
         <div className="mb-6 flex justify-end">
           <select
             value={limit}
@@ -324,6 +329,9 @@ const ServerStats = () => {
       ) : activeTab === 'settings' ? (
         /* Settings - Separate Component */
         <SettingsTab guildId={guildId} />
+      ) : activeTab === 'gamestats' ? (
+        /* Game Stats - Separate Component */
+        <GameStatsTab guildId={guildId} />
       ) : activeTab === 'members' ? (
         /* Members Tab */
         membersLoading ? (

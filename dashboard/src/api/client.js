@@ -21,6 +21,8 @@ export const api = {
     apiClient.get(`/guilds/${guildId}/stats`, { params: { type, limit } }),
   getGuildLeaderboard: (guildId) => 
     apiClient.get(`/guilds/${guildId}/leaderboard`),
+  getGuildGameStats: (guildId) =>
+    apiClient.get(`/guilds/${guildId}/game-stats`),
   getGuildPunishments: (guildId, limit = 50) => 
     apiClient.get(`/guilds/${guildId}/punishments`, { params: { limit } }),
   getSiciller: (guildId, limit = 100, offset = 0) =>

@@ -15,6 +15,7 @@ import Settings from '../models/Settings.js';
 import GuildPermission from '../models/GuildPermission.js';
 import ModLogConfig from '../models/ModLogConfig.js';
 import CommandSettings from '../models/CommandSettings.js';
+import GameStat from '../models/GameStat.js';
 import { ActionGroup, ActionEntry } from '../models/index.js';
 import Bank from '../models/Bank.js';
 import BankAccount from '../models/BankAccount.js';
@@ -718,6 +719,79 @@ class MidnightAPI {
 
       } catch (error) {
         console.error('Error fetching leaderboard:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get per-game top 10 stats for a guild
+    this.app.get('/api/guilds/:guildId/game-stats', async (req, res) => {
+      try {
+        const { guildId } = req.params;
+
+        const guild = this.client.guilds.cache.get(guildId);
+        if (!guild) {
+          return res.status(404).json({ error: 'Guild not found' });
+        }
+
+        const GAME_LIST = [
+          { value: 'wordbuilding', label: 'Kelime Türetme', icon: '🔤', word: true },
+          { value: 'wordgame', label: 'Kelime Oyunu', icon: '📝' },
+          { value: 'wordbomb', label: 'Kelime Bombası', icon: '💣' },
+          { value: 'xox', label: 'XOX', icon: '❌' },
+          { value: 'dice', label: 'Zar', icon: '🎲' },
+          { value: 'mines', label: 'Mayın Tarlası', icon: '💥' },
+          { value: 'blackjack', label: 'Blackjack', icon: '🃏' },
+          { value: 'rusruleti', label: 'Rus Ruleti', icon: '🔫' },
+          { value: 'gofishing', label: 'Balık Tutma', icon: '🎣' },
+          { value: 'coinflip', label: 'Yazı Tura', icon: '🪙' },
+          { value: 'bingo', label: 'Tombala', icon: '🎱' },
+          { value: 'slots', label: 'Slots', icon: '🎰' },
+          { value: 'wheel', label: 'Çarkıfelek', icon: '🎡' },
+          { value: 'keno', label: 'Keno', icon: '🔢' },
+          { value: 'hilo', label: 'Hi-Lo', icon: '📈' },
+          { value: 'kazikazan', label: 'Kazı Kazan', icon: '🎫' },
+        ];
+
+        const games = await Promise.all(
+          GAME_LIST.map(async (game) => {
+            const filter = game.word
+              ? { guildId, game: game.value, words: { $gt: 0 } }
+              : { guildId, game: game.value, wins: { $gt: 0 } };
+            const sort = game.word ? { words: -1 } : { wins: -1 };
+
+            const docs = await GameStat.find(filter).sort(sort).limit(10);
+
+            const top = await Promise.all(
+              docs.map(async (doc) => {
+                const userInfo = await this.fetchUserSmart(guild, doc.userId);
+                return {
+                  userId: doc.userId,
+                  username: userInfo.username,
+                  avatar: userInfo.avatar,
+                  words: doc.words || 0,
+                  plays: doc.plays || 0,
+                  wins: doc.wins || 0,
+                  losses: doc.losses || 0,
+                  draws: doc.draws || 0,
+                  totalWon: doc.totalWon || 0,
+                  totalLost: doc.totalLost || 0,
+                };
+              })
+            );
+
+            return {
+              value: game.value,
+              label: game.label,
+              icon: game.icon,
+              word: !!game.word,
+              top,
+            };
+          })
+        );
+
+        res.json(games);
+      } catch (error) {
+        console.error('Error fetching game stats:', error);
         res.status(500).json({ error: error.message });
       }
     });
