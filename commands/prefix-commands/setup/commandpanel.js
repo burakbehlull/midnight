@@ -97,9 +97,9 @@ export default {
     const categories = [
       { label: 'Economy Komutları', value: 'economy', emoji: '💰', exists: commandsByCategory.has('economy') },
       { label: 'Moderasyon Komutları', value: 'moderation', emoji: '⚖️', exists: commandsByCategory.has('moderation') },
-      { label: 'Alt Moderasyon Komutları', value: 'submoderation', emoji: '⚖️', exists: commandsByCategory.has('submoderation') },
-      { label: 'Social Komutları', value: 'social', emoji: '👥​', exists: commandsByCategory.has('social') },
-      { label: 'Ban Komutları', value: 'bans', emoji: '⚖️', exists: commandsByCategory.has('bans') },
+      { label: 'Alt Moderasyon Komutları', value: 'submoderation', emoji: '🛡️', exists: commandsByCategory.has('submoderation') },
+      { label: 'Social Komutları', value: 'social', emoji: '👥', exists: commandsByCategory.has('social') },
+      { label: 'Ban Komutları', value: 'bans', emoji: '🔨', exists: commandsByCategory.has('bans') },
       { label: 'Kayıt Komutları', value: 'register', emoji: '📝', exists: commandsByCategory.has('register') },
       { label: 'Level Komutları', value: 'level', emoji: '📊', exists: commandsByCategory.has('level') },
       { label: 'Davet Komutları', value: 'invite', emoji: '🎫', exists: commandsByCategory.has('invite') },
