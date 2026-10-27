@@ -57,11 +57,6 @@ export default {
         return sender.reply(sender.errorEmbed("❌ Lütfen bir isim belirtin veya bir kullanıcı etiketleyin.\n**Kullanım:** `.isim <isim>` veya `.isim @user <isim>`"));
       }
 
-      const ctrl = await manager.authority.control(PermissionFlagsBits.ChangeNickname, PermissionFlagsBits.ManageNicknames, PermissionFlagsBits.Administrator);
-      if (!ctrl) {
-        return sender.reply(sender.errorEmbed("❌ Kendi sunucu ismini değiştirebilmek için **İsmi Değiştir** yetkisine sahip olmalısın."));
-      }
-
       const settings = await Settings.findOne({ guildId: message.guild.id });
       const tag = settings?.tag || null;
 

@@ -20,12 +20,6 @@ export default {
 
         if (!targetUser) return manager.sender.reply(manager.sender.errorEmbed('Lütfen bir kullanıcı etiketleyin.'));
         
-		const PM = new PermissionsManager(message);
-      
-		const ctrl = await PM.control(PM.flags.ManageRoles, PM.flags.Administrator);
-		if (!ctrl) return manager.sender.reply(manager.sender.errorEmbed('❌ Bu komutu kullanmak için yetkin yok.'));
-
-
         try {
             const settings = await Settings.findOne({ guildId });
 
