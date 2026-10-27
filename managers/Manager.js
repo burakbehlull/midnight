@@ -21,6 +21,7 @@ class Manager {
     this.authority = new PermissionsManager(
       options.authority?.action ? options.authority?.action : options.action,
     )
+    this.permissions = this.authority;
     this.sender = new messageSender(
       options.sender?.action ? options.sender?.action : options.action,
     )
