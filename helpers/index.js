@@ -29,6 +29,7 @@ import * as actionRolesHelper from "./actionRolesHelper.js"
 import * as gifResolver from "./gifResolver.js"
 import * as gameIcons from "./gameIcons.js"
 import * as settingsPanel from "./settingsPanel.js"
+import { createMugshot } from "./mugshotGenerator.js"
 
 
 export {
@@ -45,6 +46,7 @@ export {
 	gifResolver,
 	gameIcons,
 	settingsPanel,
+	createMugshot,
 	Button, Modal,
 	
 	fetchPartialNeed,
