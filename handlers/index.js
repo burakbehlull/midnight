@@ -22,6 +22,7 @@ import deletedMessageHandler from "./deletedMessageHandler.js"
 import directMessageHandler from "./directMessageHandler.js"
 
 import tagRoleHandler from "./tagRoleHandler.js"
+import { handleCustomCommand } from "./customCommandHandler.js"
 
 import selfRegisterButtonHandler from "./registerHandle.js"
 import { actionButtonHandler, actionReactionAddHandler, actionReactionRemoveHandler } from "./actionRoles.js"
@@ -53,5 +54,6 @@ export {
 	deletedMessageHandler,
 	directMessageHandler,
 		
-	tagRoleHandler
+	tagRoleHandler,
+	handleCustomCommand
 }

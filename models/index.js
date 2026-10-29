@@ -36,6 +36,7 @@ import ActionEntry from "./ActionEntry.js"
 import WordBuildingGame from "./WordBuildingGame.js"
 import VoiceSession from "./VoiceSession.js"
 import GameStat from "./GameStat.js"
+import CustomCommand from "./CustomCommand.js"
 
 
 export {
@@ -71,5 +72,6 @@ export {
 	ActionEntry,
 	WordBuildingGame,
 	VoiceSession,
-	GameStat
+	GameStat,
+	CustomCommand
 }

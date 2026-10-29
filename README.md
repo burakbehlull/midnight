@@ -134,7 +134,8 @@ Create ` config.json ` file and set permission settings:
 ### contents: Setting and Setup
 | command | comment | values | situation |
 | ------ | ------ | ------ | ------ |
-| **komutpanel** | authority ones command systems | .. | stable |
+| **commandpanel** | authority ones command systems | .. | stable |
+| **customcommand** | create custom command | add, edit, delete | stable |
 | **ticket-setup** | creates embed tickets | .. | stable |
 | **room-setup** | private room creater | .. | stable |
 | **confession-setup** | people are open or anonymous confessors | channel | stable |

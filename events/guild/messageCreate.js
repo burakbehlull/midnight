@@ -1,5 +1,5 @@
 import { Events } from 'discord.js';
-import { afkHandler, levelMessageHandler, statsUtilsHandler, handleCooldown } from "#handlers"
+import { afkHandler, levelMessageHandler, statsUtilsHandler, handleCooldown, handleCustomCommand } from "#handlers"
 import { relationsHandler } from "#handlers";
 import { Settings } from "#models";
 import { checkCommandRestrictions, handleAutoDelete, normalizePrefixArgs } from "#helpers";
@@ -109,7 +109,14 @@ export default {
 
     const command = client.prefixCommands.get(commandName);
 
-    if (!command) return;
+    // Eğer normal komut yoksa, özel komut mu diye kontrol et
+    if (!command) {
+      const foundCustomCommand = await handleCustomCommand(message, commandName);
+      if (foundCustomCommand) {
+        return; // Özel komut bulundu ve çalıştırıldı
+      }
+      return; // Hiçbir komut bulunamadı
+    }
 
     const manager = new Manager(client, {
       action: message
