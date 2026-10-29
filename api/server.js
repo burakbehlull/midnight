@@ -22,6 +22,7 @@ import BankAccount from '../models/BankAccount.js';
 import BankLoan from '../models/BankLoan.js';
 import { getBankTotals, computeBankValue } from '../helpers/bankHelper.js';
 import { errorHandler, notFoundHandler, requestLogger } from './middleware.js';
+import customCommandsRouter from './routes/customCommands.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -231,6 +232,9 @@ class MidnightAPI {
   }
 
   setupRoutes() {
+    // Custom Commands Routes
+    this.app.use('/api/custom-commands', customCommandsRouter);
+
     this.app.get('/api/health', (req, res) => {
       res.json({ 
         status: 'online', 

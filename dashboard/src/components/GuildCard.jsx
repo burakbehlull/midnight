@@ -50,10 +50,10 @@ const GuildCard = ({ guild }) => {
         </Link>
 
         <Link
-          to={`/guilds/${guild.id}/actions`}
+          to={`/guilds/${guild.id}/settings`}
           className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 rounded-lg transition-opacity text-center text-sm font-medium"
         >
-          ✨ Actions
+          ⚙️ Ayarlar
         </Link>
       </div>
     </div>
