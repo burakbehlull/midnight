@@ -118,8 +118,20 @@ export default {
       if (!userData.marriageSince || !partnerId) return '_Yok_';
       const marriedDate = new Date(userData.marriageSince);
       const diff = Math.abs(Date.now() - marriedDate.getTime());
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      return `<t:${Math.floor(marriedDate.getTime() / 1000)}:D> (${days} gün)`;
+      const totalDays = Math.floor(diff / (1000 * 60 * 60 * 24));
+      
+      const years = Math.floor(totalDays / 365);
+      const months = Math.floor((totalDays % 365) / 30);
+      const days = Math.floor((totalDays % 365) % 30);
+      
+      const parts = [];
+      if (years > 0) parts.push(`${years} yıl`);
+      if (months > 0) parts.push(`${months} ay`);
+      if (days > 0) parts.push(`${days} gün`);
+      
+      const durationText = parts.length > 0 ? parts.join(' ') : '0 gün';
+      
+      return `<t:${Math.floor(marriedDate.getTime() / 1000)}:D> (${durationText})`;
     })();
 
     let petsText = '_Yok_';

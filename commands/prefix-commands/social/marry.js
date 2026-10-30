@@ -28,7 +28,18 @@ export default {
 
       const marriedDate = authorData.marriageSince ? new Date(authorData.marriageSince) : new Date();
       const diffTime = Math.abs(new Date() - marriedDate);
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      const totalDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      
+      const years = Math.floor(totalDays / 365);
+      const monthsDuration = Math.floor((totalDays % 365) / 30);
+      const days = Math.floor((totalDays % 365) % 30);
+      
+      const parts = [];
+      if (years > 0) parts.push(`${years} yıl`);
+      if (monthsDuration > 0) parts.push(`${monthsDuration} ay`);
+      if (days > 0) parts.push(`${days} gün`);
+      
+      const durationText = parts.length > 0 ? parts.join(' ') : '0 gün';
 
       let ringEmoji = '💍';
       
@@ -39,14 +50,14 @@ export default {
         }
       }
 
-      const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+      const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
       const day = marriedDate.getDate();
-      const month = months[marriedDate.getMonth()];
+      const month = monthNames[marriedDate.getMonth()];
       const year = marriedDate.getFullYear();
       const formattedDate = `${day} ${month} ${year}`;
 
       return manager.sender.reply(
-        `${ringEmoji} **${partnerName}** ile **${diffDays}** gündür evlisiniz! ${emojis.rings} \nEvlenme Tarihi: ${formattedDate}`
+        `${ringEmoji} **${partnerName}** ile **${durationText}** evlisiniz! ${emojis.rings} \nEvlenme Tarihi: ${formattedDate}`
       );
     }
 
