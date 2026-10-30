@@ -1,11 +1,11 @@
 import Manager from '#managers';
-import { Economy } from '#models';
+import { Economy, Shop } from '#models';
 
 export default {
   name: 'family',
   description: 'Aile yapını, evlatlarını ve anne-babanı gösterir.',
   aliases: ['aile'],
-  usage: '.family [@kullanıcı]',
+  usage: '.family [@kullanıcı] | .family name <isim>',
   category: 'social',
   
   permissions: {
@@ -14,6 +14,38 @@ export default {
 
   async execute(client, message, args) {
     const manager = new Manager(client, { action: message });
+    
+    if (args[0]?.toLowerCase() === 'name' || args[0]?.toLowerCase() === 'isim') {
+      const familyName = args.slice(1).join(' ').trim();
+      
+      if (!familyName) {
+        return manager.sender.reply(manager.sender.errorEmbed('❌ Bir aile ismi belirtmelisin!\n\nKullanım: `.family name <aile ismi>`'));
+      }
+      
+      if (familyName.length < 2 || familyName.length > 30) {
+        return manager.sender.reply(manager.sender.errorEmbed('❌ Aile ismi 2-30 karakter arasında olmalı!'));
+      }
+      
+      const userData = await Economy.findOne({ userId: message.author.id }) || new Economy({ userId: message.author.id });
+      
+      if (!userData.marriedTo) {
+        return manager.sender.reply(manager.sender.errorEmbed('❌ Aile ismi belirlemek için evli olmalısın!'));
+      }
+      
+      userData.familyName = familyName;
+      await userData.save();
+      
+      const partnerData = await Economy.findOne({ userId: userData.marriedTo });
+      if (partnerData) {
+        partnerData.familyName = familyName;
+        await partnerData.save();
+      }
+      
+      const embed = manager.sender.classic(`Aile isminiz **"${familyName}"** olarak belirlendi!`);
+      return manager.sender.reply(embed);
+    }
+    
+  
     const target = message.mentions.users.first() || client.users.cache.get(args[0]) || message.author;
 
     const userData = await Economy.findOne({ userId: target.id }) || new Economy({ userId: target.id });
@@ -51,19 +83,50 @@ export default {
     let petsText = '_Yok_';
     const allPets = [];
     
+  
     if (userData.pet && userData.pet.type && userData.pet.name) {
-      allPets.push(`- **${userData.pet.name}** (<@${target.id}>)`);
+      allPets.push(`- \`${userData.pet.name}\` (sahip: <@${target.id}>)`);
     }
     
+   
     if (partnerData?.pet?.type && partnerData.pet.name) {
-      allPets.push(`- **${partnerData.pet.name}** (<@${partnerId}>)`);
+      allPets.push(`-  \`${partnerData.pet.name}\` (sahip: <@${partnerId}>)`);
+    }
+    
+   
+    if (allFosterlings.size > 0) {
+      const fosterlingDataList = await Economy.find({ userId: { $in: [...allFosterlings] } }).lean();
+      for (const fosterlingData of fosterlingDataList) {
+        if (fosterlingData.pet?.type && fosterlingData.pet.name) {
+          allPets.push(`- \`${fosterlingData.pet.name}\` (sahip: <@${fosterlingData.userId}>)`);
+        }
+      }
+    }
+    
+   
+    if (parentEntry) {
+      if (parentEntry.pet?.type && parentEntry.pet.name) {
+        allPets.push(`- \`${parentEntry.pet.name}\` (sahip: <@${parentEntry.userId}>)`);
+      }
+      
+    
+      if (parentEntry.marriedTo) {
+        const otherParentData = await Economy.findOne({ userId: parentEntry.marriedTo }).lean();
+        if (otherParentData?.pet?.type && otherParentData.pet.name) {
+          allPets.push(`- \`${otherParentData.pet.name}\` (sahip: <@${parentEntry.marriedTo}>)`);
+        }
+      }
     }
     
     if (allPets.length > 0) {
       petsText = allPets.join('\n');
     }
 
-    const embed = manager.sender.classic(`👨‍👩‍👧‍👦 ${target.username} adlı kullanıcının aile ağacı`);
+    const familyTitle = userData.familyName 
+      ? `\`${userData.familyName}\`` 
+      : `👨‍👩‍👧‍👦 **${target.username}** adlı kullanıcının aile ağacı`;
+
+    const embed = manager.sender.classic(familyTitle);
     embed.addFields(
       { name: '❤️ Eşi', value: partnerId ? `<@${partnerId}>` : '_Yok_', inline: true },
       { name: '💍 Evlenme Tarihi', value: marriageSinceText, inline: true },
@@ -72,6 +135,10 @@ export default {
       { name: '👨‍👩‍👦 Anne / Babası', value: parentsText, inline: false },
       { name: '🐾 Evcil Hayvanlar', value: petsText, inline: false }
     );
+    
+    if (target.id === message.author.id && userData.marriedTo && !userData.familyName) {
+      embed.setFooter({ text: 'İpucu: .family name <isim> ile ailenize isim verebilirsiniz!' });
+    }
 
     manager.sender.reply(embed);
   }

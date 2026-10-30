@@ -39,8 +39,8 @@ export default {
     }
 
     const btns = new Button();
-    btns.add('dismiss_confirm', '✅ Evet, At', btns.style.Danger);
-    btns.add('dismiss_cancel', '❌ Hayır, İptal', btns.style.Secondary);
+    btns.add('dismiss_confirm', 'Evet, At', btns.style.Danger);
+    btns.add('dismiss_cancel', 'Hayır, İptal', btns.style.Secondary);
     const row = btns.build();
 
     const confirmEmbed = manager.sender.classic(

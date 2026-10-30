@@ -390,8 +390,8 @@ async function runTwoPlayer(client, message, manager, { challenger, target, amou
   const rejectId = `mt_${offerNonce}_reject`;
 
   const buttonBuilder = new Button();
-  buttonBuilder.add(acceptId, '✅ Kabul Et', buttonBuilder.style.Success);
-  buttonBuilder.add(rejectId, '❌ Reddet', buttonBuilder.style.Danger);
+  buttonBuilder.add(acceptId, 'Kabul Et', buttonBuilder.style.Success);
+  buttonBuilder.add(rejectId, 'Reddet', buttonBuilder.style.Danger);
 
   let offerMsg;
   try {

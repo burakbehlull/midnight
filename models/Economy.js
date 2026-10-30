@@ -13,6 +13,7 @@ const economySchema = new mongoose.Schema({
   marriedTo: { type: String, default: null },
   marriageSince: { type: Date, default: null },
   marriageRing: { type: String, default: null },
+  familyName: { type: String, default: null },
   background: { type: String, default: null },
   fosterlings: { type: [String], default: [] },
   inventory: {

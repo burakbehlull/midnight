@@ -510,10 +510,10 @@ async function runSinglePlayer(client, message, manager, { userId, amount, mode 
       text =
         `${rollLine}\n` +
         `${modeEmoji(mode)} Tahmin: **${modeLabel(mode)}**\n\n` +
-        `✅ **${roll.sum}**, ${mode === 'ust' ? "7'den büyük" : "7'den küçük"} — doğru tahmin!\n` +
-        `🎯 Çarpan: **${OVER_MULT}x**\n` +
-        `💸 Kazanç: **+${fmt(payout)}** coin\n` +
-        `📊 NET: **+${fmt(net)}** coin • ✨ XP: +${xpGain}\n` +
+        `**${roll.sum}**, ${mode === 'ust' ? "7'den büyük" : "7'den küçük"} — doğru tahmin!\n` +
+        `Çarpan: **${OVER_MULT}x**\n` +
+        `Kazanç: **+${fmt(payout)}** coin\n` +
+        `NET: **+${fmt(net)}** coin • ✨ XP: +${xpGain}\n` +
         balanceLine;
     } else {
       title = '💸 KAYBETTİN';
@@ -522,7 +522,7 @@ async function runSinglePlayer(client, message, manager, { userId, amount, mode 
         `${rollLine}\n` +
         `${modeEmoji(mode)} Tahmin: **${modeLabel(mode)}**\n\n` +
         `❌ **${roll.sum}** tahminine uymadı.\n` +
-        `💸 Kayıp: **-${fmt(amount)}** coin\n` +
+        `Kayıp: **-${fmt(amount)}** coin\n` +
         balanceLine;
     }
 

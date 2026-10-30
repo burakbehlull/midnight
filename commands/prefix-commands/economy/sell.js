@@ -40,6 +40,6 @@ export default {
     user.xp += 5;
 
     await user.save();
-    message.channel.send(`✅ __${amount}__ adet **${item.emoji || ''} ${item.name}** satıldı. Kazanılan: 💰 **__${gain}__**`);
+    message.channel.send(`__${amount}__ adet **${item.emoji || ''} ${item.name}** satıldı. Kazanılan: 💰 **__${gain}__**`);
   }
 };

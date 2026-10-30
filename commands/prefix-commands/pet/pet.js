@@ -14,6 +14,9 @@ export default {
   category: 'fun',
   description: 'Evcil hayvan sistemi',
   usage: '.pet [adopt|feed|play|love|sleep|name|accessories|leaderboard]',
+  permissions: {
+    enabled: false
+  },
   async execute(client, message, args) {
     const subCommand = args[0]?.toLowerCase();
 
@@ -129,7 +132,6 @@ async function showPetProfile(message) {
     .setFooter({ text: `${message.author.username} için`, iconURL: message.author.displayAvatarURL() })
     .setTimestamp();
 
-  // Butonlar
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('pet_feed')

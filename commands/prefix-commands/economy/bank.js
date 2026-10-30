@@ -647,7 +647,7 @@ async function openBankMenu(client, message, manager, userId) {
       pendingAmount = null;
 
       await i.reply({
-        content: `✅ **${fmtMoney(principal)} coin** kredi çekildi.\nVade: **${fmtDate(dueDate)}** · Günlük faiz %${rate} · Gecikirse ×${mult}`,
+        content: `**${fmtMoney(principal)} coin** kredi çekildi.\nVade: **${fmtDate(dueDate)}** · Günlük faiz %${rate} · Gecikirse ×${mult}`,
         ephemeral: true
       }).catch(() => {});
       return refreshAccount();

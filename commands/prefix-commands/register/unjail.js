@@ -54,7 +54,7 @@ export default {
       );
 
       message.channel.send({
-        embeds: [sender.classic(`✅ ${target} adlı kullanıcının jail cezası kaldırıldı.`)]
+        embeds: [sender.classic(`${target} adlı kullanıcının jail cezası kaldırıldı.`)]
       });
     } catch (err) {
       console.error('Unjail hatası:', err);

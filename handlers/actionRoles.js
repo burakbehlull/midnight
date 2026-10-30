@@ -124,7 +124,7 @@ export async function actionButtonHandler(interaction) {
         await stripOtherGroupRoles(member, groupId, interaction.guild, role.id);
       }
       await member.roles.add(role.id).catch(() => {});
-      let msg = `✅ Rol verildi: <@&${role.id}>`;
+      let msg = `Rol verildi: <@&${role.id}>`;
       if (roleMode === 'single') msg += `\n🎯 Tek Rol modu: eski roller temizlendi.`;
       await safeReply(interaction, { content: msg });
     } catch {

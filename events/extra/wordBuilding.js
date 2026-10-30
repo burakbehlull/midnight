@@ -372,11 +372,11 @@ export default {
             
             await message.reply({
               content: 
-                `✅ **İlk kelime kabul edildi!** Oyun başladı!\n\n` +
-                `⚠️ **"${currentWord}"** kelimesi **${lastCharOfCurrent.toUpperCase()}** harfi ile bitiyor.\n` +
+                `**İlk kelime kabul edildi!** Oyun başladı!\n\n` +
+                `**"${currentWord}"** kelimesi **${lastCharOfCurrent.toUpperCase()}** harfi ile bitiyor.\n` +
                 `Türkçe'de bu harfle başlayan kelime olmadığı için rastgele bir kelime seçildi:\n\n` +
-                `🎲 **Yeni kelime:** ${randomWord}\n` +
-                `📝 **Sonraki kelime ${getLastChar(randomWord)?.toUpperCase()} harfi ile başlamalı**\n\n` +
+                `**Yeni kelime:** ${randomWord}\n` +
+                `**Sonraki kelime ${getLastChar(randomWord)?.toUpperCase()} harfi ile başlamalı**\n\n` +
                 `**Toplam kelime:** ${game.totalWords}`,
               allowedMentions: { repliedUser: false }
             });
@@ -425,11 +425,11 @@ export default {
             
             await message.reply({
               content: 
-                `✅ **Kelime kabul edildi!**\n\n` +
-                `⚠️ **"${currentWord}"** kelimesi **${lastCharOfCurrent.toUpperCase()}** harfi ile bitiyor.\n` +
+                `**Kelime kabul edildi!**\n\n` +
+                `**"${currentWord}"** kelimesi **${lastCharOfCurrent.toUpperCase()}** harfi ile bitiyor.\n` +
                 `Türkçe'de bu harfle başlayan kelime olmadığı için rastgele bir kelime seçildi:\n\n` +
-                `🎲 **Yeni kelime:** ${randomWord}\n` +
-                `📝 **Sonraki kelime ${getLastChar(randomWord)?.toUpperCase()} harfi ile başlamalı**\n\n` +
+                `**Yeni kelime:** ${randomWord}\n` +
+                `**Sonraki kelime ${getLastChar(randomWord)?.toUpperCase()} harfi ile başlamalı**\n\n` +
                 `**Toplam kelime:** ${game.totalWords}`,
               allowedMentions: { repliedUser: false }
             });

@@ -29,8 +29,8 @@ export default {
     const partnerId = parentEntry.marriedTo;
 
     const btns = new Button();
-    btns.add('leave_confirm', '✅ Evet, Ayrıl', btns.style.Danger);
-    btns.add('leave_cancel', '❌ Hayır, İptal', btns.style.Secondary);
+    btns.add('leave_confirm', 'Evet, Ayrıl', btns.style.Danger);
+    btns.add('leave_cancel', 'Hayır, İptal', btns.style.Secondary);
     const row = btns.build();
 
     let parentsText = `<@${parentId}>`;
