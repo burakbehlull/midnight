@@ -134,7 +134,7 @@ export default {
         if (refreshedTarget.isNew) await refreshedTarget.save();
 
         const successEmbed = manager.sender.classic(
-          `🎉 Tebrikler! **${target.username}**, artık <@${parentId}> ve <@${partnerId}> çiftinin evladıdır! 👨‍👩‍👧\n` +
+          `Tebrikler! **${target.username}**, artık <@${parentId}> ve <@${partnerId}> çiftinin evladıdır! 👨‍👩‍👧\n` +
           `Evlat Edinme Belgesi kullanıldı.`
         );
 

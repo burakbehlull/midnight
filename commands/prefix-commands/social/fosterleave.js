@@ -89,10 +89,12 @@ export default {
           await refreshedPartner.save();
         }
 
+        userData.familyName = null;
+        await userData.save();
+
         const successEmbed = manager.sender.classic(
           `🚨 **Aile Duyurusu!**\n\n` +
-          `**${message.author.username}**, ailesinden ${parentsText} gönüllü olarak ayrıldı! 👋`
-        );
+          `**${message.author.username}**, ailesinden ${parentsText} gönüllü olarak ayrıldı! 👋`);
 
         return confirmMsg.edit({ embeds: [successEmbed], components: [] }).catch(() => {});
       }

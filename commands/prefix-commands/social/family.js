@@ -125,38 +125,68 @@ export default {
     let petsText = '_Yok_';
     const allPets = [];
     
-  
+    const allPetSlugs = [];
+    if (userData.pet?.slug) allPetSlugs.push(userData.pet.slug);
+    if (partnerData?.pet?.slug) allPetSlugs.push(partnerData.pet.slug);
+    
+    if (allFosterlings.size > 0) {
+      const fosterlingDataList = await Economy.find({ userId: { $in: [...allFosterlings] } }).lean();
+      for (const fd of fosterlingDataList) {
+        if (fd.pet?.slug) allPetSlugs.push(fd.pet.slug);
+      }
+    }
+    
+    if (parentEntry?.pet?.slug) allPetSlugs.push(parentEntry.pet.slug);
+    if (parentEntry?.marriedTo) {
+      const otherParentData = await Economy.findOne({ userId: parentEntry.marriedTo }).lean();
+      if (otherParentData?.pet?.slug) allPetSlugs.push(otherParentData.pet.slug);
+    }
+    
+    const petItems = await Shop.find({ slug: { $in: allPetSlugs.filter(Boolean) } });
+    const petItemMap = new Map(petItems.map(item => [item.slug, item]));
+    
     if (userData.pet && userData.pet.type && userData.pet.name) {
-      allPets.push(`- \`${userData.pet.name}\` (sahip: <@${target.id}>)`);
+      const petItem = petItemMap.get(userData.pet.slug);
+      const emoji = petItem?.emoji || ' ';
+      const breed = petItem?.name || userData.pet.breed || 'Bilinmeyen';
+      allPets.push(`- ${emoji} \`${userData.pet.name}\` : ${breed} (sahip: <@${target.id}>)`);
     }
     
-   
     if (partnerData?.pet?.type && partnerData.pet.name) {
-      allPets.push(`-  \`${partnerData.pet.name}\` (sahip: <@${partnerId}>)`);
+      const petItem = petItemMap.get(partnerData.pet.slug);
+      const emoji = petItem?.emoji || ' ';
+      const breed = petItem?.name || partnerData.pet.breed || 'Bilinmeyen';
+      allPets.push(`- ${emoji} \`${partnerData.pet.name}\` : ${breed} (sahip: <@${partnerId}>)`);
     }
     
-   
+
     if (allFosterlings.size > 0) {
       const fosterlingDataList = await Economy.find({ userId: { $in: [...allFosterlings] } }).lean();
       for (const fosterlingData of fosterlingDataList) {
         if (fosterlingData.pet?.type && fosterlingData.pet.name) {
-          allPets.push(`- \`${fosterlingData.pet.name}\` (sahip: <@${fosterlingData.userId}>)`);
+          const petItem = petItemMap.get(fosterlingData.pet.slug);
+          const emoji = petItem?.emoji || ' ';
+          const breed = petItem?.name || fosterlingData.pet.breed || 'Bilinmeyen';
+          allPets.push(`- ${emoji} \`${fosterlingData.pet.name}\` : ${breed} (sahip: <@${fosterlingData.userId}>)`);
         }
       }
     }
     
-   
-    if (parentEntry) {
-      if (parentEntry.pet?.type && parentEntry.pet.name) {
-        allPets.push(`- \`${parentEntry.pet.name}\` (sahip: <@${parentEntry.userId}>)`);
-      }
-      
+
+    if (parentEntry?.pet?.type && parentEntry.pet.name) {
+      const petItem = petItemMap.get(parentEntry.pet.slug);
+      const emoji = petItem?.emoji || ' ';
+      const breed = petItem?.name || parentEntry.pet.breed || 'Bilinmeyen';
+      allPets.push(`- ${emoji} \`${parentEntry.pet.name}\` : ${breed} (sahip: <@${parentEntry.userId}>)`);
+    }
     
-      if (parentEntry.marriedTo) {
-        const otherParentData = await Economy.findOne({ userId: parentEntry.marriedTo }).lean();
-        if (otherParentData?.pet?.type && otherParentData.pet.name) {
-          allPets.push(`- \`${otherParentData.pet.name}\` (sahip: <@${parentEntry.marriedTo}>)`);
-        }
+    if (parentEntry?.marriedTo) {
+      const otherParentData = await Economy.findOne({ userId: parentEntry.marriedTo }).lean();
+      if (otherParentData?.pet?.type && otherParentData.pet.name) {
+        const petItem = petItemMap.get(otherParentData.pet.slug);
+        const emoji = petItem?.emoji || ' ';
+        const breed = petItem?.name || otherParentData.pet.breed || 'Bilinmeyen';
+        allPets.push(`- ${emoji} \`${otherParentData.pet.name}\` : ${breed} (sahip: <@${parentEntry.marriedTo}>)`);
       }
     }
     

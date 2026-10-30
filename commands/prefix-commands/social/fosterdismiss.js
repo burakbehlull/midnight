@@ -99,9 +99,16 @@ export default {
         await refreshedParent.save();
         await refreshedPartner.save();
 
+        const childData = await Economy.findOne({ userId: target.id });
+        if (childData) {
+          childData.familyName = null;
+          await childData.save();
+        }
+
         const successEmbed = manager.sender.classic(
           `🚨 **Aile Duyurusu!**\n\n` +
-          `<@${parentId}> ve <@${partnerId}> çifti, **${target.username}** adlı evladını aileden uzaklaştırdı. 💔`
+          `<@${parentId}> ve <@${partnerId}> çifti, **${target.username}** adlı evladını aileden uzaklaştırdı. 💔\n\n` +
+          `Aile bağları tamamen koparıldı.`
         );
 
         return confirmMsg.edit({ embeds: [successEmbed], components: [] }).catch(() => {});
