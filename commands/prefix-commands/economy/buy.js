@@ -46,6 +46,6 @@ export default {
 
     await userData.save();
 
-    message.channel.send(`✅ **${item.emoji || ''} ${item.name}** satın alındı! (Envantere eklendi)`);
+    message.channel.send(`**${item.emoji || ''} ${item.name}** satın alındı!`);
   }
 };

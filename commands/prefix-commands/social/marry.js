@@ -70,7 +70,6 @@ export default {
     if (!ringId || isNaN(ringId)) 
       return manager.sender.reply(manager.sender.errorEmbed('❌ Geçerli bir yüzük ID girmelisin. Örn: `.marry @user 2`'));
 
-    // ID'den yüzük bilgisini çek ve module kontrolü yap
     const ringItem = await Shop.findOne({ id: parseInt(ringId), module: 'ring' });
     
     if (!ringItem) {
@@ -89,7 +88,7 @@ export default {
     const row = btns.build();
 
     const proposalEmbed = manager.sender.embed({
-      title: '💍 Evlilik Teklifi',
+      title: 'Evlilik Teklifi',
       description: 
         `**${message.author.username}**, **${target.username}** ile evlenmek istiyor!\n\n` +
         `**Yüzük:** ${ringItem.emoji || '💍'} **${ringItem.name}**\n\n` +
@@ -126,7 +125,6 @@ export default {
         const refreshedAuthorData = await Economy.findOne({ userId: authorId }) || new Economy({ userId: authorId });
         const refreshedTargetData = await Economy.findOne({ userId: target.id }) || new Economy({ userId: target.id });
 
-        // Slug ile kontrol
         const stock = refreshedAuthorData.inventory.get(ringSlug) || 0;
         if (stock < 1) {
           const fail = manager.sender.errorEmbed('❌ Kabul edildi ama yüzük envanterinden çıkmış, işlem iptal edildi.');
@@ -138,7 +136,6 @@ export default {
           return proposalMsg.edit({ embeds: [fail], components: [] }).catch(() => {});
         }
 
-        // Slug ile yüzüğü azalt
         refreshedAuthorData.inventory.set(ringSlug, stock - 1);
 
         const now = new Date();
@@ -147,10 +144,12 @@ export default {
         refreshedAuthorData.marriedTo = target.id;
         refreshedAuthorData.marriageSince = now;
         refreshedAuthorData.marriageRing = marriageRingSlug;
+        refreshedAuthorData.familyName = null;
 
         refreshedTargetData.marriedTo = authorId;
         refreshedTargetData.marriageSince = now;
         refreshedTargetData.marriageRing = marriageRingSlug;
+        refreshedTargetData.familyName = null; 
 
         await refreshedAuthorData.save();
         await refreshedTargetData.save();

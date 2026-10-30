@@ -35,13 +35,39 @@ export default {
       userData.familyName = familyName;
       await userData.save();
       
+    
       const partnerData = await Economy.findOne({ userId: userData.marriedTo });
       if (partnerData) {
         partnerData.familyName = familyName;
         await partnerData.save();
       }
       
-      const embed = manager.sender.classic(`Aile isminiz **"${familyName}"** olarak belirlendi!`);
+
+      if (userData.fosterlings && userData.fosterlings.length > 0) {
+        const children = await Economy.find({ 
+          userId: { $in: userData.fosterlings },
+          marriedTo: null 
+        });
+        
+        for (const child of children) {
+          child.familyName = familyName;
+          await child.save();
+        }
+      }
+      
+      if (partnerData?.fosterlings && partnerData.fosterlings.length > 0) {
+        const partnerChildren = await Economy.find({ 
+          userId: { $in: partnerData.fosterlings },
+          marriedTo: null
+        });
+        
+        for (const child of partnerChildren) {
+          child.familyName = familyName;
+          await child.save();
+        }
+      }
+      
+      const embed = manager.sender.classic(`Aile isminiz **"${familyName}"** olarak belirlendi!\n\n(Eşinize ve evlenmemiş çocuklarınıza da yansıtıldı)`);
       return manager.sender.reply(embed);
     }
     
@@ -54,6 +80,22 @@ export default {
     let partnerData = null;
     if (partnerId) {
       partnerData = await Economy.findOne({ userId: partnerId }).lean();
+    }
+
+    let displayFamilyName = null;
+    
+    if (userData.marriedTo && userData.familyName) {
+      displayFamilyName = userData.familyName;
+    } else {
+      const parentEntry = await Economy.findOne({ fosterlings: target.id }).lean();
+      if (parentEntry?.familyName) {
+        displayFamilyName = parentEntry.familyName;
+      } else if (parentEntry?.marriedTo) {
+        const otherParentData = await Economy.findOne({ userId: parentEntry.marriedTo }).lean();
+        if (otherParentData?.familyName) {
+          displayFamilyName = otherParentData.familyName;
+        }
+      }
     }
 
     const allFosterlings = new Set([...(userData.fosterlings || [])]);
@@ -122,9 +164,9 @@ export default {
       petsText = allPets.join('\n');
     }
 
-    const familyTitle = userData.familyName 
-      ? `\`${userData.familyName}\`` 
-      : `👨‍👩‍👧‍👦 **${target.username}** adlı kullanıcının aile ağacı`;
+    const familyTitle = displayFamilyName 
+      ? `${displayFamilyName} Ailesi` 
+      : `**${target.username}** adlı kullanıcının aile ağacı`;
 
     const embed = manager.sender.classic(familyTitle);
     embed.addFields(

@@ -34,15 +34,21 @@ export default {
       const partnerId = authorData.marriedTo;
       const partnerData = await Economy.findOne({ userId: partnerId });
 
+      const familyNameToKeep = authorData.familyName;
+
       authorData.marriedTo = null;
       authorData.marriageSince = null;
+      authorData.familyName = null;
+      
       partnerData.marriedTo = null;
       partnerData.marriageSince = null;
+      partnerData.familyName = null; // Boşananın aile ismi temizlenir
 
       await authorData.save();
       await partnerData.save();
+      
 
-      await msg.edit({ content: '❌ Artık boşandınız.', components: [] });
+      await msg.edit({ content: '❌ Artık boşandınız. Aile isminiz temizlendi.', components: [] });
     });
 
     collector.on('end', (collected) => {
