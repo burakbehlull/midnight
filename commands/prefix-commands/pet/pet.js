@@ -10,7 +10,7 @@ const LOVE_COOLDOWN = 12 * 60 * 60 * 1000;
 
 export default {
   name: 'pet',
-  aliases: ['pets', 'evcilhayvan'],
+  aliases: ['evcilhayvan'],
   category: 'fun',
   description: 'Evcil hayvan sistemi',
   usage: '.pet [adopt|feed|play|love|sleep|name|accessories|leaderboard]',
@@ -768,7 +768,7 @@ async function showLeaderboard(message) {
   ctx.font = 'bold 42px sans-serif';
   ctx.fillStyle = '#FFD700';
   ctx.textAlign = 'center';
-  ctx.fillText('🏆 Evcil Hayvan Lider Tablosu', canvas.width / 2, 60);
+  ctx.fillText('Evcil Hayvan Lider Tablosu', canvas.width / 2, 60);
 
 
   ctx.font = '20px sans-serif';
@@ -798,7 +798,7 @@ async function showLeaderboard(message) {
   
     ctx.font = 'bold 22px sans-serif';
     ctx.fillStyle = '#ffffff';
-    ctx.fillText(`${petItem?.emoji || '🐾'} ${pet.name}`, 100, yPos);
+    ctx.fillText(`${petItem?.emoji || ' '} ${pet.name}`, 100, yPos);
 
     
     ctx.font = '18px sans-serif';
