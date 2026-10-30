@@ -28,20 +28,20 @@ export default {
     const entries = inventoryEntries
       .filter(([_, count]) => count > 0)
       .map(([slug, count]) => {
-        const item = shopItems.find(i => (i.slug || `item_${i.id}`) === slug);
+        const item = shopItems.find(i => i.slug === slug);
         if (!item) return null;
-        return `\` ${item.id} \` | ${item.name} | **${count}** adet | Değer: 💰 ${item.price}`;
+        return `\` ${item.id} \` | ${item.emoji || ''} ${item.name} | **${count}** adet | Değer: 💰 ${item.price}`;
       })
       .filter(Boolean);
 
     if (!entries.length) return manager.sender.reply(manager.sender.classic('📦 **Envanterin boş.**'));
 
     const pages = [];
-    for (let i = 0; i < entries.length; i += 3) {
+    for (let i = 0; i < entries.length; i += 7) {
       const embed = new EmbedBuilder()
         .setTitle('📦 Envanter')
-        .setDescription(entries.slice(i, i + 3).join('\n'))
-        .setFooter({ text: `Sayfa ${Math.floor(i / 3) + 1}` });
+        .setDescription(entries.slice(i, i + 7).join('\n'))
+        .setFooter({ text: `Sayfa ${Math.floor(i / 7) + 1}` });
       pages.push(embed);
     }
 

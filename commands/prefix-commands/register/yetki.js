@@ -143,7 +143,7 @@ export default {
 
           await interaction.update({
             embeds: [sender.embed({
-              title: "✅ Yetkili Başlatıldı",
+              title: "Yetkili Başlatıldı",
               description: 
                 `${target} kullanıcısına <@&${settings.staffRole}> rolü verildi!\n\n` +
                 `**Tarih:** ${formattedDate}\n` +

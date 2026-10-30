@@ -447,8 +447,8 @@ async function runTwoPlayer(client, message, manager, { challenger, target, betA
   }
 
   const buttonBuilder = new Button();
-  buttonBuilder.add('bt_accept', '✅ Kabul Et', buttonBuilder.style.Success);
-  buttonBuilder.add('bt_reject', '❌ Reddet', buttonBuilder.style.Danger);
+  buttonBuilder.add('bt_accept', 'Kabul Et', buttonBuilder.style.Success);
+  buttonBuilder.add('bt_reject', 'Reddet', buttonBuilder.style.Danger);
   const componentsRow = buttonBuilder.build();
 
   const offerMsg = await message.channel.send({
@@ -456,8 +456,8 @@ async function runTwoPlayer(client, message, manager, { challenger, target, betA
       title: '🎣 Balık Tutma Yarışı Teklifi!',
       description:
         `<@${challenger.id}>, <@${target.id}> rakibine **${fmtMoney(betAmount)}** coinlik yarış teklif etti!\n\n` +
-        `🎁 Havuz: **${fmtMoney(betAmount * 2)}** coin (kazanan hepsini alır)\n` +
-        `⏳ Onay için **30 saniyen** var.`,
+        `Havuz: **${fmtMoney(betAmount * 2)}** coin (kazanan hepsini alır)\n` +
+        `Onay için **30 saniyen** var.`,
       color: 0x1e3a8a,
     }],
     components: [componentsRow],

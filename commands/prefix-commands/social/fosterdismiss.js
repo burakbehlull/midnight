@@ -109,7 +109,7 @@ export default {
 
       if (interaction.customId === 'dismiss_cancel') {
         const cancelledEmbed = manager.sender.classic(
-          `✅ İşlem iptal edildi. **${target.username}** hala ailenin bir parçası. 👨‍👩‍👧`
+          `İşlem iptal edildi. **${target.username}** hala ailenin bir parçası. 👨‍👩‍👧`
         );
         return confirmMsg.edit({ embeds: [cancelledEmbed], components: [] }).catch(() => {});
       }

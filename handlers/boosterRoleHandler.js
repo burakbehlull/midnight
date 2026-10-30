@@ -118,7 +118,7 @@ async function editBoosterRole(guild, member, roleName, color, emojiId) {
     
     return { 
       success: true, 
-      message: `✅ **${discordRole.name}** rolü başarıyla düzenlendi!`
+      message: `**${discordRole.name}** rolü başarıyla düzenlendi!`
     };
   } catch (error) {
     console.error('Booster rol düzenleme hatası:', error);
@@ -146,7 +146,7 @@ async function deleteBoosterRole(guild, member) {
     
     return { 
       success: true, 
-      message: '✅ Rolünüz başarıyla silindi!'
+      message: 'Rolünüz başarıyla silindi!'
     };
   } catch (error) {
     console.error('Booster rol silme hatası:', error);

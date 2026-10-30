@@ -88,7 +88,7 @@ export default {
             content: null,
             embeds: [
               manager.sender.classic(
-                `✅ Emoji başarıyla yüklendi!\n\n` +
+                `Emoji başarıyla yüklendi!\n\n` +
                 `**Görsel:** ${emojiFormat}\n` +
                 `**İsim:** \`${createdEmoji.name}\`\n` +
                 `**ID:** \`${createdEmoji.id}\`\n` +

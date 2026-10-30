@@ -229,7 +229,7 @@ export default function ActionsTab({ guildId }) {
 
   const getRoleModeLabel = (mode) => {
     if (mode === 'single') return '🎯 Tek Rol';
-    return '✅ Çoklu Rol';
+    return 'Çoklu Rol';
   };
 
   const getButtonStyleColor = (style) => {

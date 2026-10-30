@@ -218,7 +218,7 @@ async function setActiveCosmetic(userId, module, slugOrId) {
     ok: true,
     changed: true,
     item,
-    message: `✅ ${getModuleMeta(moduleLower).label} teması artık **${item.name}** olarak ayarlandı!`
+    message: `${getModuleMeta(moduleLower).label} teması artık **${item.name}** olarak ayarlandı!`
   };
 }
 

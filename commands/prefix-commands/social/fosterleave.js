@@ -99,7 +99,7 @@ export default {
 
       if (interaction.customId === 'leave_cancel') {
         const cancelledEmbed = manager.sender.classic(
-          `✅ Ayrılma işlemi iptal edildi. Hala ailesinin ${parentsText} bir parçasısın! ❤️`
+          `Ayrılma işlemi iptal edildi. Hala ailesinin ${parentsText} bir parçasısın! ❤️`
         );
         return confirmMsg.edit({ embeds: [cancelledEmbed], components: [] }).catch(() => {});
       }

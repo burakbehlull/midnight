@@ -23,21 +23,23 @@ export default {
     const item = await Shop.findOne({ id: parseInt(itemId) });
     if (!item)
       return manager.sender.reply(manager.sender.errorEmbed('❌ Bu ID ile bir item bulunamadı.'));
+    
+    if (!item.slug)
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Bu ürünün slug\'ı yok, satılamaz.'));
 
     const user = await Economy.findOne({ userId }) || new Economy({ userId });
     
-    const slug = item.slug || `item_${item.id}`;
-    const currentAmount = user.inventory.get(slug) || 0;
+    const currentAmount = user.inventory.get(item.slug) || 0;
 
     if (currentAmount < amount)
       return manager.sender.reply(manager.sender.errorEmbed('❌ Envanterinde yeterli eşya yok.'));
 
     const gain = Math.floor((item.price * amount) * 0.75);
-    user.inventory.set(slug, currentAmount - amount);
+    user.inventory.set(item.slug, currentAmount - amount);
     user.money += gain;
     user.xp += 5;
 
     await user.save();
-    message.channel.send(`__${amount}__ adet **${item.name}** satıldı. Kazanılan: 💰 **__${gain}__**`);
+    message.channel.send(`✅ __${amount}__ adet **${item.emoji || ''} ${item.name}** satıldı. Kazanılan: 💰 **__${gain}__**`);
   }
 };

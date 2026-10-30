@@ -35,14 +35,17 @@ export default {
 
     userData.money -= item.price;
 
-    const slug = item.slug || `item_${item.id}`;
-    const currentAmount = userData.inventory.get(slug) || 0;
-    userData.inventory.set(slug, currentAmount + 1);
+    if (!item.slug) {
+      return manager.sender.reply(manager.sender.errorEmbed('❌ Bu ürünün slug\'ı yok, satın alınamaz.'));
+    }
+
+    const currentAmount = userData.inventory.get(item.slug) || 0;
+    userData.inventory.set(item.slug, currentAmount + 1);
 
     userData.xp += 5;
 
     await userData.save();
 
-    message.channel.send(`**${item.name}** satın alındı.`);
+    message.channel.send(`✅ **${item.emoji || ''} ${item.name}** satın alındı! (Envantere eklendi)`);
   }
 };

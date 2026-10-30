@@ -175,6 +175,7 @@ Create ` config.json ` file and set permission settings:
 | ------ | ------ | ------ | ------ |
 | **gamestat** | user and top stats | me, user | stable |
 | **spotify** | .. | me, user | stable |
+| **pet** | adopt pet | self, adopt, love, heal, play, sleep, name, feed, leaderboard | stable |
 | **game** | shows the game the user is currently playing as a card (icon, game name, playtime) | me, user | stable |
 | **ship** | ships | user | stable |
 | **slot** | game | bet amount | stable |

@@ -48,13 +48,29 @@ export default {
       return `<t:${Math.floor(marriedDate.getTime() / 1000)}:D> (${days} gün)`;
     })();
 
+    let petsText = '_Yok_';
+    const allPets = [];
+    
+    if (userData.pet && userData.pet.type && userData.pet.name) {
+      allPets.push(`🐾 ${userData.pet.name} (<@${target.id}>)`);
+    }
+    
+    if (partnerData?.pet?.type && partnerData.pet.name) {
+      allPets.push(`🐾 ${partnerData.pet.name} (<@${partnerId}>)`);
+    }
+    
+    if (allPets.length > 0) {
+      petsText = allPets.join('\n');
+    }
+
     const embed = manager.sender.classic(`👨‍👩‍👧‍👦 ${target.username} adlı kullanıcının aile ağacı`);
     embed.addFields(
       { name: '❤️ Eşi', value: partnerId ? `<@${partnerId}>` : '_Yok_', inline: true },
       { name: '💍 Evlenme Tarihi', value: marriageSinceText, inline: true },
       { name: '\u200B', value: '\u200B', inline: true },
       { name: '👨‍👩‍👧 Evlatları', value: fosterlingsList, inline: false },
-      { name: '👨‍👩‍👦 Anne / Babası', value: parentsText, inline: false }
+      { name: '👨‍👩‍👦 Anne / Babası', value: parentsText, inline: false },
+      { name: '🐾 Evcil Hayvanlar', value: petsText, inline: false }
     );
 
     manager.sender.reply(embed);

@@ -23,6 +23,7 @@ import directMessageHandler from "./directMessageHandler.js"
 
 import tagRoleHandler from "./tagRoleHandler.js"
 import { handleCustomCommand } from "./customCommandHandler.js"
+import { petInteractionHandler } from "./petInteractionHandler.js"
 
 import selfRegisterButtonHandler from "./registerHandle.js"
 import { actionButtonHandler, actionReactionAddHandler, actionReactionRemoveHandler } from "./actionRoles.js"
@@ -55,5 +56,6 @@ export {
 	directMessageHandler,
 		
 	tagRoleHandler,
-	handleCustomCommand
+	handleCustomCommand,
+	petInteractionHandler
 }

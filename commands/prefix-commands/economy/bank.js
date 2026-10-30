@@ -582,7 +582,7 @@ async function openBankMenu(client, message, manager, userId) {
       pendingAmount = null;
 
       await i.reply({
-        content: `✅ **${fmtMoney(amount)} coin** ${dayLabel(days)} vadeli hesaba yatırıldı.\nVade sonu (**${fmtDate(maturesAt)}**) ödeme: \`${fmtMoney(payout)} coin\``,
+        content: `**${fmtMoney(amount)} coin** ${dayLabel(days)} vadeli hesaba yatırıldı.\nVade sonu (**${fmtDate(maturesAt)}**) ödeme: \`${fmtMoney(payout)} coin\``,
         ephemeral: true
       }).catch(() => {});
       return refreshAccount();

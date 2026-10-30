@@ -50,7 +50,7 @@ export default {
       }
 
       return sender.reply(sender.embed({
-        title: '✅ Spotify Eşleşme Açıldı',
+        title: 'Spotify Eşleşme Açıldı',
         color: sender.colors.green,
         description: `Sistem başarıyla aktif edildi.${extra}`
       }));
@@ -80,7 +80,7 @@ export default {
       await settings.save();
 
       return sender.reply(sender.embed({
-        title: '✅ Kanal Ayarlandı',
+        title: 'Kanal Ayarlandı',
         color: sender.colors.green,
         description: `Eşleşme mesajları artık <#${channel.id}> kanalına atılacak.\n\nSistem otomatik olarak **açıldı**.`
       }));

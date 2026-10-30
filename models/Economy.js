@@ -12,7 +12,7 @@ const economySchema = new mongoose.Schema({
   xp: { type: Number, default: 0 },
   marriedTo: { type: String, default: null },
   marriageSince: { type: Date, default: null },
-  marriageRing: { type: String, default: null }, // Hangi yüzükle evlendi (ring slug)
+  marriageRing: { type: String, default: null },
   background: { type: String, default: null },
   fosterlings: { type: [String], default: [] },
   inventory: {
@@ -24,6 +24,78 @@ const economySchema = new mongoose.Schema({
     type: Map,
     of: String,
     default: () => new Map()
+  },
+  pet: {
+    type: {
+      type: String,
+      enum: ['dog', 'cat', 'rabbit', 'hamster', 'lion'],
+      default: null
+    },
+    breed: {
+      type: String,
+      default: null
+    },
+    slug: {
+      type: String,
+      default: null
+    },
+    name: {
+      type: String,
+      default: null
+    },
+    level: {
+      type: Number,
+      default: 1,
+      min: 1,
+      max: 100
+    },
+    xp: {
+      type: Number,
+      default: 0
+    },
+    love: {
+      type: Number,
+      default: 50,
+      min: 0,
+      max: 100
+    },
+    hunger: {
+      type: Number,
+      default: 50,
+      min: 0,
+      max: 100
+    },
+    happiness: {
+      type: Number,
+      default: 50,
+      min: 0,
+      max: 100
+    },
+    energy: {
+      type: Number,
+      default: 100,
+      min: 0,
+      max: 100
+    },
+    adoptedAt: {
+      type: Date,
+      default: null
+    },
+    lastFed: {
+      type: Date,
+      default: new Date(0)
+    },
+    lastPlayed: {
+      type: Date,
+      default: new Date(0)
+    },
+    lastLoved: {
+      type: Date,
+      default: new Date(0)
+    },
+    accessories: [{
+      type: String
+    }]
   },
   cooldowns: {
     daily: { type: Date, default: new Date(0) },

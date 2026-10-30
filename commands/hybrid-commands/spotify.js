@@ -152,9 +152,9 @@ export default {
         let successMsg;
         
         if (res.changed === false) {
-          successMsg = `ℹ️ Spotify teması zaten **${themeName}** olarak ayarlı.`;
+          successMsg = `Spotify teması zaten **${themeName}** olarak ayarlı.`;
         } else {
-          successMsg = `✅ Spotify teması başarıyla **${themeName}** olarak değiştirildi!`;
+          successMsg = `Spotify teması başarıyla **${themeName}** olarak değiştirildi!`;
         }
         
         const embed = manager.sender.embed({

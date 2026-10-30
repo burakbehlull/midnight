@@ -33,6 +33,14 @@ const shopSchema = new mongoose.Schema({
     type: String,
     default: 'item',
     enum: ['item', 'theme', 'cosmetic']
+  },
+  description: {
+    type: String,
+    default: null
+  },
+  species: {
+    type: String,
+    default: null
   }
 });
 

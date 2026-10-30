@@ -140,7 +140,7 @@ export default {
 
     const description =
       `**Toplam İşlem:** ${userIds.length}\n` +
-      `✅ **Başarılı:** ${successCount}\n` +
+      `**Başarılı:** ${successCount}\n` +
       `❌ **Başarısız:** ${failCount}\n\n` +
       `**Sebep:** ${reason}\n\n` +
       `🔒 Bu banlar **unban** veya **unmassban** ile açılabilir`;
@@ -152,7 +152,7 @@ export default {
         `• \`${s.tag}\` - Ceza #${s.recordId}`
       ).join('\n');
       fields.push({
-        name: `✅ Başarılı Banlar (${successList.length})`,
+        name: `Başarılı Banlar (${successList.length})`,
         value: successText + (successList.length > 15 ? `\n... (+${successList.length - 15} daha)` : ''),
         inline: false
       });

@@ -337,10 +337,10 @@ function createSettingsEmbed(commandName, settings, guild, commandInfo) {
   let channelText = '❌ Kapalı (Tüm kanallarda kullanılabilir)';
   if (settings.channelMode === 'whitelist') {
     if (!settings.allowedChannels || settings.allowedChannels.length === 0) {
-      channelText = `✅ **Whitelist** — ⚠️ Henüz kanal seçilmedi`;
+      channelText = `**Whitelist** — ⚠️ Henüz kanal seçilmedi`;
     } else {
       const chunks = chunkArray(settings.allowedChannels, 20);
-      channelText = `✅ **Whitelist** — Sadece şu **${settings.allowedChannels.length}** kanalda:\n${chunks[0].map(id => `<#${id}>`).join(', ')}`;
+      channelText = `**Whitelist** — Sadece şu **${settings.allowedChannels.length}** kanalda:\n${chunks[0].map(id => `<#${id}>`).join(', ')}`;
       if (chunks.length > 1) channelText += ` +${settings.allowedChannels.length - 20} tane daha`;
     }
   } else if (settings.channelMode === 'blacklist') {
@@ -357,18 +357,18 @@ function createSettingsEmbed(commandName, settings, guild, commandInfo) {
   let roleText = '❌ Kapalı (Tüm roller kullanabilir)';
   if (settings.roleMode === 'whitelist') {
     if (!settings.allowedRoles || settings.allowedRoles.length === 0) {
-      roleText = `✅ **Whitelist** — ⚠️ Henüz rol seçilmedi`;
+      roleText = `**Whitelist** — ⚠️ Henüz rol seçilmedi`;
     } else {
       const chunks = chunkArray(settings.allowedRoles, 20);
-      roleText = `✅ **Whitelist** — Sadece şu **${settings.allowedRoles.length}** rol:\n${chunks[0].map(id => `<@&${id}>`).join(', ')}`;
+      roleText = `**Whitelist** — Sadece şu **${settings.allowedRoles.length}** rol:\n${chunks[0].map(id => `<@&${id}>`).join(', ')}`;
       if (chunks.length > 1) roleText += ` +${settings.allowedRoles.length - 20} tane daha`;
     }
   } else if (settings.roleMode === 'blacklist') {
     if (!settings.blockedRoles || settings.blockedRoles.length === 0) {
-      roleText = `🚫 **Blacklist** — ⚠️ Henüz rol seçilmedi`;
+      roleText = `**Blacklist** — ⚠️ Henüz rol seçilmedi`;
     } else {
       const chunks = chunkArray(settings.blockedRoles, 20);
-      roleText = `🚫 **Blacklist** — Şu **${settings.blockedRoles.length}** rol hariç:\n${chunks[0].map(id => `<@&${id}>`).join(', ')}`;
+      roleText = `**Blacklist** — Şu **${settings.blockedRoles.length}** rol hariç:\n${chunks[0].map(id => `<@&${id}>`).join(', ')}`;
       if (chunks.length > 1) roleText += ` +${settings.blockedRoles.length - 20} tane daha`;
     }
   }
@@ -377,10 +377,10 @@ function createSettingsEmbed(commandName, settings, guild, commandInfo) {
   let userText = '❌ Kapalı (Tüm üyeler kullanabilir)';
   if (settings.userMode === 'whitelist') {
     if (!settings.allowedUsers || settings.allowedUsers.length === 0) {
-      userText = `✅ **Whitelist** — ⚠️ Henüz üye seçilmedi`;
+      userText = `**Whitelist** — ⚠️ Henüz üye seçilmedi`;
     } else {
       const chunks = chunkArray(settings.allowedUsers, 20);
-      userText = `✅ **Whitelist** — Sadece şu **${settings.allowedUsers.length}** üye:\n${chunks[0].map(id => `<@${id}>`).join(', ')}`;
+      userText = `**Whitelist** — Sadece şu **${settings.allowedUsers.length}** üye:\n${chunks[0].map(id => `<@${id}>`).join(', ')}`;
       if (chunks.length > 1) userText += ` +${settings.allowedUsers.length - 20} tane daha`;
     }
   } else if (settings.userMode === 'blacklist') {
