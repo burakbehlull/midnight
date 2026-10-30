@@ -52,11 +52,11 @@ export default {
     const allPets = [];
     
     if (userData.pet && userData.pet.type && userData.pet.name) {
-      allPets.push(`🐾 ${userData.pet.name} (<@${target.id}>)`);
+      allPets.push(`- **${userData.pet.name}** (<@${target.id}>)`);
     }
     
     if (partnerData?.pet?.type && partnerData.pet.name) {
-      allPets.push(`🐾 ${partnerData.pet.name} (<@${partnerId}>)`);
+      allPets.push(`- **${partnerData.pet.name}** (<@${partnerId}>)`);
     }
     
     if (allPets.length > 0) {
