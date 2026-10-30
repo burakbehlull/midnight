@@ -165,7 +165,7 @@ export default {
     }
 
     const familyTitle = displayFamilyName 
-      ? `${displayFamilyName} Ailesi` 
+      ? `\`${displayFamilyName}\`` 
       : `**${target.username}** adlı kullanıcının aile ağacı`;
 
     const embed = manager.sender.classic(familyTitle);
