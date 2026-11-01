@@ -215,7 +215,7 @@ async function buildKenoGif({ picks, drawn, amount, matches, result, resultType 
 
   const frames = [];
 
-  // 1) Karıştırma: sayılar hızlıca yanıp söner
+  
   for (let i = 0; i < SHUFFLE_FRAMES; i++) {
     const rand = pickRandom(DRAW_COUNT);
     frames.push({
@@ -225,7 +225,7 @@ async function buildKenoGif({ picks, drawn, amount, matches, result, resultType 
     });
   }
 
-  // 2) Sayılar tek tek çekilir
+  
   for (let i = 1; i <= drawn.length; i++) {
     frames.push({
       drawn: drawn.slice(0, i),
@@ -458,7 +458,7 @@ export default {
         `${legend}\n` +
         `Seçimin: \`${picksText}\``;
 
-      // Animasyonlu çekiliş GIF'i
+      
       let gifBuffer = null;
       let spinMs = 0;
       try {

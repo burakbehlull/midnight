@@ -1,5 +1,6 @@
 import Manager from '#managers';
 import { Punishment } from '#models';
+import { logModeratorAction, enforceActionLimit, formatPunishments } from '#helpers';
 import { PermissionFlagsBits } from 'discord.js';
 
 export default {
@@ -37,6 +38,18 @@ export default {
         return sender.reply(sender.errorEmbed('❌ Bu kullanıcıya işlem yapamazsınız. Rolünüz onunkinden yüksek değil.'));
       }
 
+    
+      const limit = await enforceActionLimit(client, message.guild, message.member, 'kick');
+      if (limit.blocked) {
+        const penalty = limit.applied.length > 0
+          ? `\n⚔️ Uygulanan ceza: **${formatPunishments(limit.applied)}**`
+          : '';
+        return sender.reply(sender.errorEmbed(
+          `⛔ **Kick limitiniz doldu!** (${limit.current}/${limit.max})${penalty}\n` +
+          `Lütfen bekleyip tekrar deneyin.`
+        ));
+      }
+
       const botMember = message.guild.members.cache.get(client.user.id);
 
       if (!botMember.permissions.has('KickMembers')) {
@@ -65,6 +78,16 @@ export default {
       } catch (err) {
         console.error('[kick] Punishment kaydedilemedi:', err);
       }
+
+     
+      await logModeratorAction({
+        guildId: message.guild.id,
+        moderatorId: message.author.id,
+        botId: client.user.id,
+        action: 'kick',
+        targetId: target.id,
+        reason,
+      });
 
       const recordIdText = punishmentRecord ? `\n**Ceza No:** #${punishmentRecord.recordId}` : '';
 

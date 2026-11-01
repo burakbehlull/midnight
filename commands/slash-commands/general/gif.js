@@ -33,7 +33,7 @@ async function downloadAttachment(url) {
   return data ? Buffer.from(data) : null;
 }
 
-// Fotoğrafı olduğu gibi (efekt yok) GIF'e çevirir
+
 async function encodeGif(inputBuffer) {
   const { data, info } = await sharp(inputBuffer, { animated: false })
     .rotate()

@@ -20,7 +20,7 @@ export default {
         footer: { text: executor?.tag || 'Bilinmiyor', iconURL: executor?.displayAvatarURL() }
       });
     } catch (error) {
-      // Audit log izni yoksa sessizce devam et
+      
       if (error.code === 50013) {
         console.log(`[ModLog] Audit log izni yok (${channel.guild.name})`);
       } else {

@@ -242,7 +242,7 @@ async function extractGlowPalette(coverData) {
       let g = entry.g / entry.weight;
       let b = entry.b / entry.weight;
       const avg = (r + g + b) / 3;
-      // Siyah kapaklarda glow görünür kalsın ama neon patlamasın.
+     
       const strongest = Math.max(r, g, b);
       const scale = Math.min(1.7, 170 / Math.max(1, strongest));
       return [r, g, b].map(v =>
@@ -465,7 +465,7 @@ export default {
       const avatarData = await imageAsDataURI(avatarURL);
       const startedDate = activity.timestamps?.start ? new Date(activity.timestamps.start) : null;
       const validDate = startedDate && Number.isFinite(startedDate.getTime()) ? startedDate : null;
-      // Tek görüntü kaynağından iki yerel neon rengi çıkar.
+      
       const palette = await extractGlowPalette(coverData);
       const buffer = await renderGameCard({
         palette,

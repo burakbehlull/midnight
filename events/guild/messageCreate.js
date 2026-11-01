@@ -109,13 +109,13 @@ export default {
 
     const command = client.prefixCommands.get(commandName);
 
-    // Eğer normal komut yoksa, özel komut mu diye kontrol et
+    
     if (!command) {
       const foundCustomCommand = await handleCustomCommand(message, commandName);
       if (foundCustomCommand) {
-        return; // Özel komut bulundu ve çalıştırıldı
+        return; 
       }
-      return; // Hiçbir komut bulunamadı
+      return; 
     }
 
     const manager = new Manager(client, {

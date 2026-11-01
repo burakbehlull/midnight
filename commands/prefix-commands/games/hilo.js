@@ -581,7 +581,7 @@ async function runGame(client, message, manager, { userId, amount }) {
       const step = stepMultiplier(st.current.rank, guess);
       const won = guess === 'up' ? rolled.rank > st.current.rank : rolled.rank < st.current.rank;
 
-      // Kart açılış animasyonu
+      
       st.next = rolled;
       st.nextHidden = true;
       st.status = guess === 'up' ? 'Yüksek tahmin edildi, kart açılıyor...' : 'Düşük tahmin edildi, kart açılıyor...';

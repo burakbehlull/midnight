@@ -122,6 +122,34 @@ export const api = {
     apiClient.delete(`/guilds/${guildId}/actions/${groupId}/entries/${entryId}`),
   setupActionGroup: (guildId, groupId, setupData) => 
     apiClient.post(`/guilds/${guildId}/actions/${groupId}/setup`, setupData),
+
+  // Guard (ayrı token'lı guard botu - ortak DB)
+  getGuardHealth: () => apiClient.get('/guard/health'),
+  getGuardGuilds: () => apiClient.get('/guard/guilds'),
+  getGuardChannels: (guildId) => apiClient.get(`/guard/guilds/${guildId}/channels`),
+  getGuardRoles: (guildId) => apiClient.get(`/guard/guilds/${guildId}/roles`),
+  getGuardSettings: (guildId) => apiClient.get(`/guard/guilds/${guildId}/settings`),
+  updateGuardSettings: (guildId, data) => apiClient.put(`/guard/guilds/${guildId}/settings`, data),
+  getGuardLogs: (guildId, params = {}) => 
+    apiClient.get(`/guard/guilds/${guildId}/logs`, { params }),
+  getGuardLogStats: (guildId, days = 7) => 
+    apiClient.get(`/guard/guilds/${guildId}/logs/stats`, { params: { days } }),
+  getGuardModerators: (guildId, days = 30) => 
+    apiClient.get(`/guard/guilds/${guildId}/moderators`, { params: { days } }),
+  getGuardModeratorDetail: (guildId, userId, days = 30) => 
+    apiClient.get(`/guard/guilds/${guildId}/moderators/${userId}`, { params: { days } }),
+  getGuardActionLimits: (guildId) => apiClient.get(`/guard/guilds/${guildId}/action-limits`),
+  getGuardBackups: (guildId) => apiClient.get(`/guard/guilds/${guildId}/backups`),
+  deleteGuardBackup: (guildId, backupId) => 
+    apiClient.delete(`/guard/guilds/${guildId}/backups/${backupId}`),
+  getGuardCommandPermissions: (guildId) =>
+    apiClient.get(`/guard/guilds/${guildId}/command-permissions`),
+  getGuardCommandPermission: (guildId, commandName) =>
+    apiClient.get(`/guard/guilds/${guildId}/command-permissions/${commandName}`),
+  updateGuardCommandPermission: (guildId, commandName, data) =>
+    apiClient.put(`/guard/guilds/${guildId}/command-permissions/${commandName}`, data),
+  resetGuardCommandPermission: (guildId, commandName) =>
+    apiClient.delete(`/guard/guilds/${guildId}/command-permissions/${commandName}`),
 };
 
 export default apiClient;

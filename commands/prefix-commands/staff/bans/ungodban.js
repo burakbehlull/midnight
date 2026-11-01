@@ -166,7 +166,7 @@ export default {
         }
       );
 
-      // K2: godban tüm sunuculara kayıt yazdığı için kayıtlar her sunucudan temizlenir.
+     
       await ForceBan.deleteMany({ userId: rawId, banType: 'godban' });
     } catch (dbErr) {
       console.error('[ungodban] DB güncelleme hatası:', dbErr);

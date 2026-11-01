@@ -61,14 +61,14 @@ export default {
 			let updatedCount = 0;
 			
 			for (const item of shopItems) {
-				// Önce aynı module+slug'a sahip FARKLI ID'li kayıtları temizle
+				
 				await Shop.deleteMany({ 
 					module: item.module, 
 					slug: item.slug, 
 					id: { $ne: item.id } 
 				});
 				
-				// Şimdi ID ile bul
+				
 				const existing = await Shop.findOne({ id: item.id });
 				
 				if (!existing) {
@@ -120,7 +120,7 @@ export default {
 			const itemIds = shopItems.map(item => item.id);
 			const deletedResult = await Shop.deleteMany({ id: { $nin: itemIds } });
 			
-			// Sonuç raporu
+			
 			if (createdCount > 0 || updatedCount > 0 || deletedResult.deletedCount > 0) {
 				console.log(`[EconomyStartup] Mağaza güncellendi:`);
 				if (createdCount > 0) console.log(`   → ${createdCount} yeni ürün eklendi`);

@@ -871,7 +871,7 @@ export default {
         return;
       }
 
-      // Ödemeler
+      
       settled = true;
       try {
         for (const c of cards) {

@@ -27,16 +27,16 @@ export default {
       return sender.reply(sender.errorEmbed("❌ Jail rolü ayarlanmamış."));
     }
 
-    // Jail rolü var mı kontrol et
+   
     if (!target.roles.cache.has(settings.jailRoleId)) {
       return sender.reply(sender.errorEmbed("❌ Bu kullanıcıda jail rolü yok!"));
     }
 
     try {
-      // Jail rolünü çek
+      
       await target.roles.remove(settings.jailRoleId);
 
-      // Punishment kaydını güncelle (active = false)
+     
       await Punishment.updateMany(
         {
           userId: target.id,

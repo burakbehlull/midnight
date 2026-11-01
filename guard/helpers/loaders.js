@@ -1,0 +1,194 @@
+import { Collection, REST, Routes } from 'discord.js';
+
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
+
+import { getFilesRecursively } from './operations.js'
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+async function getPrefixCommands() {
+  const prefixCommands = []
+  const commandsPath = path.join(__dirname, "../commands/prefix-commands");
+  const commandFiles = await getFilesRecursively(commandsPath);
+
+  for (const filePath of commandFiles) {
+    const command = (await import(`file://${filePath}`)).default;
+    if (!command?.name) continue;
+
+    prefixCommands.push({...command, type: 'prefix'});
+  }
+  console.log(`📢 ${prefixCommands.length} tane Prefix komutu yüklendi`);
+
+  return prefixCommands
+}
+
+async function getSlashCommands() {
+  const slashCommands = []
+  const commandsPath = path.join(__dirname, "../commands/slash-commands");
+  const commandFiles = await getFilesRecursively(commandsPath);
+
+  for (const filePath of commandFiles) {
+    const command = (await import(`file://${filePath}`)).default;
+    if (!command?.data) continue;
+
+	  slashCommands.push({...command, name: command.data.name, type: 'slash'});
+  }
+  console.log(`⚡ ${slashCommands.length} tane Slash komutu yüklendi`);
+
+  return slashCommands
+}
+
+async function getHybridCommands() {
+  const hybridCommands = [];
+  const commandsPath = path.join(__dirname, "../commands/hybrid-commands");
+
+  if (!fs.existsSync(commandsPath)) {
+    console.log("🔗 Hybrid komut oluşturulmamış, atlanıyor");
+    return hybridCommands;
+  }
+
+  const commandFiles = await getFilesRecursively(commandsPath);
+
+  for (const filePath of commandFiles) {
+    const command = (await import(`file://${filePath}`)).default;
+    if (!command?.name || !command?.data) continue;
+
+    hybridCommands.push({ ...command, type: 'hybrid' });
+  }
+  console.log(`🔗 ${hybridCommands.length} tane Hybrid komut yüklendi`);
+
+  return hybridCommands;
+}
+
+async function getEvents() {
+  const events = [];
+  const eventsPath = path.join(__dirname, "../events");
+  const eventFiles = await getFilesRecursively(eventsPath);
+  
+  for (const filePath of eventFiles) {
+    const event = (await import(`file://${filePath}`)).default;
+
+    if (!event?.name) continue;
+    events.push(event);
+  }
+  console.log(`🎯 ${events.length} tane Event yüklendi.`);
+
+  return events;
+}
+
+async function deploySlashCommands(token, botId, commands) {
+  const slashCommands = []
+  for (const c of commands) {
+    slashCommands.push(c.data.toJSON())
+  }
+
+
+  const rest = new REST().setToken(token);
+    try {
+    console.log(`Started refreshing ${commands.length} application (/) commands.`);
+
+    const data = await rest.put(
+      Routes.applicationCommands(botId),
+      { body: slashCommands },
+    );
+
+      console.log(`✅ Successfully reloaded ${data.length} application (/) commands.`);
+      return {
+        success: true,
+        message: "Successfully reloaded ${data.length} application (/) commands.",
+        count: data.length || 0
+      }
+    } catch (error) {
+      console.error('❌ Failed to refresh commands:', error);
+      return {
+        success: false,
+        message: 'Failed to refresh commands:', error
+      }
+    }
+}
+
+async function eventExecuter(client, events){
+	for (const event of events) {
+		if (event.once) {
+		    client.once(event.name, async (...args) => event.execute(client, ...args));
+		} else {
+		    client.on(event.name, async (...args) => event.execute(client, ...args));
+		}
+	}
+}
+
+async function commandExecuter(client, slashCommands, prefixCommands, hybridCommands = []){
+	
+	client.prefixCommands = new Collection();
+	client.slashCommands = new Collection();
+	
+	if(prefixCommands.length > 0){
+		for (const pc of prefixCommands) {
+			client.prefixCommands.set(pc.name, pc);
+			if (Array.isArray(pc.aliases)) {
+				for (const alias of pc.aliases) {
+					client.prefixCommands.set(alias, pc);
+				}
+			}
+		}	
+	}
+
+	if(hybridCommands.length > 0){
+		const seenPrefix = new Set([...client.prefixCommands.keys()]);
+		for (const hc of hybridCommands) {
+			const prefixName = (hc.name || '').toLowerCase();
+			if (prefixName && !seenPrefix.has(prefixName)) {
+				client.prefixCommands.set(prefixName, hc);
+				seenPrefix.add(prefixName);
+			}
+			if (Array.isArray(hc.aliases)) {
+				for (const alias of hc.aliases) {
+					const a = (alias || '').toLowerCase();
+					if (a && !seenPrefix.has(a)) {
+						client.prefixCommands.set(a, hc);
+						seenPrefix.add(a);
+					}
+				}
+			}
+		}
+	}
+	
+	if(slashCommands.length > 0){
+		for (const sc of slashCommands) {
+			client.slashCommands.set(sc.name, sc);
+		}
+	}
+
+	if(hybridCommands.length > 0){
+		const seenSlash = new Set([...client.slashCommands.keys()]);
+		for (const hc of hybridCommands) {
+			const slashName = (hc.name || '').toLowerCase();
+			if (slashName && !seenSlash.has(slashName)) {
+				client.slashCommands.set(slashName, hc);
+				seenSlash.add(slashName);
+			}
+		}
+	}
+}
+
+async function getDeployableSlashCommands() {
+	const slashOnly = await getSlashCommands();
+	const hybrid = await getHybridCommands();
+	return [...slashOnly, ...hybrid];
+}
+
+export {
+    getPrefixCommands,
+    getSlashCommands,
+    getHybridCommands,
+    getEvents,
+	
+    eventExecuter,
+    commandExecuter,
+    
+	deploySlashCommands,
+	getDeployableSlashCommands,
+}

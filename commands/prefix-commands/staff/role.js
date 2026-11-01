@@ -37,7 +37,7 @@ export default {
 
       let manageableRoles = message.guild.roles.cache
         .filter(r => {
-          if (r.id === message.guild.id) return false;          // @everyone
+          if (r.id === message.guild.id) return false;
           if (!isOwnerOrBotOwner && r.position >= authorHighest.position) return false;
           if (r.position >= botHighest.position) return false;
           return true;

@@ -15,7 +15,7 @@ const SIDES = [
 export default {
   name: 'cf',
   category: 'games',
-  aliases: ['coinflip', 'yazitura', 'yazıtura', 'yt'],
+  aliases: ['coinflip', 'yazitura', 'yazıtura'],
   usage: '.cf <bahisMiktarı|all>',
   description: 'Yazı tura at, %50 şansla paranı 2ye katla! all = maksimum bahis.',
   permissions: {

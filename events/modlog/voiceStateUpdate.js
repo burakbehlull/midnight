@@ -43,11 +43,12 @@ export default {
   async execute(client, oldState, newState) {
     try {
       const logger = new modLogger(client);
-      const member = newState.member;
+      const member = newState.member ?? oldState.member;
       const guild = newState.guild;
-      const user = newState.member.user;
 
-      if (member.user.bot) return;
+      if (!member?.user || member.user.bot) return;
+
+      const user = member.user;
 
       if (!oldState.channel && newState.channel) {
         await VoiceSession.findOneAndUpdate(
@@ -118,7 +119,7 @@ export default {
         if (!logs) return;
         
         const entry = logs.entries.find(e =>
-          e.target.id === member.id &&
+          e.target?.id === member.id &&
           e.changes?.some(change => change.key === 'mute' && change.new === true)
         );
         const executor = entry?.executor;
@@ -139,7 +140,7 @@ export default {
         if (!logs) return;
         
         const entry = logs.entries.find(e =>
-          e.target.id === member.id &&
+          e.target?.id === member.id &&
           e.changes?.some(change => change.key === 'mute' && change.new === false)
         );
         const executor = entry?.executor;

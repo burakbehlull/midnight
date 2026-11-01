@@ -109,7 +109,7 @@ async function ownsItem(userId, shopItem) {
   if (!shopItem.id || shopItem.id < 0) return true;
   const econ = await Economy.findOne({ userId }).select('inventory').lean();
   if (!econ) return false;
-  // SLUG ile kontrol et
+ 
   const slug = shopItem.slug || `item_${shopItem.id}`;
   const count = readInventoryCount(econ.inventory, slug);
   return count > 0;
@@ -244,7 +244,7 @@ async function listAvailableCosmetics(userId, module) {
   }];
 
   for (const item of shopItems) {
-    // SLUG ile kontrol et
+    
     const slug = item.slug || `item_${item.id}`;
     const count = readInventoryCount(econ?.inventory, slug);
     available.push({

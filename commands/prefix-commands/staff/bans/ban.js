@@ -1,7 +1,7 @@
 import { PermissionFlagsBits } from 'discord.js';
 import Manager from '#managers';
 import { Punishment, ForceBan } from '#models';
-import { createMugshot } from '#helpers';
+import { createMugshot, logModeratorAction, enforceActionLimit, formatPunishments } from '#helpers';
 
 export default {
   name: 'ban',
@@ -41,6 +41,18 @@ export default {
       const canMod = await manager.permissions.canModerate(message.author, target.user);
       if (!canMod) {
         return sender.reply(sender.errorEmbed('❌ Bu kullanıcıya işlem yapamazsınız. Rolünüz onunkinden yüksek değil.'));
+      }
+
+     
+      const limit = await enforceActionLimit(client, message.guild, message.member, 'ban');
+      if (limit.blocked) {
+        const penalty = limit.applied.length > 0
+          ? `\n⚔️ Uygulanan ceza: **${formatPunishments(limit.applied)}**`
+          : '';
+        return sender.reply(sender.errorEmbed(
+          `⛔ **Ban limitiniz doldu!** (${limit.current}/${limit.max})${penalty}\n` +
+          `Lütfen bekleyip tekrar deneyin.`
+        ));
       }
 
       const botMember = message.guild.members.me ?? await message.guild.members.fetchMe();
@@ -87,6 +99,16 @@ export default {
       } catch (error) {
         console.error('[ban] Punishment kaydedilemedi:', error);
       }
+
+      
+      await logModeratorAction({
+        guildId: message.guild.id,
+        moderatorId: message.author.id,
+        botId: client.user.id,
+        action: 'ban',
+        targetId: target.id,
+        reason,
+      });
 
       try {
         await ForceBan.findOneAndUpdate(

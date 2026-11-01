@@ -23,6 +23,7 @@ import BankLoan from '../models/BankLoan.js';
 import { getBankTotals, computeBankValue } from '../helpers/bankHelper.js';
 import { errorHandler, notFoundHandler, requestLogger } from './middleware.js';
 import customCommandsRouter from './routes/customCommands.js';
+import createGuardRouter from './routes/guard.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -178,8 +179,9 @@ async function resolveUserNames(client, ids) {
 }
 
 class MidnightAPI {
-  constructor(client) {
+  constructor(client, guardClient = null) {
     this.client = client;
+    this.guardClient = guardClient;
     this.app = express();
     this.port = process.env.API_PORT || 3001;
 
@@ -234,6 +236,9 @@ class MidnightAPI {
   setupRoutes() {
     // Custom Commands Routes
     this.app.use('/api/custom-commands', customCommandsRouter);
+
+    // Guard botu Routes (ayrı token/client, ortak DB)
+    this.app.use('/api/guard', createGuardRouter(this.guardClient));
 
     this.app.get('/api/health', (req, res) => {
       res.json({ 
@@ -1606,22 +1611,22 @@ class MidnightAPI {
       }
     });
 
-    // Get guilds with invite links
+    
     this.app.get('/api/bot/guilds/invites', async (req, res) => {
       try {
         const guilds = this.client.guilds.cache.map(async (guild) => {
-          // Her sunucu için davet linki oluştur veya mevcut olanı al
+          
           let inviteUrl = null;
 
           try {
-            // Önce mevcut davet linklerini kontrol et
+            
             const invites = await guild.invites.fetch();
             const permanentInvite = invites.find(inv => !inv.expiresAt && inv.maxUses === 0);
 
             if (permanentInvite) {
               inviteUrl = `https://discord.gg/${permanentInvite.code}`;
             } else {
-              // Yoksa yeni bir sınırsız davet linki oluştur
+              
               const channels = guild.channels.cache.filter(ch => 
                 ch.isTextBased() && 
                 ch.permissionsFor(guild.members.me).has('CreateInstantInvite')
@@ -1630,8 +1635,8 @@ class MidnightAPI {
               if (channels.size > 0) {
                 const channel = channels.first();
                 const invite = await channel.createInvite({
-                  maxAge: 0, // Sınırsız süre
-                  maxUses: 0, // Sınırsız kullanım
+                  maxAge: 0, 
+                  maxUses: 0,
                   reason: 'Web panel için davet linki'
                 });
                 inviteUrl = `https://discord.gg/${invite.code}`;
@@ -1749,15 +1754,15 @@ class MidnightAPI {
       }
     });
 
-    // Get bot DMs - grouped by user
+    
     this.app.get('/api/bot/dms', async (req, res) => {
       try {
         const DirectMessage = (await import('../models/DirectMessage.js')).default;
         
-        // Tüm DM'leri kullanıcıya göre grupla
+        
         const messages = await DirectMessage.find().sort({ createdAt: -1 });
         
-        // Kullanıcıya göre grupla
+        
         const groupedByUser = {};
         messages.forEach(msg => {
           if (!groupedByUser[msg.userId]) {
@@ -1781,13 +1786,13 @@ class MidnightAPI {
             repliedAt: msg.repliedAt
           });
           
-          // Cevap verilmemiş mesaj sayısı
+          
           if (!msg.replied) {
             groupedByUser[msg.userId].unreadCount++;
           }
         });
 
-        // Array'e çevir ve son mesaja göre sırala
+       
         const users = Object.values(groupedByUser).sort((a, b) => 
           new Date(b.lastMessage) - new Date(a.lastMessage)
         );
@@ -1859,7 +1864,7 @@ class MidnightAPI {
           return res.status(400).json({ error: 'Mesaj içeriği gerekli' });
         }
 
-        // Kullanıcıya DM gönder
+
         const user = await this.client.users.fetch(userId);
         if (!user) {
           return res.status(404).json({ error: 'Kullanıcı bulunamadı' });
@@ -1867,7 +1872,7 @@ class MidnightAPI {
 
         await user.send(content);
 
-        // Veritabanında cevap verildi olarak işaretle
+      
         const DirectMessage = (await import('../models/DirectMessage.js')).default;
         
         if (messageIds && messageIds.length > 0) {
@@ -1882,7 +1887,7 @@ class MidnightAPI {
             }
           );
         } else {
-          // Tüm cevaplanmamış mesajları işaretle
+         
           await DirectMessage.updateMany(
             { userId: userId, replied: false },
             { 
@@ -1906,7 +1911,7 @@ class MidnightAPI {
       }
     });
 
-    // Get single member detail
+    
     this.app.get('/api/guilds/:guildId/members/:userId', async (req, res) => {
       try {
         const { guildId, userId } = req.params;
@@ -2089,7 +2094,7 @@ class MidnightAPI {
 
         const groups = await ActionGroup.find({ guildId }).sort({ createdAt: -1 }).lean();
         
-        // Her grup için entry sayısını da al
+       
         const groupsWithCount = await Promise.all(
           groups.map(async (group) => {
             const entryCount = await ActionEntry.countDocuments({ guildId, groupId: group.groupId });
@@ -2108,7 +2113,7 @@ class MidnightAPI {
       }
     });
 
-    // Get a specific action group with entries
+    
     this.app.get('/api/guilds/:guildId/actions/:groupId', async (req, res) => {
       try {
         const { guildId, groupId } = req.params;
@@ -2125,7 +2130,7 @@ class MidnightAPI {
 
         const entries = await ActionEntry.find({ guildId, groupId }).sort({ entryId: 1 }).lean();
         
-        // Rol bilgilerini ekle
+        
         const entriesWithRoles = await Promise.all(
           entries.map(async (entry) => {
             const role = await guild.roles.fetch(entry.roleId).catch(() => null);
@@ -2149,7 +2154,7 @@ class MidnightAPI {
       }
     });
 
-    // Create new action group
+    
     this.app.post('/api/guilds/:guildId/actions', async (req, res) => {
       try {
         const { guildId } = req.params;
@@ -2164,20 +2169,20 @@ class MidnightAPI {
           return res.status(404).json({ error: 'Guild not found' });
         }
 
-        // Grup sayısı kontrolü
+       
         const groupCount = await ActionGroup.countDocuments({ guildId });
         if (groupCount >= 25) {
           return res.status(400).json({ error: 'Sunucu başına maksimum 25 grup olabilir' });
         }
 
-        // groupId oluştur
+        
         const groupId = groupName
           .toLowerCase()
           .replace(/[^a-z0-9çğıöşü_]/gi, '_')
           .replace(/_{2,}/g, '_')
           .slice(0, 32);
 
-        // Aynı ID'de grup var mı kontrol et
+        
         const exists = await ActionGroup.findOne({ guildId, groupId });
         if (exists) {
           return res.status(400).json({ error: `${groupId} ID'li bir grup zaten var` });
@@ -2202,7 +2207,7 @@ class MidnightAPI {
       }
     });
 
-    // Update action group
+    
     this.app.put('/api/guilds/:guildId/actions/:groupId', async (req, res) => {
       try {
         const { guildId, groupId } = req.params;
@@ -2305,30 +2310,30 @@ class MidnightAPI {
           return res.status(400).json({ error: 'roleId gerekli' });
         }
 
-        // Rol kontrolü
+     
         const role = await guild.roles.fetch(roleId).catch(() => null);
         if (!role) {
           return res.status(404).json({ error: 'Rol bulunamadı' });
         }
 
-        // Aynı rol var mı kontrol et
+       
         const entries = await ActionEntry.find({ guildId, groupId });
         const roleExists = entries.some(e => e.roleId === roleId);
         if (roleExists) {
           return res.status(400).json({ error: 'Bu rol zaten eklenmiş' });
         }
 
-        // Limit kontrolü
+       
         const limit = group.type === 'emoji' ? 20 : 25;
         if (entries.length >= limit) {
           return res.status(400).json({ error: `Maksimum ${limit} kayıt sınırına ulaşıldı` });
         }
 
-        // Yeni entryId
+    
         const maxEntry = await ActionEntry.findOne({ guildId, groupId }).sort({ entryId: -1 }).select('entryId').lean();
         const nextEntryId = (maxEntry?.entryId || 0) + 1;
 
-        // Entry oluştur
+      
         const entryData = {
           guildId,
           groupId,

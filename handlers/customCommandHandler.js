@@ -1,22 +1,18 @@
 import { CustomCommand } from '#models';
 
-/**
- * Özel komutu çalıştırır
- * @param {Message} message - Discord mesaj objesi
- * @param {Object} customCmd - CustomCommand model objesi
- */
+
 async function executeCustomCommand(message, customCmd) {
   try {
-    // MULTI veya diğer tipler - tüm özellikleri kontrol et
+    
     let hasAction = false;
 
-    // 1. TEXT - Metin gönder
+    
     if (customCmd.responseText) {
       await message.channel.send(customCmd.responseText);
       hasAction = true;
     }
 
-    // 2. EMBED - Embed gönder
+    
     if (customCmd.embedData && customCmd.embedData.description) {
       const embed = {
         description: customCmd.embedData.description,
@@ -43,7 +39,7 @@ async function executeCustomCommand(message, customCmd) {
       hasAction = true;
     }
 
-    // 3. ROLE - Rol ver/al
+    
     if (customCmd.roleActions && customCmd.roleActions.length > 0) {
       const member = message.member;
       if (member) {
@@ -71,7 +67,7 @@ async function executeCustomCommand(message, customCmd) {
       }
     }
 
-    // Hiçbir aksiyon yoksa reaction ver
+    
     if (!hasAction) {
       return message.react('❓').catch(() => {});
     }
@@ -82,12 +78,7 @@ async function executeCustomCommand(message, customCmd) {
   }
 }
 
-/**
- * Özel komut kontrolü ve çalıştırması
- * @param {Message} message - Discord mesaj objesi
- * @param {string} commandName - Komut adı
- * @returns {Promise<boolean>} - Komut bulundu ve çalıştırıldı mı?
- */
+
 async function handleCustomCommand(message, commandName) {
   try {
     const customCmd = await CustomCommand.findOne({ 
@@ -97,27 +88,27 @@ async function handleCustomCommand(message, commandName) {
     });
 
     if (!customCmd) {
-      return false; // Özel komut bulunamadı
+      return false;
     }
 
-    // Yetki kontrolü (eğer ayarlanmışsa)
+    
     if (customCmd.requiredRoles && customCmd.requiredRoles.length > 0) {
       const hasRole = customCmd.requiredRoles.some(roleId => 
         message.member.roles.cache.has(roleId)
       );
       if (!hasRole) {
-        return true; // Komut var ama yetki yok, yine de true dön (komut bulundu ama çalıştırılamadı)
+        return true; 
       }
     }
 
-    // Kanal kontrolü (eğer ayarlanmışsa)
+    
     if (customCmd.allowedChannels && customCmd.allowedChannels.length > 0) {
       if (!customCmd.allowedChannels.includes(message.channel.id)) {
-        return true; // Komut var ama bu kanalda kullanılamaz
+        return true;
       }
     }
 
-    // Kullanım sayısını artır
+   
     await CustomCommand.updateOne(
       { _id: customCmd._id },
       { 
@@ -126,7 +117,7 @@ async function handleCustomCommand(message, commandName) {
       }
     );
 
-    // Komutu çalıştır
+   
     await executeCustomCommand(message, customCmd);
     return true;
 

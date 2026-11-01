@@ -75,13 +75,13 @@ Aşağıdaki butonları kullanarak işlemlerinizi yapabilirsiniz.`,
         .setStyle(ButtonStyle.Danger)
     );
 
-    // Paneli gönder
+   
     await message.channel.send({
       embeds: [embed],
       components: [row1, row2]
     });
 
-    // Kurulum mesajını sil
+    
     await message.delete().catch(() => {});
   }
 };

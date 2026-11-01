@@ -706,7 +706,7 @@ async function waitRoll({ manager, offerMsg, challenger, target, amount, cleanup
     `<@${challenger.id}> ⚔️ <@${target.id}>\n` +
     '👉 Zarları atmak için **🎲 Zar At** butonuna basın. **60 saniyeniz** var.';
 
-  // Masa görseliyle "zar at" ekranı
+  
   let imageOk = true;
   try {
     await offerMsg.edit({
@@ -802,7 +802,7 @@ async function startDuel({ manager, offerMsg, challenger, target, amount, cleanu
   const line1 = `🟦 <@${challenger.id}>: ${diceStr(p1.a, p1.b)} = **${p1.sum}**`;
   const line2 = `🟥 <@${target.id}>: ${diceStr(p2.a, p2.b)} = **${p2.sum}**`;
 
-  // Masa görseli ile kademeli zar atışı
+  
   const showFrame = async (state, content) => {
     try {
       await offerMsg.edit({
@@ -895,7 +895,7 @@ async function startDuel({ manager, offerMsg, challenger, target, amount, cleanu
 
   const ok = await showFrame(finalState, `${line1}\n${line2}\n\n${resultText}`);
   if (!ok) {
-    // Görsel gönderilemezse metin embed'ine düş
+   
     await offerMsg.edit({ embeds: [manager.sender.embed({ color, title, description: text, footer: { text: ' ' } })], components: [] }).catch(() => {});
   }
 

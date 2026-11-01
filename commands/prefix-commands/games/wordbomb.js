@@ -305,7 +305,7 @@ function drawBomb(ctx, cx, cy, r) {
   ctx.stroke();
   ctx.restore();
 
-  // Kıvılcım
+
   const kx = cx + r * 0.6;
   const ky = cy - r * 1.6;
   const glow = ctx.createRadialGradient(kx, ky, 0, kx, ky, 32);
@@ -721,7 +721,7 @@ export default {
     const wordHistory = [];
     let syllable = '';
 
-    // Her oyuncunun canı (kalbi)
+    
     const hearts = new Map([[challenger.id, HEARTS_START], [targetUser.id, HEARTS_START]]);
     const buildPlayersState = (activeId = null) =>
       players.map((p) => ({

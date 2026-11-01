@@ -45,10 +45,10 @@ const settingsSchema = new mongoose.Schema({
   
   wordBuildingChannelId: { type: String, default: null },
   
-  // Safe users (güvenli kişiler)
+  
   safeUsers: { type: [String], default: [] },
   
-  // Log channel
+  
   logChannelId: { type: String, default: null }
   
 });

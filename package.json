@@ -18,6 +18,7 @@
   "scripts": {
     "start": "node main.js",
     "deploy": "node config/deploy.js",
+    "deploy:guard": "node guard/config/deploy.js",
     "all": "concurrently \"npm start\" \"cd dashboard && npm run dev\""
   },
   "dependencies": {
@@ -37,6 +38,7 @@
     "multer": "^1.4.5-lts.1",
     "mysql2": "^3.24.4",
     "puppeteer": "^25.15.0",
-    "sharp": "^0.35.5"
+    "sharp": "^0.35.5",
+    "undici": "6.21.3"
   }
 }

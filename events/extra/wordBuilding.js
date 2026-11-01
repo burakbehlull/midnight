@@ -145,7 +145,7 @@ export default {
         return;
       }
 
-      // İlk kontrol: boşluk var mı?
+      
       if (message.content.includes(' ')) {
         message.react('❌');
         const warningMsg = await message.reply({

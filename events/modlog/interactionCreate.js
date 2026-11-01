@@ -6,7 +6,7 @@ export default {
   async execute(client, interaction) {
     if (!interaction.isChatInputCommand()) return;
 
-    // DM'de (guild = null) mod log tutmaya gerek yok, doğrudan dön
+    
     if (!interaction.guild) return;
 
     const logger = new modLogger(client);

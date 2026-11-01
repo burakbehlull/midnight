@@ -211,7 +211,7 @@ export async function createSpotifyMatchCard({
   ctx.stroke();
   ctx.restore();
 
-  // Kalp kaldırıldı - boşluk bırakıldı
+
 
   const avatarSize = 115;
   const user1X = 65;

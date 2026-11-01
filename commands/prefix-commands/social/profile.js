@@ -81,7 +81,7 @@ function acceptableImageURL(value) {
     if (!["https:", "http:"].includes(u.protocol)) return false;
     if (u.username || u.password || !u.hostname) return false;
     if (u.port && !["80", "443"].includes(u.port)) return false;
-    // Direkt IP adresi kullanımı kapalı. DNS sonucu ayrıca doğrulanır.
+   
     if (/^\d+\.\d+\.\d+\.\d+$/.test(u.hostname) || u.hostname.includes(":")) return false;
     return true;
   } catch { return false; }

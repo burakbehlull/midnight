@@ -35,7 +35,7 @@ const commandSettingsSchema = new mongoose.Schema({
 
   exemptUsers: [{ type: String }],
   exemptRoles: [{ type: String }],
-  
+
   enabled: { type: Boolean, default: true },
   
   createdAt: { type: Date, default: Date.now },

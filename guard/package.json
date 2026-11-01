@@ -1,0 +1,26 @@
+{
+  "name": "antisocial",
+  "version": "1.0.0",
+  "description": "A discord guardian bot",
+  "author": "Burak <@burakbehlull>",
+  "license": "MIT",
+  "main": "bot.js",
+  "type": "module",
+  "imports": {
+    "#helpers": "./helpers/index.js",
+    "#libs": "./libs/index.js",
+    "#config": "./config/index.js",
+    "#managers": "./managers/index.js",
+    "#handlers": "./handlers/index.js",
+    "#models": "./models/index.js"
+  },
+  "scripts": {
+    "start": "node main.js",
+    "deploy": "node config/deploy.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.17.3",
+    "dotenv": "^16.6.1",
+    "mongoose": "^8.24.7"
+  }
+}

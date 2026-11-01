@@ -83,7 +83,7 @@ export default {
           continue;
         }
 
-        // Forceban/Godban koruması massban ile ezilemez.
+       
         const existingProtection = await ForceBan.findOne({ userId, guildId: message.guild.id });
         if (existingProtection && (existingProtection.banType === 'forceban' || existingProtection.banType === 'godban')) {
           failList.push({ id: userId, reason: `${existingProtection.banType === 'godban' ? 'GOD BAN' : 'FORCE BAN'} koruması var` });

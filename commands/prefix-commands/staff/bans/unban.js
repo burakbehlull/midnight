@@ -61,7 +61,7 @@ export default {
         }
       );
 
-      await sender.reply(sender.classic(`✅ <@${userId}> adlı kullanıcının banı kaldırıldı.`));
+      await sender.reply(sender.classic(`<@${userId}> adlı kullanıcının banı kaldırıldı.`));
     } catch (err) {
       console.error('[unban] Ban kaldırma hatası:', err);
       await sender.reply(sender.errorEmbed('❌ Kullanıcının banı kaldırılırken bir hata oluştu!'));

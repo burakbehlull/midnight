@@ -688,11 +688,11 @@ async function generateFriendsStatsCanvas(client, member, guild) {
 	const canvas = createCanvas(width, height);
 	const ctx = canvas.getContext('2d');
 
-	// Background
+	
 	ctx.fillStyle = '#0f0f0f';
 	ctx.fillRect(0, 0, width, height);
 
-	// Profil resmi ve isim (sol üst)
+	
 	const profileY = 70;
 	
 	try {
@@ -713,7 +713,7 @@ async function generateFriendsStatsCanvas(client, member, guild) {
 	ctx.textAlign = 'left';
 	ctx.fillText(member.user.displayName || member.user.username, 160, profileY - 5);
 
-	// Title (orta)
+	
 	ctx.font = 'bold 32px sans-serif';
 	ctx.fillStyle = '#ffffff';
 	ctx.textAlign = 'center';
@@ -729,7 +729,7 @@ async function generateFriendsStatsCanvas(client, member, guild) {
 	const startX = (width - totalGridWidth) / 2;
 	const marginY = 165;
 
-	// SES ARKADAŞLARI (Sol)
+	
 	const x1 = startX;
 	const y = marginY;
 
@@ -806,7 +806,7 @@ async function generateFriendsStatsCanvas(client, member, guild) {
 		}
 	}
 
-	// MESAJ ARKADAŞLARI (Sağ)
+	
 	const x2 = startX + categoryWidth + gapX;
 
 	ctx.font = 'bold 20px sans-serif';

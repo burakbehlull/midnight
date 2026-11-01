@@ -10,13 +10,11 @@ export function toDirectImgurSync(url) {
   if (typeof url !== 'string') return url;
   if (/i\.imgur\.com/.test(url)) return url;
 
-  // Album icinde belirli resim: imgur.com/a/XXXX#YYYY
   const albumHash = url.match(/imgur\.com\/a\/[^#?]+#([A-Za-z0-9]+)/);
   if (albumHash) {
     return `https://i.imgur.com/${albumHash[1]}.gif`;
   }
 
-  // Tek resim: imgur.com/XXXX
   const single = url.match(/imgur\.com\/([A-Za-z0-9]+)(?:\.[a-z0-9]+)?(?:[?#].*)?$/i);
   if (single) {
     return `https://i.imgur.com/${single[1]}.gif`;
@@ -25,10 +23,7 @@ export function toDirectImgurSync(url) {
   return url;
 }
 
-/**
- * Imgur album sayfasindaki resim hash'lerini cikarir.
- * Sayfadaki "hash":"XXXXXX" veya /a/XXXX/YYYYYY pattern'lerini arar.
- */
+
 async function fetchAlbumHashes(albumUrl) {
   try {
     const res = await fetch(albumUrl, {
@@ -39,7 +34,7 @@ async function fetchAlbumHashes(albumUrl) {
 
     const hashes = new Set();
 
-    // Imgur sayfasinda i.imgur.com/XXXXXX referanslarini ara
+  
     const imgurRefs = html.match(/i\.imgur\.com\/([A-Za-z0-9]{5,8})/g);
     if (imgurRefs) {
       for (const ref of imgurRefs) {
@@ -50,7 +45,7 @@ async function fetchAlbumHashes(albumUrl) {
       }
     }
 
-    // Alternatif: "hash":"XXXXXXX" (bazı sayfalarda var)
+   
     const hashRegex = /"hash":"([A-Za-z0-9]{5,8})"/g;
     let match;
     while ((match = hashRegex.exec(html)) !== null) {
@@ -70,22 +65,21 @@ async function fetchAlbumHashes(albumUrl) {
 export async function resolveGifUrl(url) {
   if (typeof url !== 'string') return url;
 
-  // Zaten dogrudan resim
+ 
   if (/i\.imgur\.com/.test(url)) return url;
 
-  // Album icinde belirli resim
+
   const albumHash = url.match(/imgur\.com\/a\/[^#?]+#([A-Za-z0-9]+)/);
   if (albumHash) {
     return `https://i.imgur.com/${albumHash[1]}.gif`;
   }
 
-  // Tek resim
+  
   const single = url.match(/imgur\.com\/([A-Za-z0-9]+)(?:\.[a-z0-9]+)?(?:[?#].*)?$/i);
   if (single) {
     return `https://i.imgur.com/${single[1]}.gif`;
   }
 
-  // Album (hash yok) — sayfayi cekip rastgele resim sec
   const albumMatch = url.match(/imgur\.com\/a\/([A-Za-z0-9]+)/i);
   if (albumMatch) {
     const hashes = await fetchAlbumHashes(url);

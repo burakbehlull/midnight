@@ -11,6 +11,7 @@ import BotSettings from './pages/BotSettings'
 import GuildUsers from './pages/GuildUsers'
 import Actions from './pages/Actions'
 import GuildSettings from './pages/GuildSettings'
+import Guard from './pages/Guard'
 
 function App() {
   return (
@@ -46,6 +47,7 @@ function App() {
           <Route path="/economy/global" element={<GlobalEconomy />} />
           <Route path="/banks" element={<Banks />} />
           <Route path="/bot/settings" element={<BotSettings />} />
+          <Route path="/guard" element={<Guard />} />
           <Route path="/stats/:guildId" element={<ServerStats />} />
           <Route path="/leaderboard/:guildId" element={<Leaderboard />} />
           <Route path="/guilds/:guildId/users" element={<GuildUsers />} />

@@ -4,7 +4,7 @@ import { PermissionFlagsBits } from 'discord.js';
 import { Button } from '#helpers';
 import ms from 'ms';
 
-// Aktif mute timeout'larını saklamak için
+
 const muteTimeouts = new Map();
 
 export default {
@@ -76,7 +76,7 @@ export default {
           console.error('[mute] Punishment kaydedilemedi:', err);
         }
         
-        // Süre sonunda unmute (setTimeout)
+       
         const timeoutId = setTimeout(async () => {
           if (member.roles.cache.has(mutedRole.id)) {
             await member.roles.remove(mutedRole).catch(() => {});
@@ -84,7 +84,7 @@ export default {
           muteTimeouts.delete(`${message.guild.id}-${member.id}`);
         }, msDuration);
         
-        // Timeout'u sakla
+       
         muteTimeouts.set(`${message.guild.id}-${member.id}`, timeoutId);
         
         const recordIdText = punishmentRecord ? ` | **Ceza No:** #${punishmentRecord.recordId}` : '';
@@ -154,7 +154,7 @@ export default {
           components: []
         });
         
-        // Süre sonunda unmute
+       
         const timeoutId = setTimeout(async () => {
           if (member.roles.cache.has(mutedRole.id)) {
             await member.roles.remove(mutedRole).catch(() => {});
@@ -162,7 +162,7 @@ export default {
           muteTimeouts.delete(`${message.guild.id}-${member.id}`);
         }, selectedMs);
         
-        // Timeout'u sakla
+       
         muteTimeouts.set(`${message.guild.id}-${member.id}`, timeoutId);
         
         collector.stop('success');
@@ -180,5 +180,5 @@ export default {
   }
 };
 
-// Export muteTimeouts for unmute.js to access
+
 export { muteTimeouts };

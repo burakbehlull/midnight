@@ -132,8 +132,7 @@ export default {
         });
         successCount++;
 
-        // K2: Ban başarılı olan her sunucuya ForceBan kaydı yazılır ki
-        // o sunucudaki guildBanRemove koruması da devreye girsin.
+       
         try {
           await ForceBan.findOneAndUpdate(
             { userId: targetUser.id, guildId: g.id },

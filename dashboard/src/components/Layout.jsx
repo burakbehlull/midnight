@@ -46,6 +46,16 @@ const Layout = ({ children }) => {
             </Link>
 
             <Link
+              to="/guard"
+              className={`block px-4 py-3 rounded-lg transition-colors ${isActive('/guard')}`}
+            >
+              <span className="flex items-center gap-3">
+                <span className="text-xl">🛡️</span>
+                <span>Guard</span>
+              </span>
+            </Link>
+
+            <Link
               to="/bot/settings"
               className={`block px-4 py-3 rounded-lg transition-colors ${isActive('/bot/settings')}`}
             >

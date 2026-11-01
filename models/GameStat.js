@@ -13,7 +13,7 @@ const gameStatSchema = new mongoose.Schema({
   totalWon: { type: Number, default: 0 },
   totalLost: { type: Number, default: 0 },
 
-  // Kelime türetmece gibi oyunlar için yazılan kelime sayısı
+  
   words: { type: Number, default: 0 },
 
   createdAt: { type: Date, default: Date.now },

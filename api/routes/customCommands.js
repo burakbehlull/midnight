@@ -3,10 +3,7 @@ import { CustomCommand } from '#models';
 
 const router = Router();
 
-/**
- * GET /api/custom-commands/list/:guildId
- * Sunucunun tüm özel komutlarını listele
- */
+
 router.get('/list/:guildId', async (req, res) => {
   try {
     const { guildId } = req.params;
@@ -42,10 +39,7 @@ router.get('/list/:guildId', async (req, res) => {
   }
 });
 
-/**
- * GET /api/custom-commands/:guildId/:commandName
- * Belirli bir komutun detaylarını getir
- */
+
 router.get('/:guildId/:commandName', async (req, res) => {
   try {
     const { guildId, commandName } = req.params;
@@ -92,10 +86,7 @@ router.get('/:guildId/:commandName', async (req, res) => {
   }
 });
 
-/**
- * POST /api/custom-commands/create
- * Yeni özel komut oluştur
- */
+
 router.post('/create', async (req, res) => {
   try {
     const { guildId, commandName, description, responseText, embedData, roleActions } = req.body;
@@ -107,7 +98,7 @@ router.post('/create', async (req, res) => {
       });
     }
 
-    // Komut zaten var mı?
+  
     const existing = await CustomCommand.findOne({ 
       guildId, 
       commandName: commandName.toLowerCase() 
@@ -129,7 +120,7 @@ router.post('/create', async (req, res) => {
       enabled: true
     };
 
-    // Add optional fields
+ 
     if (responseText) {
       commandData.responseText = responseText;
     }
@@ -161,16 +152,13 @@ router.post('/create', async (req, res) => {
   }
 });
 
-/**
- * PUT /api/custom-commands/update/:commandId
- * Komutu güncelle
- */
+
 router.put('/update/:commandId', async (req, res) => {
   try {
     const { commandId } = req.params;
     const updates = req.body;
 
-    // Güvenli güncelleme - sadece belirli alanları güncelle
+    
     const allowedUpdates = [
       'description',
       'enabled',

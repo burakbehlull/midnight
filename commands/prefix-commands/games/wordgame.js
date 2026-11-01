@@ -401,7 +401,7 @@ export default {
 
       const userMessage = collected.first();
 
-      // İLK KONTROL: Boşluk var mı?
+      
       if (userMessage.content.includes(' ')) {
         userMessage.react('❌');
         const warningMsg = await userMessage.reply({
@@ -453,7 +453,7 @@ export default {
       const normalizedWord = normalizeText(word);
 
       if (!/^[a-zA-ZığüşöçİĞÜŞÖÇ]+$/.test(word)) {
-        userMessage.react('❌'); // await kaldırıldı
+        userMessage.react('❌');
         const warningMsg = await userMessage.reply({
           content: `❌ **Geçersiz karakter!** Kelime sadece harf içermelidir.`,
           allowedMentions: { repliedUser: false }
@@ -483,7 +483,7 @@ export default {
       }
 
       if (usedWords.has(normalizedWord)) {
-        userMessage.react('❌'); // await kaldırıldı
+        userMessage.react('❌'); 
         loser = currentPlayer;
         winner = players[currentPlayerIndex === 0 ? 1 : 0];
         
@@ -512,7 +512,7 @@ export default {
         const firstChars = getFirstChars(word, gameMode);
 
         if (!firstChars || lastChars !== firstChars) {
-          userMessage.react('❌'); // await kaldırıldı
+          userMessage.react('❌');
           loser = currentPlayer;
           winner = players[currentPlayerIndex === 0 ? 1 : 0];
           

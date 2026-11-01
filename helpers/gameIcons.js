@@ -33,7 +33,6 @@ export async function loadDetectable() {
   return cache;
 }
 
-// Aktiviteye karşılık gelen oyunu önce applicationId, sonra isim/alias ile arar
 export async function findDetectableApp(activity) {
   const { byId, byName } = await loadDetectable();
   if (!byId) return null;
@@ -43,7 +42,6 @@ export async function findDetectableApp(activity) {
   return byName.get(String(activity?.name ?? "").trim().toLowerCase()) ?? null;
 }
 
-// Oyunun kendi resmi ikonu (Discord oyun listesinden)
 export async function detectableIconUrls(activity) {
   const app = await findDetectableApp(activity);
   if (!app) return [];
@@ -53,7 +51,6 @@ export async function detectableIconUrls(activity) {
   return urls;
 }
 
-// Rich Presence görselleri (oyun içi özel görsel varsa)
 export function assetCoverUrls(activity) {
   const urls = [];
   const large = activity?.assets?.largeImage;
@@ -65,7 +62,7 @@ export function assetCoverUrls(activity) {
   return urls;
 }
 
-// Steam butonundan oyun kapak görseli
+
 export function steamCoverUrls(activity) {
   const urls = [];
   for (const btn of activity?.buttons ?? []) {
@@ -76,7 +73,7 @@ export function steamCoverUrls(activity) {
   return urls;
 }
 
-// Rich Presence görseli yoksa oyunun resmi ikonunu (ve Steam kapağını) döndürür
+
 export async function appIconUrls(client, activity) {
   let urls = [];
   try {
@@ -90,7 +87,7 @@ export async function appIconUrls(client, activity) {
       const app = await client.rest.get(`/applications/${activity.applicationId}`);
       if (app?.icon) urls.push(iconUrl(activity.applicationId, app.icon));
     } catch {
-      // bot bu uygulamayı göremiyor olabilir, sorun değil
+      
     }
   }
 

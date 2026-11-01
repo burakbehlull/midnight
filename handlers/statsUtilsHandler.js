@@ -54,7 +54,7 @@ async function updateVoiceStats(userId, guildId, channelId, durationMs, channelN
   let channel = stats.voiceChannels.find(c => c.channelId === channelId);
   if (channel) {
     channel.duration += durationMs;
-    // Eğer yeni channelName varsa güncelle, yoksa mevcut olanı koru
+   
     if (channelName && channelName.trim()) {
       channel.channelName = channelName;
     }

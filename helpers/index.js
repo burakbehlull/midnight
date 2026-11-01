@@ -14,6 +14,8 @@ import * as marketHelper from "./marketHelper.js"
 import * as cosmeticsHelper from "./cosmeticsHelper.js"
 import * as bankHelper from "./bankHelper.js"
 import * as gameStatsHelper from "./gameStatsHelper.js"
+import { logModeratorAction } from "./moderatorActions.js"
+import { enforceActionLimit, formatPunishments } from "./moderationLimits.js"
 
 import { checkCommandRestrictions, handleAutoDelete } from "./commandRestrictions.js"
 import {
@@ -42,6 +44,9 @@ export {
 	cosmeticsHelper,
 	bankHelper,
 	gameStatsHelper,
+	logModeratorAction,
+	enforceActionLimit,
+	formatPunishments,
 	actionRolesHelper,
 	gifResolver,
 	gameIcons,

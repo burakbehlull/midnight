@@ -6,7 +6,7 @@ const inviteHandler = async (client, member) => {
 	
 	const settings = await Settings.findOne({ guildId: guild.id });
 	
-	// Invite tracking sistemi kapalıysa hiçbir şey yapma
+	
 	if (!settings || !settings.inviteLogStatus) return;
 	
 	const sender = new messageSender(member);
@@ -30,7 +30,7 @@ const inviteHandler = async (client, member) => {
 			}
 		}
 
-		// Update all invites in cache
+		
 		for (const [code, invite] of newInvites) {
 			await InviteCacheSchema.findOneAndUpdate(
 				{ guildId: guild.id, code },
@@ -45,7 +45,7 @@ const inviteHandler = async (client, member) => {
 		console.error('[InviteHandler] Davetler kontrol edilemedi:', err);
 	}
 
-	// Inviter varsa database'e kaydet (log kanalı olmasa bile)
+	
 	if (inviter) {
 		const existing = await InviteModel.findOne({ guildId: guild.id, userId: inviter.id });
 		if (existing) {
@@ -60,7 +60,7 @@ const inviteHandler = async (client, member) => {
 		}
 	}
 
-	// Log kanalı varsa embed gönder
+	
 	if (settings.inviteLogChannelId) {
 		const channel = guild.channels.cache.get(settings.inviteLogChannelId);
 		if (channel) {

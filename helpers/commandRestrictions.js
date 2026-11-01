@@ -136,9 +136,7 @@ function checkCombinedRoleUserRestriction(member, userId, settings) {
   const memberRoles = member?.roles?.cache?.map(r => r.id) || [];
   const guild = member?.guild;
 
-  // ========================
-  // 1. ADIM: BLACKLIST KONTROLÜ (Önce engel olanları eleyelim)
-  // ========================
+  
   let blockedByRole = false;
   if (settings.roleMode === 'blacklist' && settings.blockedRoles?.length > 0) {
     blockedByRole = settings.blockedRoles.some(roleId => memberRoles.includes(roleId));
@@ -159,9 +157,7 @@ function checkCombinedRoleUserRestriction(member, userId, settings) {
     };
   }
 
-  // ========================
-  // 2. ADIM: WHITELIST KONTROLÜ (VEYA mantığı ile geçişe izin ver)
-  // ========================
+
   const roleWhitelistOn = settings.roleMode === 'whitelist';
   const userWhitelistOn = settings.userMode === 'whitelist';
 
@@ -191,9 +187,7 @@ function checkCombinedRoleUserRestriction(member, userId, settings) {
     hasUserWhitelist = settings.allowedUsers.includes(userId);
   }
 
-  // ----- VEYA (OR) MANTIĞI -----
-  // Hem rol hem üye whitelist açıksa → ikisinden BİRİ olması yeterli
-  // Sadece biri açıksa → o koşulun sağlanması gerekir
+
   let allowed;
   if (roleWhitelistOn && userWhitelistOn) {
     allowed = hasRoleWhitelist || hasUserWhitelist;
@@ -206,7 +200,7 @@ function checkCombinedRoleUserRestriction(member, userId, settings) {
   if (!allowed) {
     const parts = [];
     if (roleWhitelistOn) {
-      // Rol adlarını getir
+      
       const roleNames = settings.allowedRoles
         .map(roleId => {
           const role = guild?.roles?.cache?.get(roleId);

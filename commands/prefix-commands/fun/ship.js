@@ -37,11 +37,11 @@ export default {
             const canvas = createCanvas(1024, 500);
             const ctx = canvas.getContext('2d');
 
-            // Arka plan pembe
+            
             ctx.fillStyle = '#f5e5ee';
             ctx.fillRect(0, 0, 1024, 500);
 
-            // Başlık - yüzdeye göre değişir
+            
             let title;
             if (lovePercentage >= 80) {
                 title = 'BÜYÜK AŞK';

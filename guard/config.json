@@ -1,0 +1,10 @@
+{
+	"BOT_OWNER_IDS": [],
+
+	"ACTIVITY_NAME": "only Miguel Guard",
+	"ACTIVITY_TYPE": 3,
+	"ACTIVITY_STATUS": "dnd",
+
+	"DEVELOPMENT_MODE": false,
+	"AUTO_SLASH_COMMAND_DEPLOY": false
+}

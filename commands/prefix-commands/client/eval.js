@@ -3,7 +3,7 @@ import Manager from '#managers';
 import config from '../../../config.json' with { type: 'json' };
 
 const BLOCKED_PATTERNS = [
-  // Dosya sistemi modülleri
+  
   /require\s*\(\s*['"`]fs['"`]/gi,
   /require\s*\(\s*['"`]node:fs['"`]/gi,
   /import\s+.*\s+from\s+['"`]fs['"`]/gi,

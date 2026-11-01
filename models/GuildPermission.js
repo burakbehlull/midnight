@@ -26,7 +26,7 @@ const GuildPermissionSchema = new mongoose.Schema({
     type: Boolean, 
     default: true 
   },
-  // Yeni field'lar
+  
   staffRoles: {
     type: [String],
     default: []
