@@ -1,5 +1,5 @@
 import Manager from '#managers';
-import { messageSender, Button } from '#helpers';
+import { Button } from '#helpers';
 import { ChannelType, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 
 export default {
@@ -12,6 +12,8 @@ export default {
     const manager = new Manager(client, {
       action: message
     });
+
+    const sender = manager.sender
 
     const ctrl = await manager.authority.checkOwnerAndBotOwners();
     if (!ctrl) return message.reply({ content: '❌ Bu komutu kullanmak owner olmalısın.', ephemeral: true });
