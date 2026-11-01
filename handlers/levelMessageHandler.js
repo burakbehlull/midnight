@@ -24,6 +24,7 @@ export default async function levelMessageHandler(userId, guildId, message) {
     user.messageLevel = newLevel;
     await user.save();
 
+    /*
     const embed = new EmbedBuilder()
       .setTitle("Seviye Atladın!")
       .setDescription(`🎉 Tebrikler ${message.author}, **${newLevel}. seviye**ye ulaştın!`)
@@ -31,5 +32,6 @@ export default async function levelMessageHandler(userId, guildId, message) {
       .setThumbnail(message.author.displayAvatarURL());
 
     message.channel.send({ embeds: [embed] });
+    */
   }
 }

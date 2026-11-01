@@ -3,7 +3,7 @@ import { ComponentType, StringSelectMenuBuilder, ActionRowBuilder } from 'discor
 
 import Manager from '#managers';
 import { statsUtilsHandler, relationsHandler } from '#handlers';
-import { Level, InviteModel } from '#models';
+import { Level, InviteModel, UserStats } from '#models';
 
 function drawRoundedRect(ctx, x, y, width, height, radius, fill, stroke, strokeWidth) {
 	ctx.beginPath();
@@ -206,15 +206,24 @@ async function generateMyStatsCanvas(client, member, guild) {
 	const boxHeight = 300;
 	const gapX = 30;
 
-	const allMessageXP = await Level.find({ guildId: guild.id }).sort({ messageXP: -1 });
-	const allVoiceXP = await Level.find({ guildId: guild.id }).sort({ voiceXP: -1 });
-	const allCamera = await Level.find({ guildId: guild.id }).sort({ totalCameraOpens: -1 });
-	const allStream = await Level.find({ guildId: guild.id }).sort({ totalStreams: -1 });
+	const allStats = await UserStats.find({ guildId: guild.id });
+	const allLevel = await Level.find({ guildId: guild.id });
 
-	const messageRank = allMessageXP.findIndex(u => u.userId === member.id) + 1;
-	const voiceRank = allVoiceXP.findIndex(u => u.userId === member.id) + 1;
-	const cameraRank = allCamera.findIndex(u => u.userId === member.id) + 1;
-	const streamRank = allStream.findIndex(u => u.userId === member.id) + 1;
+	const messageRank = allStats
+		.sort((a, b) => b.totalMessages - a.totalMessages)
+		.findIndex(u => u.userId === member.id) + 1;
+
+	const voiceRank = allStats
+		.sort((a, b) => b.totalVoice - a.totalVoice)
+		.findIndex(u => u.userId === member.id) + 1;
+
+	const cameraRank = allLevel
+		.sort((a, b) => b.totalCameraOpens - a.totalCameraOpens)
+		.findIndex(u => u.userId === member.id) + 1;
+
+	const streamRank = allLevel
+		.sort((a, b) => b.totalStreams - a.totalStreams)
+		.findIndex(u => u.userId === member.id) + 1;
 
 	drawRoundedRect(ctx, 50, startY, boxWidth, boxHeight, 15, '#1a1a1a');
 	ctx.font = 'bold 20px sans-serif';

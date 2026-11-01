@@ -27,18 +27,108 @@ export default {
 
         const lovePercentage = Math.floor(Math.random() * 101);
         
-        const themes = [
-            'Şeker', 'Aşk', 'Tutku', 'Romantik', 'Sevgi', 
-            'Kalp', 'Mutluluk', 'Hayal', 'Rüya', 'Sonsuzluk'
+        const THEMES = [
+            {
+                name: 'Kırmızı',
+                weight: 60,
+                colors: {
+                    bg: '#ffe5e5',
+                    polaroidBorder: '#f4d4d4',
+                    username: '#e59b9b',
+                    heartFill: '#ff4b4b',
+                    circle: '#f6d5d5',
+                    tape: '#fcd4d4',
+                    tapePattern: '#ee9f9f'
+                }
+            },
+            {
+                name: 'Şeker',
+                weight: 20,
+                colors: {
+                    bg: '#f5e5ee',
+                    polaroidBorder: '#f4dbe4',
+                    username: '#e59bb2',
+                    heartFill: '#ff4b8b',
+                    circle: '#f6d5e3',
+                    tape: '#fce2c4',
+                    tapePattern: '#eec59f'
+                }
+            },
+            {
+                name: 'Lavanta',
+                weight: 10,
+                colors: {
+                    bg: '#fdf0f5',
+                    polaroidBorder: '#e8e8ff',
+                    username: '#9b9be5',
+                    heartFill: '#b19cd9',
+                    circle: '#c3b1e1',
+                    tape: '#e8e8ff',
+                    tapePattern: '#9b9be5'
+                }
+            },
+            {
+                name: 'Mint',
+                weight: 3,
+                colors: {
+                    bg: '#e5f5f0',
+                    polaroidBorder: '#d4f4e8',
+                    username: '#9be5c8',
+                    heartFill: '#4bffb6',
+                    circle: '#d5f6e9',
+                    tape: '#d4fce2',
+                    tapePattern: '#9feecc'
+                }
+            },
+            {
+                name: 'Vanilya',
+                weight: 2,
+                colors: {
+                    bg: '#fdf0f5',
+                    polaroidBorder: '#fef5e7',
+                    username: '#e5c185',
+                    heartFill: '#f4a261',
+                    circle: '#f4d1a1',
+                    tape: '#fef5e7',
+                    tapePattern: '#e5c185'
+                }
+            },
+            {
+                name: 'Sarı',
+                weight: 2,
+                colors: {
+                    bg: '#fff9e5',
+                    polaroidBorder: '#f4f0d4',
+                    username: '#e5d89b',
+                    heartFill: '#ffdd4b',
+                    circle: '#f6f2d5',
+                    tape: '#fcf8c4',
+                    tapePattern: '#eee89f'
+                }
+            }
         ];
-        const theme = themes[Math.floor(Math.random() * themes.length)];
+
+        const totalWeight = THEMES.reduce((sum, t) => sum + t.weight, 0);
+        let random = Math.random() * totalWeight;
+        let selectedTheme = THEMES[0];
+
+        for (const t of THEMES) {
+            if (random < t.weight) {
+                selectedTheme = t;
+                break;
+            }
+            random -= t.weight;
+        }
+
+        const theme = selectedTheme.name;
+        const colors = selectedTheme.colors;
 
         try {
             const canvas = createCanvas(1024, 500);
             const ctx = canvas.getContext('2d');
 
             
-            ctx.fillStyle = '#f5e5ee';
+            ctx.fillStyle = colors.bg;
             ctx.fillRect(0, 0, 1024, 500);
 
             
@@ -61,7 +151,8 @@ export default {
                 message.author.displayAvatarURL({ extension: 'png', size: 256 }), 
                 80, 70, 
                 message.author.username, 
-                -4
+                -4,
+                colors
             );
 
             await drawPolaroid(
@@ -69,10 +160,11 @@ export default {
                 user.user.displayAvatarURL({ extension: 'png', size: 256 }), 
                 660, 70, 
                 user.user.username, 
-                4
+                4,
+                colors
             );
 
-            drawLoveCenter(ctx, 500, 220, lovePercentage);
+            drawLoveCenter(ctx, 500, 220, lovePercentage, colors);
 
 
             ctx.fillStyle = '#555555';
@@ -94,7 +186,7 @@ export default {
     }
 };
 
-async function drawPolaroid(ctx, avatarURL, x, y, username, rotation) {
+async function drawPolaroid(ctx, avatarURL, x, y, username, rotation, colors) {
     ctx.save();
     
 
@@ -117,7 +209,7 @@ async function drawPolaroid(ctx, avatarURL, x, y, username, rotation) {
 
     ctx.shadowBlur = 0;
     ctx.shadowOffsetY = 0;
-    ctx.strokeStyle = '#f4dbe4';
+    ctx.strokeStyle = colors.polaroidBorder;
     ctx.lineWidth = 1.5;
     ctx.strokeRect(x, y, frameWidth, frameHeight);
 
@@ -131,7 +223,7 @@ async function drawPolaroid(ctx, avatarURL, x, y, username, rotation) {
     }
 
 
-    ctx.fillStyle = '#e59bb2';
+    ctx.fillStyle = colors.username;
     ctx.font = 'bold 22px "Times New Roman", Georgia, serif';
     ctx.textAlign = 'center';
     
@@ -146,11 +238,11 @@ async function drawPolaroid(ctx, avatarURL, x, y, username, rotation) {
     const tapeX = x + (frameWidth - tapeWidth) / 2;
     const tapeY = y - 10;
 
-    ctx.fillStyle = '#fce2c4';
+    ctx.fillStyle = colors.tape;
     ctx.fillRect(tapeX, tapeY, tapeWidth, tapeHeight);
 
 
-    ctx.strokeStyle = '#eec59f';
+    ctx.strokeStyle = colors.tapePattern;
     ctx.lineWidth = 1.5;
     for (let i = tapeX + 8; i < tapeX + tapeWidth - 4; i += 8) {
         ctx.beginPath();
@@ -163,11 +255,11 @@ async function drawPolaroid(ctx, avatarURL, x, y, username, rotation) {
 }
 
 
-function drawLoveCenter(ctx, x, y, percentage) {
+function drawLoveCenter(ctx, x, y, percentage, colors) {
     ctx.save();
 
 
-    ctx.strokeStyle = '#f6d5e3';
+    ctx.strokeStyle = colors.circle;
     ctx.lineWidth = 14;
     ctx.beginPath();
     ctx.arc(x, y, 105, 0, Math.PI * 2);
@@ -193,7 +285,7 @@ function drawLoveCenter(ctx, x, y, percentage) {
     const fillHeight = (percentage / 100) * totalHeartHeight;
     const fillY = (heartYOffset + 140) - fillHeight;
 
-    ctx.fillStyle = '#ff4b8b';
+    ctx.fillStyle = colors.heartFill;
     ctx.fillRect(x - 120, fillY, 240, fillHeight + 30);
     ctx.restore();
 

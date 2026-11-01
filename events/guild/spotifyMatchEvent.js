@@ -104,7 +104,8 @@ export default {
         return;
       }
 
-      const mentionText = `<@${user1.id}> ve <@${matchedMember.id}> aynı şarkıda eşleşti!`;
+      // const mentionText = `<@${user1.id}> ve <@${matchedMember.id}> aynı şarkıda eşleşti!`;
+      const mentionText = `${user1Name} ve ${user2Name} aynı şarkıda eşleşti!`;
 
       await channel.send({
         content: mentionText,
