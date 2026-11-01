@@ -117,6 +117,46 @@ export default function createGuardRouter(guardClient) {
   });
 
  
+  router.post('/message/send', async (req, res) => {
+    try {
+      const { guildId, channelId, content, embed } = req.body;
+
+      if (!guildId || !channelId) {
+        return res.status(400).json({ error: 'guildId ve channelId zorunlu' });
+      }
+      if (!guardClient?.isReady?.()) {
+        return res.status(503).json({ error: 'Guard botu çevrimdışı' });
+      }
+
+      const guild = guardClient.guilds.cache.get(guildId);
+      if (!guild) return res.status(404).json({ error: 'Guild not found' });
+
+      const channel = guild.channels.cache.get(channelId);
+      if (!channel || !channel.isTextBased()) {
+        return res.status(404).json({ error: 'Kanal bulunamadı veya metin kanalı değil' });
+      }
+
+      const messageOptions = {};
+      if (content) messageOptions.content = content;
+      if (embed) messageOptions.embeds = [embed];
+      if (!messageOptions.content && !messageOptions.embeds) {
+        return res.status(400).json({ error: 'Mesaj içeriği boş' });
+      }
+
+      const sentMessage = await channel.send(messageOptions);
+
+      res.json({
+        success: true,
+        messageId: sentMessage.id,
+        channelId: channel.id,
+        channelName: channel.name,
+      });
+    } catch (error) {
+      console.error('Guard mesaj gönderme hatası:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   router.get('/guilds', async (req, res) => {
     try {
       const guilds = guardClient ? Array.from(guardClient.guilds.cache.values()) : [];
@@ -184,6 +224,35 @@ export default function createGuardRouter(guardClient) {
     }
   });
 
+
+  router.get('/guilds/:guildId/members', async (req, res) => {
+    try {
+      const guild = guardClient?.guilds?.cache?.get(req.params.guildId);
+      if (!guild) return res.status(404).json({ error: 'Guild not found' });
+
+      const limit = Math.min(parseInt(req.query.limit, 10) || 10, 25);
+      const search = String(req.query.search || '').trim();
+
+      let members;
+      if (search) {
+        members = await guild.members.fetch({ query: search, limit });
+      } else {
+        members = [...guild.members.cache.values()].slice(0, limit);
+      }
+
+      const list = [...members.values()].map((m) => ({
+        userId: m.id,
+        username: m.user.username,
+        globalName: m.user.globalName || null,
+        avatar: m.user.displayAvatarURL({ size: 64 }),
+        bot: m.user.bot,
+      }));
+
+      res.json({ members: list });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
 
   router.get('/guilds/:guildId/settings', async (req, res) => {
     try {

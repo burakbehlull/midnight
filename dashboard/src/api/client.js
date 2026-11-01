@@ -128,6 +128,9 @@ export const api = {
   getGuardGuilds: () => apiClient.get('/guard/guilds'),
   getGuardChannels: (guildId) => apiClient.get(`/guard/guilds/${guildId}/channels`),
   getGuardRoles: (guildId) => apiClient.get(`/guard/guilds/${guildId}/roles`),
+  getGuardMembers: (guildId, { search = '', limit = 10 } = {}) =>
+    apiClient.get(`/guard/guilds/${guildId}/members`, { params: { search, limit } }),
+  sendGuardMessage: (data) => apiClient.post('/guard/message/send', data),
   getGuardSettings: (guildId) => apiClient.get(`/guard/guilds/${guildId}/settings`),
   updateGuardSettings: (guildId, data) => apiClient.put(`/guard/guilds/${guildId}/settings`, data),
   getGuardLogs: (guildId, params = {}) => 

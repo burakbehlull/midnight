@@ -175,6 +175,7 @@ export default function Guard() {
                 { id: 'moderators', label: '👮 Moderatörler' },
                 { id: 'backups', label: '💾 Yedekler' },
                 { id: 'commands', label: '🔑 Komut Yetkileri' },
+                { id: 'message', label: '✉️ Mesaj Gönder' },
               ].map((item) => (
                 <button
                   key={item.id}
@@ -197,6 +198,7 @@ export default function Guard() {
             {tab === 'moderators' && <GuardModerators guildId={guildId} />}
             {tab === 'backups' && <GuardBackups guildId={guildId} />}
             {tab === 'commands' && <GuardCommandPermissions guildId={guildId} />}
+            {tab === 'message' && <GuardMessageSender guildId={guildId} />}
           </div>
         </>
       )}
@@ -205,10 +207,172 @@ export default function Guard() {
 }
 
 /* ─────────────────────────── Ayarlar ─────────────────────────── */
+const PUNISHMENT_TYPES = [
+  ['roleCreate', 'Rol Oluşturma'],
+  ['roleDelete', 'Rol Silme'],
+  ['roleUpdate', 'Rol Güncelleme'],
+  ['channelCreate', 'Kanal Oluşturma'],
+  ['channelDelete', 'Kanal Silme'],
+  ['channelUpdate', 'Kanal Güncelleme'],
+  ['ban', 'Ban'],
+  ['kick', 'Kick'],
+  ['roleAssign', 'Rol Verme'],
+  ['botAdd', 'Bot Ekleme'],
+  ['guildUpdate', 'Sunucu Güncelleme'],
+  ['vanityUpdate', 'Vanity Değişikliği'],
+];
+
+const PUNISHMENT_ACTIONS = [
+  ['ban', 'Ban'],
+  ['kick', 'Kick'],
+  ['removePerms', 'Yetki Çek'],
+  ['jail', 'Jail'],
+  ['closePerms', 'Yetki Kapat'],
+  ['none', 'Cezasız'],
+];
+
+const GUARD_TOGGLES = [
+  ['banGuard', 'Ban Guard'],
+  ['kickGuard', 'Kick Guard'],
+  ['roleAssignGuard', 'Rol Verme Guard'],
+  ['botGuard', 'Bot Guard'],
+  ['guildUpdateGuard', 'Sunucu Güncelleme Guard'],
+  ['vanityGuard', 'Vanity Guard'],
+  ['webhookGuard', 'Webhook Guard'],
+  ['spamGuard', 'Spam Guard'],
+  ['advertisementGuard', 'Reklam Guard'],
+];
+
+function ListRow({ label, sub, avatar, color, onRemove }) {
+  return (
+    <div className="flex items-center justify-between rounded-lg bg-midnight-light/40 p-2">
+      <span className="flex items-center gap-2 text-sm min-w-0">
+        {avatar && <img src={avatar} alt="" className="w-6 h-6 rounded-full" />}
+        {color && <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />}
+        <span className="truncate">{label}</span>
+        {sub && <span className="text-xs text-gray-500 truncate">{sub}</span>}
+      </span>
+      <button onClick={onRemove} className="text-red-400 hover:text-red-300 text-sm flex-shrink-0 ml-2">
+        ✖ Çıkar
+      </button>
+    </div>
+  );
+}
+
+function RoleListEditor({ title, icon, roles, items, onAdd, onRemove }) {
+  return (
+    <div className="rounded-lg bg-midnight-base border border-midnight-light p-4">
+      <h4 className="font-semibold mb-3">{icon} {title}</h4>
+      <select
+        value=""
+        onChange={(e) => e.target.value && onAdd(e.target.value)}
+        className="w-full px-3 py-2 rounded-lg bg-midnight-base border border-midnight-light outline-none mb-2 text-sm"
+      >
+        <option value="">Rol ekle...</option>
+        {roles
+          .filter((r) => !items.includes(r.id))
+          .map((r) => (
+            <option key={r.id} value={r.id}>{r.name}</option>
+          ))}
+      </select>
+      <div className="space-y-1">
+        {items.map((id) => {
+          const role = roles.find((r) => r.id === id);
+          return (
+            <ListRow
+              key={id}
+              label={role?.name || id}
+              color={role?.hexColor || '#99AAB5'}
+              onRemove={() => onRemove(id)}
+            />
+          );
+        })}
+        {items.length === 0 && <p className="text-gray-500 text-center py-2 text-sm">Liste boş</p>}
+      </div>
+    </div>
+  );
+}
+
+function MemberListEditor({ title, icon, guildId, items, onAdd, onRemove, botsOnly = false, nameCache = {} }) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+
+  const search = async () => {
+    if (!query.trim()) return;
+    try {
+      setSearching(true);
+      const res = await api.getGuardMembers(guildId, { search: query, limit: 25 });
+      setResults((res.data.members || []).filter((m) => (botsOnly ? m.bot : true)));
+    } catch (error) {
+      console.error(error);
+      toast.error('Arama başarısız');
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  return (
+    <div className="rounded-lg bg-midnight-base border border-midnight-light p-4">
+      <h4 className="font-semibold mb-3">{icon} {title}</h4>
+      <div className="flex gap-2 mb-2">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && search()}
+          placeholder={botsOnly ? 'Bot ara...' : 'Kullanıcı ara...'}
+          className="flex-1 px-3 py-2 rounded-lg bg-midnight-base border border-midnight-light outline-none text-sm"
+        />
+        <button
+          onClick={search}
+          disabled={searching}
+          className="px-4 py-2 rounded-lg bg-midnight-purple/20 border border-midnight-purple hover:bg-midnight-purple/30 transition-colors disabled:opacity-50"
+        >
+          {searching ? '⏳' : '🔍'}
+        </button>
+      </div>
+      {results.length > 0 && (
+        <div className="mb-2 rounded-lg bg-midnight-light/30 border border-midnight-light p-2 max-h-[150px] overflow-y-auto">
+          {results.map((m) => (
+            <div
+              key={m.userId}
+              onClick={() => !items.includes(m.userId) && onAdd(m.userId, m)}
+              className={`flex items-center justify-between p-2 rounded cursor-pointer hover:bg-midnight-light ${
+                items.includes(m.userId) ? 'opacity-50' : ''
+              }`}
+            >
+              <span className="flex items-center gap-2 text-sm">
+                {m.avatar && <img src={m.avatar} alt="" className="w-6 h-6 rounded-full" />}
+                {m.globalName || m.username}
+              </span>
+              <span className="text-green-400 text-sm">
+                {items.includes(m.userId) ? '✓ Eklendi' : '+ Ekle'}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="space-y-1">
+        {items.map((id) => (
+          <ListRow
+            key={id}
+            label={nameCache[id]?.label || id}
+            avatar={nameCache[id]?.avatar}
+            onRemove={() => onRemove(id)}
+          />
+        ))}
+        {items.length === 0 && <p className="text-gray-500 text-center py-2 text-sm">Liste boş</p>}
+      </div>
+    </div>
+  );
+}
+
 function GuardSettings({ guildId }) {
   const [settings, setSettings] = useState(null);
   const [channels, setChannels] = useState([]);
   const [roles, setRoles] = useState([]);
+  const [names, setNames] = useState({});
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -232,6 +396,49 @@ function GuardSettings({ guildId }) {
   };
 
   const patch = (updater) => setSettings((prev) => updater(structuredClone(prev)));
+
+  const addTo = (getter, value) => {
+    if (!value) return;
+    patch((s) => {
+      const arr = getter(s);
+      if (Array.isArray(arr) && !arr.includes(value)) arr.push(value);
+      return s;
+    });
+  };
+
+  const removeFrom = (getter, value) =>
+    patch((s) => {
+      const arr = getter(s);
+      if (Array.isArray(arr)) {
+        const i = arr.indexOf(value);
+        if (i >= 0) arr.splice(i, 1);
+      }
+      return s;
+    });
+
+  const cacheName = (id, member) =>
+    setNames((prev) => ({
+      ...prev,
+      [id]: { label: member.globalName || member.username, avatar: member.avatar },
+    }));
+
+  const togglePunishment = (type, action) =>
+    patch((s) => {
+      if (!s.punishments[type]) s.punishments[type] = { actions: [], default: [] };
+      const entry = s.punishments[type];
+      let arr =
+        Array.isArray(entry.actions) && entry.actions.length
+          ? [...entry.actions]
+          : [...(entry.default || [])];
+      if (action === 'none') {
+        arr = arr.includes('none') ? [] : ['none'];
+      } else {
+        arr = arr.filter((a) => a !== 'none');
+        arr = arr.includes(action) ? arr.filter((a) => a !== action) : [...arr, action];
+      }
+      entry.actions = arr;
+      return s;
+    });
 
   const save = async () => {
     try {
@@ -298,6 +505,60 @@ function GuardSettings({ guildId }) {
       </section>
 
       <section>
+        <h3 className="text-lg font-semibold mb-3">Güvenlik Listeleri</h3>
+        <p className="text-xs text-gray-500 mb-3">
+          Güvenli kullanıcı/rol/bot ve korumalı roller bu listelerdeki guard kontrollerinden muaftır.
+        </p>
+        <div className="grid md:grid-cols-2 gap-4">
+          <RoleListEditor
+            title="Güvenli Roller"
+            icon="🎭"
+            roles={roles}
+            items={settings.safeguard.safeRoles || []}
+            onAdd={(v) => addTo((s) => s.safeguard.safeRoles, v)}
+            onRemove={(v) => removeFrom((s) => s.safeguard.safeRoles, v)}
+          />
+          <RoleListEditor
+            title="Korumalı Roller"
+            icon="🛡️"
+            roles={roles}
+            items={settings.protectedRoles || []}
+            onAdd={(v) => addTo((s) => s.protectedRoles, v)}
+            onRemove={(v) => removeFrom((s) => s.protectedRoles, v)}
+          />
+          <MemberListEditor
+            title="Güvenli Kullanıcılar"
+            icon="👤"
+            guildId={guildId}
+            nameCache={names}
+            items={settings.safeguard.safeUsers || []}
+            onAdd={(id, m) => { cacheName(id, m); addTo((s) => s.safeguard.safeUsers, id); }}
+            onRemove={(v) => removeFrom((s) => s.safeguard.safeUsers, v)}
+          />
+          <MemberListEditor
+            title="İzinli Botlar (Bot İzni)"
+            icon="🤖"
+            guildId={guildId}
+            botsOnly
+            nameCache={names}
+            items={settings.safeguard.allowedBots || []}
+            onAdd={(id, m) => { cacheName(id, m); addTo((s) => s.safeguard.allowedBots, id); }}
+            onRemove={(v) => removeFrom((s) => s.safeguard.allowedBots, v)}
+          />
+          <MemberListEditor
+            title="Whitelist Botlar"
+            icon="♾️"
+            guildId={guildId}
+            botsOnly
+            nameCache={names}
+            items={settings.safeguard.whitelistBots || []}
+            onAdd={(id, m) => { cacheName(id, m); addTo((s) => s.safeguard.whitelistBots, id); }}
+            onRemove={(v) => removeFrom((s) => s.safeguard.whitelistBots, v)}
+          />
+        </div>
+      </section>
+
+      <section>
         <h3 className="text-lg font-semibold mb-3">Korumalar</h3>
         <div className="grid md:grid-cols-2 gap-x-8">
           <div>
@@ -319,16 +580,7 @@ function GuardSettings({ guildId }) {
           </div>
 
           <div>
-            {[
-              ['banGuard', 'Ban Guard'],
-              ['kickGuard', 'Kick Guard'],
-              ['roleAssignGuard', 'Rol Verme Guard'],
-              ['botGuard', 'Bot Guard'],
-              ['guildUpdateGuard', 'Sunucu Güncelleme Guard'],
-              ['vanityGuard', 'Vanity Guard'],
-              ['spamGuard', 'Spam Guard'],
-              ['advertisementGuard', 'Reklam Guard'],
-            ].map(([key, label]) => (
+            {GUARD_TOGGLES.map(([key, label]) => (
               <Toggle key={key} label={label} checked={g[key]}
                 onChange={(v) => patch((s) => { s.guards[key] = v; return s; })} />
             ))}
@@ -343,6 +595,43 @@ function GuardSettings({ guildId }) {
             <NumberField key={key} label={EVENT_LABELS[key] || key} value={value}
               onChange={(v) => patch((s) => { s.limits[key] = v; return s; })} />
           ))}
+          <NumberField label="Genel Limit (Toplam)" value={g.globalLimit}
+            onChange={(v) => patch((s) => { s.guards.globalLimit = v; return s; })} />
+        </div>
+      </section>
+
+      <section>
+        <h3 className="text-lg font-semibold mb-3">Ceza Ayarları</h3>
+        <p className="text-xs text-gray-500 mb-3">Her guard olayında uygulanacak cezaları seçin (çoklu seçim).</p>
+        <div className="grid md:grid-cols-2 gap-4">
+          {PUNISHMENT_TYPES.map(([type, label]) => {
+            const entry = settings.punishments?.[type] || {};
+            const current = entry.actions?.length ? entry.actions : (entry.default || []);
+            return (
+              <div key={type} className="rounded-lg bg-midnight-base border border-midnight-light p-4">
+                <p className="font-medium mb-2 text-sm">{label}</p>
+                <div className="flex flex-wrap gap-2">
+                  {PUNISHMENT_ACTIONS.map(([action, actionLabel]) => {
+                    const active = current.includes(action);
+                    return (
+                      <button
+                        key={action}
+                        type="button"
+                        onClick={() => togglePunishment(type, action)}
+                        className={`px-3 py-1.5 rounded-lg text-xs border transition-colors ${
+                          active
+                            ? 'bg-midnight-purple border-midnight-purple text-white'
+                            : 'bg-midnight-base border-midnight-light text-gray-300 hover:bg-midnight-light'
+                        }`}
+                      >
+                        {actionLabel}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -354,12 +643,38 @@ function GuardSettings({ guildId }) {
               onChange={(v) => patch((s) => { s.antiSpam.enabled = v; return s; })} />
             <NumberField label="Maks. uyarı" value={settings.antiSpam.maxWarnings}
               onChange={(v) => patch((s) => { s.antiSpam.maxWarnings = v; return s; })} />
+            <NumberField label="Timeout (dakika)" value={Math.round((settings.antiSpam.timeoutDuration || 0) / 60000)}
+              onChange={(v) => patch((s) => { s.antiSpam.timeoutDuration = v * 60000; return s; })} />
           </div>
           <div>
             <Toggle label="Anti-Reklam" checked={settings.antiAdvertisement.enabled}
               onChange={(v) => patch((s) => { s.antiAdvertisement.enabled = v; return s; })} />
             <NumberField label="Maks. uyarı" value={settings.antiAdvertisement.maxWarnings}
               onChange={(v) => patch((s) => { s.antiAdvertisement.maxWarnings = v; return s; })} />
+            <NumberField label="Timeout (dakika)" value={Math.round((settings.antiAdvertisement.timeoutDuration || 0) / 60000)}
+              onChange={(v) => patch((s) => { s.antiAdvertisement.timeoutDuration = v * 60000; return s; })} />
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h3 className="text-lg font-semibold mb-3">Yedekleme</h3>
+        <Toggle
+          label="Otomatik yedekleme"
+          description="Belirlenen aralıkta sunucu yedeği alınır"
+          checked={settings.backup.enabled}
+          onChange={(v) => patch((s) => { s.backup.enabled = v; return s; })}
+        />
+        <div className="grid md:grid-cols-2 gap-4 mt-2">
+          <NumberField label="Yedek aralığı (saat)" value={Math.round((settings.backup.interval || 0) / 3600000)}
+            onChange={(v) => patch((s) => { s.backup.interval = v * 3600000; return s; })} />
+          <div>
+            <span className="block text-xs text-gray-400 mb-1">Son yedek</span>
+            <p className="text-sm py-2">
+              {settings.backup.lastBackup
+                ? new Date(settings.backup.lastBackup).toLocaleString('tr-TR')
+                : 'Henüz alınmadı'}
+            </p>
           </div>
         </div>
       </section>
@@ -953,6 +1268,141 @@ function GuardCommandPermissions({ guildId }) {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+/* ──────────────────────── Mesaj Gönder ──────────────────────── */
+function GuardMessageSender({ guildId }) {
+  const [channels, setChannels] = useState([]);
+  const [channelId, setChannelId] = useState('');
+  const [content, setContent] = useState('');
+  const [useEmbed, setUseEmbed] = useState(false);
+  const [embed, setEmbed] = useState({ title: '', description: '', color: 0x9333ea, footer: '' });
+  const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    api.getGuardChannels(guildId)
+      .then((res) => {
+        setChannels(res.data);
+        setChannelId(res.data[0]?.id || '');
+      })
+      .catch((error) => {
+        console.error(error);
+        toast.error('Kanallar yüklenemedi');
+      });
+  }, [guildId]);
+
+  const send = async (e) => {
+    e.preventDefault();
+    if (!channelId) return toast.error('Kanal seçmelisin');
+    if (!content.trim() && !useEmbed) return toast.error('Mesaj içeriği boş olamaz');
+
+    try {
+      setSending(true);
+      const payload = { guildId, channelId };
+      if (useEmbed) {
+        payload.embed = {
+          title: embed.title || undefined,
+          description: embed.description || content || undefined,
+          color: embed.color,
+          footer: embed.footer ? { text: embed.footer } : undefined,
+        };
+      } else {
+        payload.content = content;
+      }
+      const res = await api.sendGuardMessage(payload);
+      toast.success(`Mesaj #${res.data.channelName} kanalına gönderildi`);
+      setContent('');
+      setEmbed({ title: '', description: '', color: 0x9333ea, footer: '' });
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.error || 'Mesaj gönderilemedi');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const hex = `#${(embed.color || 0).toString(16).padStart(6, '0')}`;
+
+  return (
+    <div className="max-w-3xl">
+      <h3 className="text-lg font-semibold mb-4">✉️ Guard Botu ile Mesaj Gönder</h3>
+      <form onSubmit={send} className="space-y-5">
+        <label className="block">
+          <span className="block text-sm font-medium mb-2">Kanal</span>
+          <select
+            value={channelId}
+            onChange={(e) => setChannelId(e.target.value)}
+            className="w-full px-4 py-3 rounded-lg bg-midnight-base border border-midnight-light focus:border-midnight-purple outline-none"
+          >
+            <option value="">Kanal seçin</option>
+            {channels.map((c) => (
+              <option key={c.id} value={c.id}>#{c.name}</option>
+            ))}
+          </select>
+        </label>
+
+        <Toggle label="Embed olarak gönder" checked={useEmbed} onChange={setUseEmbed} />
+
+        {useEmbed ? (
+          <div className="space-y-3 rounded-lg bg-midnight-base border border-midnight-light p-4">
+            <input
+              type="text"
+              value={embed.title}
+              onChange={(e) => setEmbed({ ...embed, title: e.target.value })}
+              placeholder="Başlık"
+              className="w-full px-3 py-2 rounded-lg bg-midnight-base border border-midnight-light outline-none"
+            />
+            <textarea
+              value={embed.description}
+              onChange={(e) => setEmbed({ ...embed, description: e.target.value })}
+              placeholder="Açıklama"
+              rows={4}
+              className="w-full px-3 py-2 rounded-lg bg-midnight-base border border-midnight-light outline-none resize-none"
+            />
+            <div className="grid md:grid-cols-2 gap-3">
+              <label className="block">
+                <span className="block text-xs text-gray-400 mb-1">Renk</span>
+                <input
+                  type="color"
+                  value={hex}
+                  onChange={(e) => setEmbed({ ...embed, color: parseInt(e.target.value.slice(1), 16) })}
+                  className="w-full h-10 rounded-lg bg-midnight-base border border-midnight-light cursor-pointer"
+                />
+              </label>
+              <label className="block">
+                <span className="block text-xs text-gray-400 mb-1">Alt bilgi (footer)</span>
+                <input
+                  type="text"
+                  value={embed.footer}
+                  onChange={(e) => setEmbed({ ...embed, footer: e.target.value })}
+                  placeholder="Footer metni"
+                  className="w-full px-3 py-2 rounded-lg bg-midnight-base border border-midnight-light outline-none"
+                />
+              </label>
+            </div>
+          </div>
+        ) : (
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="Mesaj içeriği..."
+            rows={4}
+            className="w-full px-4 py-3 rounded-lg bg-midnight-base border border-midnight-light focus:border-midnight-purple outline-none resize-none"
+          />
+        )}
+
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={sending}
+            className="px-6 py-3 rounded-lg bg-gradient-to-r from-midnight-purple to-midnight-pink font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+          >
+            {sending ? 'Gönderiliyor...' : 'Gönder'}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
