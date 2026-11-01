@@ -31,10 +31,6 @@ export async function handleVoiceRoomCreate(oldState, newState) {
         ]
       });
 
-      await cloned.permissionOverwrites
-        .edit(newState.guild.roles.everyone, { Connect: false })
-        .catch(() => {});
-
       await Room.create({
         id: cloned.id,
         ownerId: newState.member.id,
