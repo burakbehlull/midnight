@@ -263,6 +263,63 @@ export async function petInteractionHandler(interaction) {
   }
 
 
+  if (interaction.customId === 'pet_abandon_confirm') {
+    const userEco = await Economy.findOne({ userId: interaction.user.id });
+    if (!userEco || !userEco.pet || !userEco.pet.type) {
+      return interaction.update({
+        embeds: [],
+        components: [],
+        content: '❌ Evcil hayvanın yok!'
+      });
+    }
+
+    const petName = userEco.pet.name;
+    const petItem = await Shop.findOne({ slug: userEco.pet.slug });
+
+    userEco.pet = {
+      type: null,
+      breed: null,
+      slug: null,
+      name: null,
+      level: 1,
+      xp: 0,
+      love: 50,
+      hunger: 50,
+      happiness: 50,
+      energy: 100,
+      adoptedAt: null,
+      lastFed: new Date(0),
+      lastPlayed: new Date(0),
+      lastLoved: new Date(0),
+      accessories: []
+    };
+    await userEco.save();
+
+    const embed = new EmbedBuilder()
+      .setTitle('🕊️ Hayvan Salındı')
+      .setDescription([
+        `${petItem?.emoji || '🐾'} **${petName}** artık özgür!`,
+        '',
+        'Dilersen `.pet adopt` ile yeni bir hayvan evlat edinebilirsin.'
+      ].join('\n'))
+      .setColor('#ED4245')
+      .setTimestamp();
+
+    await interaction.update({ embeds: [embed], components: [] });
+    return true;
+  }
+
+  if (interaction.customId === 'pet_abandon_cancel') {
+    const embed = new EmbedBuilder()
+      .setTitle('❌ İptal Edildi')
+      .setDescription('Hayvanı salma işlemi iptal edildi. Hayvanın güvende! 🐾')
+      .setColor('#57F287');
+
+    await interaction.update({ embeds: [embed], components: [] });
+    return true;
+  }
+
+
   if (interaction.customId === 'adopt_pet_select') {
     const petSlug = interaction.values[0];
 

@@ -13,7 +13,7 @@ export default {
   aliases: ['evcilhayvan'],
   category: 'fun',
   description: 'Evcil hayvan sistemi',
-  usage: '.pet [adopt|feed|play|love|sleep|name|accessories|leaderboard]',
+  usage: '.pet [adopt|feed|play|love|sleep|name|accessories|abandon|leaderboard]',
   permissions: {
     enabled: false
   },
@@ -47,6 +47,10 @@ export default {
       case 'accessories':
       case 'aksesuar':
         return manageAccessories(message, args.slice(1));
+      case 'abandon':
+      case 'sal':
+      case 'bırak':
+        return abandonPet(message);
       case 'leaderboard':
       case 'lider':
       case 'top':
@@ -65,6 +69,7 @@ export default {
             '• `.pet sleep` - Hayvanı uyut',
             '• `.pet name <isim>` - İsim değiştir',
             '• `.pet accessories` - Aksesuar yönetimi',
+            '• `.pet abandon` - Hayvanı sal',
             '• `.pet leaderboard` - Lider tablosu'
           ].join('\n'),
           allowedMentions: { repliedUser: false }
@@ -512,6 +517,55 @@ async function sleepPet(message) {
 
   await message.reply({
     embeds: [embed],
+    allowedMentions: { repliedUser: false }
+  });
+}
+
+
+async function abandonPet(message) {
+  const userEco = await Economy.findOne({ userId: message.author.id });
+
+  if (!userEco || !userEco.pet || !userEco.pet.type) {
+    return message.reply({
+      content: '❌ Evcil hayvanın yok!',
+      allowedMentions: { repliedUser: false }
+    });
+  }
+
+  const petItem = await Shop.findOne({ slug: userEco.pet.slug });
+
+  const embed = new EmbedBuilder()
+    .setTitle('⚠️ Hayvanı Salmak Üzeresin')
+    .setDescription([
+      `${petItem?.emoji || '🐾'} **${userEco.pet.name}** isimli hayvanını salmak üzeresin.`,
+      '',
+      'Bu işlem **geri alınamaz:**',
+      `• Hayvan ve seviyesi (Seviye ${userEco.pet.level}) silinir`,
+      '• Aksesuarlar ve tüm ilerleme kaybolur',
+      '• Para iadesi yapılmaz',
+      '',
+      'Devam etmek istiyor musun?'
+    ].join('\n'))
+    .setColor('#ED4245')
+    .setFooter({ text: `${message.author.username} için`, iconURL: message.author.displayAvatarURL() })
+    .setTimestamp();
+
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('pet_abandon_confirm')
+      .setLabel('Evet, Sal')
+      .setEmoji('✅')
+      .setStyle(ButtonStyle.Danger),
+    new ButtonBuilder()
+      .setCustomId('pet_abandon_cancel')
+      .setLabel('Vazgeç')
+      .setEmoji('❌')
+      .setStyle(ButtonStyle.Secondary)
+  );
+
+  await message.reply({
+    embeds: [embed],
+    components: [row],
     allowedMentions: { repliedUser: false }
   });
 }
