@@ -18,6 +18,8 @@ const userStatsSchema = new mongoose.Schema({
 
   totalMessages: { type: Number, default: 0 },
   totalVoice: { type: Number, default: 0 },
+  totalCameraOpens: { type: Number, default: 0 },
+  totalStreams: { type: Number, default: 0 },
 
   messagePerDay: {
     type: Map,

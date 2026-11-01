@@ -1,5 +1,6 @@
 import { Level } from "#models";
 import { misc } from "#helpers";
+import { statsUtilsHandler } from "#handlers";
 
 export async function handleVoiceActivity(userId, guildId, durationMinutes, guild) {
   const user = await Level.findOneAndUpdate(
@@ -16,17 +17,9 @@ export async function handleVoiceActivity(userId, guildId, durationMinutes, guil
 }
 
 export async function handleStream(userId, guildId) {
-  await Level.findOneAndUpdate(
-    { userId, guildId },
-    { $inc: { totalStreams: 1 } },
-    { upsert: true }
-  );
+  await statsUtilsHandler.updateStreamStats(userId, guildId);
 }
 
 export async function handleCamera(userId, guildId) {
-  await Level.findOneAndUpdate(
-    { userId, guildId },
-    { $inc: { totalCameraOpens: 1 } },
-    { upsert: true }
-  );
+  await statsUtilsHandler.updateCameraStats(userId, guildId);
 }

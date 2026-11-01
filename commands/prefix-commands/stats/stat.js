@@ -206,24 +206,28 @@ async function generateMyStatsCanvas(client, member, guild) {
 	const boxHeight = 300;
 	const gapX = 30;
 
-	const allStats = await UserStats.find({ guildId: guild.id });
-	const allLevel = await Level.find({ guildId: guild.id });
+	const targetStats = await UserStats.findOne({ userId: member.id, guildId: guild.id });
+	const targetLevel = await Level.findOne({ userId: member.id, guildId: guild.id });
 
-	const messageRank = allStats
-		.sort((a, b) => b.totalMessages - a.totalMessages)
-		.findIndex(u => u.userId === member.id) + 1;
+	const messageRank = await UserStats.countDocuments({
+		guildId: guild.id,
+		totalMessages: { $gt: targetStats?.totalMessages || 0 }
+	}) + 1;
 
-	const voiceRank = allStats
-		.sort((a, b) => b.totalVoice - a.totalVoice)
-		.findIndex(u => u.userId === member.id) + 1;
+	const voiceRank = await UserStats.countDocuments({
+		guildId: guild.id,
+		totalVoice: { $gt: targetStats?.totalVoice || 0 }
+	}) + 1;
 
-	const cameraRank = allLevel
-		.sort((a, b) => b.totalCameraOpens - a.totalCameraOpens)
-		.findIndex(u => u.userId === member.id) + 1;
+	const cameraRank = await UserStats.countDocuments({
+		guildId: guild.id,
+		totalCameraOpens: { $gt: targetStats?.totalCameraOpens || 0 }
+	}) + 1;
 
-	const streamRank = allLevel
-		.sort((a, b) => b.totalStreams - a.totalStreams)
-		.findIndex(u => u.userId === member.id) + 1;
+	const streamRank = await UserStats.countDocuments({
+		guildId: guild.id,
+		totalStreams: { $gt: targetStats?.totalStreams || 0 }
+	}) + 1;
 
 	drawRoundedRect(ctx, 50, startY, boxWidth, boxHeight, 15, '#1a1a1a');
 	ctx.font = 'bold 20px sans-serif';
@@ -553,8 +557,9 @@ async function generateDetailedStatsCanvas(client, member, guild) {
 async function generateLevelInviteStatsCanvas(client, member, guild) {
 	const levelData = await Level.findOne({ userId: member.id, guildId: guild.id });
 	const inviteData = await InviteModel.findOne({ userId: member.id, guildId: guild.id });
+	const statsData = await UserStats.findOne({ userId: member.id, guildId: guild.id });
 	
-	if (!levelData && !inviteData) return null;
+	if (!levelData && !inviteData && !statsData) return null;
 
 	const width = 1400;
 	const height = 720;
@@ -612,8 +617,8 @@ async function generateLevelInviteStatsCanvas(client, member, guild) {
 		{ label: 'Mesaj Level', value: `Seviye ${levelData?.messageLevel || 0}` },
 		{ label: 'Ses XP', value: `${levelData?.voiceXP?.toLocaleString('tr-TR') || 0} XP` },
 		{ label: 'Ses Level', value: `Seviye ${levelData?.voiceLevel || 0}` },
-		{ label: 'Yayın Sayısı', value: `${levelData?.totalStreams?.toLocaleString('tr-TR') || 0} yayın` },
-		{ label: 'Kamera Açma', value: `${levelData?.totalCameraOpens?.toLocaleString('tr-TR') || 0} kamera` }
+		{ label: 'Yayın Sayısı', value: `${statsData?.totalStreams?.toLocaleString('tr-TR') || 0} yayın` },
+		{ label: 'Kamera Açma', value: `${statsData?.totalCameraOpens?.toLocaleString('tr-TR') || 0} kamera` }
 	];
 
 	levelStats.forEach((item, i) => {

@@ -7,8 +7,6 @@ const levelSchema = new mongoose.Schema({
   voiceXP: { type: Number, default: 0 },
   messageLevel: { type: Number, default: 0 },
   voiceLevel: { type: Number, default: 0 },
-  totalCameraOpens: { type: Number, default: 0 },
-  totalStreams: { type: Number, default: 0 },
 });
 
 export default mongoose.model("Level", levelSchema);

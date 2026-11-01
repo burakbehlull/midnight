@@ -575,6 +575,8 @@ class MidnightAPI {
                 voiceLevel: data.voiceLevel || 0,
                 totalMessages: userStats?.totalMessages || 0,
                 totalVoice: userStats?.totalVoice || 0,
+                totalCameraOpens: userStats?.totalCameraOpens || 0,
+                totalStreams: userStats?.totalStreams || 0,
                 messageChannels: topMessageChannels,
                 voiceChannels: topVoiceChannels,
                 roles: userRoles
@@ -684,9 +686,9 @@ class MidnightAPI {
             })
         );
 
-        // Top 10 Camera (Level modelinden)
+        // Top 10 Camera (UserStats modelinden)
         const topCamera = await Promise.all(
-          allLevels
+          allStats
             .filter(data => (data.totalCameraOpens || 0) > 0)
             .sort((a, b) => (b.totalCameraOpens || 0) - (a.totalCameraOpens || 0))
             .slice(0, 10)
@@ -702,9 +704,9 @@ class MidnightAPI {
             })
         );
 
-        // Top 10 Stream (Level modelinden)
+        // Top 10 Stream (UserStats modelinden)
         const topStream = await Promise.all(
-          allLevels
+          allStats
             .filter(data => (data.totalStreams || 0) > 0)
             .sort((a, b) => (b.totalStreams || 0) - (a.totalStreams || 0))
             .slice(0, 10)

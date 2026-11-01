@@ -66,6 +66,24 @@ async function updateVoiceStats(userId, guildId, channelId, durationMs, channelN
 }
 
 
+async function updateCameraStats(userId, guildId) {
+  await UserStats.findOneAndUpdate(
+    { userId, guildId },
+    { $inc: { totalCameraOpens: 1 } },
+    { upsert: true }
+  );
+}
+
+
+async function updateStreamStats(userId, guildId) {
+  await UserStats.findOneAndUpdate(
+    { userId, guildId },
+    { $inc: { totalStreams: 1 } },
+    { upsert: true }
+  );
+}
+
+
 async function getUserStats(userId, guildId) {
   const stats = await UserStats.findOne({ userId, guildId });
   if (!stats) return null;
@@ -84,7 +102,7 @@ async function getUserStats(userId, guildId) {
   const dailyVoice = Number(stats.voicePerDay.get(today)) || 0;
 
   return {
-    days: Object.keys(stats.messagePerDay || {}).length,
+    days: stats.messagePerDay ? stats.messagePerDay.size : 0,
     totalMessages: stats.totalMessages,
     weeklyMessages,
     monthlyMessages,
@@ -98,13 +116,15 @@ async function getUserStats(userId, guildId) {
     weeklyVoiceMs: weeklyVoice,
     monthlyVoiceMs: monthlyVoice,
     dailyVoiceMs: dailyVoice,
+    totalCameraOpens: stats.totalCameraOpens || 0,
+    totalStreams: stats.totalStreams || 0,
     topMessageChannels: stats.messageChannels
       .sort((a, b) => b.count - a.count)
-      .slice(0, 5)
+      .slice(0, 10)
       .map(c => ({ channelId: c.channelId, channelName: c.channelName, count: c.count })),
     topVoiceChannels: stats.voiceChannels
       .sort((a, b) => b.duration - a.duration)
-      .slice(0, 5)
+      .slice(0, 10)
       .map(c => ({ id: c.channelId, channelName: c.channelName, duration: formatDuration(c.duration) }))
   };
 }
@@ -128,7 +148,7 @@ async function getTopVoiceUsers(guildId) {
 }
 
 async function getTopCameraUsers(guildId) {
-  return await Level.find({
+  return await UserStats.find({
     guildId,
     totalCameraOpens: { $gt: 0 }
   })
@@ -137,7 +157,7 @@ async function getTopCameraUsers(guildId) {
 }
 
 async function getTopStreamUsers(guildId) {
-  return await Level.find({
+  return await UserStats.find({
     guildId,
     totalStreams: { $gt: 0 }
   })
@@ -149,6 +169,8 @@ export {
   formatDuration,
   updateMessageStats,
   updateVoiceStats,
+  updateCameraStats,
+  updateStreamStats,
   getUserStats,
   getTopMessageUsers,
   getTopVoiceUsers,
