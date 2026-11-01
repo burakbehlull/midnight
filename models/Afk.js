@@ -5,6 +5,7 @@ const afkSchema = new mongoose.Schema({
   guildId: { type: String, required: true },
   reason: { type: String, default: null },
   originalNickname: { type: String, default: null },
+  taggedBy: [{ type: String }],
   timestamp: { type: Date, default: Date.now }
 });
 

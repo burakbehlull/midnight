@@ -22,8 +22,8 @@ export default {
     const member = message.member;
     const originalNickname = member?.nickname ?? null;
 
-    const displayName = message.author.globalName ?? message.author.username;
-    const newNickname = `[AFK] ${displayName}`;
+    const baseName = member?.nickname ?? message.author.globalName ?? message.author.username;
+    const newNickname = `[AFK] ${baseName}`;
 
     try {
       if (member && member.manageable) {
@@ -48,6 +48,6 @@ export default {
     }
 
     const reasonText = reason ? ` Sebep: **${reason}**` : '';
-    manager.sender.reply(manager.sender.classic(`**[AFK] ${displayName}** artık AFK modunda.${reasonText}`));
+    manager.sender.reply(manager.sender.classic(`**[AFK] ${baseName}** artık AFK modunda.${reasonText}`));
   }
 };

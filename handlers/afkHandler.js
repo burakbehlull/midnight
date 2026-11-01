@@ -8,10 +8,26 @@ export default async function afkHandler(message) {
   if (mentioned) {
     const afkData = await Afk.findOne({ userId: mentioned.id, guildId });
     if (afkData) {
-      const displayName = mentioned.globalName ?? mentioned.username;
-      const reasonText = afkData.reason ? `: ${afkData.reason}` : '';
+      if (mentioned.id !== message.author.id) {
+        await Afk.updateOne(
+          { userId: mentioned.id, guildId },
+          { $addToSet: { taggedBy: message.author.id } }
+        ).catch(() => {});
+      }
+
+      const memberObj = message.mentions.members?.first();
+      const displayName =
+        afkData.originalNickname ??
+        memberObj?.user.globalName ??
+        mentioned.globalName ??
+        mentioned.username;
+
+      const reasonPart = afkData.reason
+        ? ` bu sebepten dolayı AFK: **${afkData.reason}**`
+        : ' şu anda AFK.';
+
       message.channel.send({
-        content: `**[AFK] ${displayName}** şu anda AFK${reasonText}`
+        content: `**[AFK] ${displayName}**${reasonPart}`
       });
     }
   }
@@ -30,6 +46,13 @@ export default async function afkHandler(message) {
     }
 
     const displayName = message.author.globalName ?? message.author.username;
-    message.reply(`Hoş geldin **${displayName}**, artık AFK değilsin.`);
+    let reply = `Hoş geldin **${displayName}**, artık AFK değilsin.`;
+
+    if (selfAfk.taggedBy && selfAfk.taggedBy.length > 0) {
+      const list = selfAfk.taggedBy.map((id) => `<@${id}>`).join(', ');
+      reply += `\nYokluğunda şunlar tarafından etiketlendin: ${list}`;
+    }
+
+    message.reply(reply);
   }
 }
