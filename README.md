@@ -18,11 +18,18 @@ Operating path:
 To enter bot settings, create an .env file, there is an example ` .env ` file named **.env-example** in the project.
 
 ```
-TOKEN = 
-BOT_ID = 
-PREFIX = 
 MONGO_URI = 
 GEMINI_API_KEY = 
+
+// MOD 
+TOKEN = 
+BOT_ID = 
+PREFIX = .
+
+// GUARD
+GUARD_TOKEN = 
+GUARD_BOT_ID = 
+GUARD_PREFIX = 
 ```
 
 Create ` config.json ` file and set permission settings:
