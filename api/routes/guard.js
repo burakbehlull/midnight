@@ -39,6 +39,38 @@ function normalizePunishmentType(type) {
   return type;
 }
 
+const TR_FOLD = { ı: 'i', ş: 's', ğ: 'g', ü: 'u', ö: 'o', ç: 'c' };
+
+function normalizeSearch(value) {
+  return String(value ?? '')
+    .replace(/İ/g, 'i')
+    .replace(/I/g, 'ı')
+    .toLowerCase()
+    .replace(/[ışğüöç]/g, (char) => TR_FOLD[char])
+    .replace(/#/g, '')
+    .trim();
+}
+
+function memberSearchText(member) {
+  return normalizeSearch(
+    [member.user?.username, member.nickname, member.user?.globalName, member.id]
+      .filter(Boolean)
+      .join(' ')
+  );
+}
+
+const memberFetchCooldown = new Map();
+const MEMBERS_FETCH_COOLDOWN = 60 * 1000;
+
+async function ensureMemberCache(guild) {
+  if (guild.members.cache.size >= guild.memberCount) return;
+  const last = memberFetchCooldown.get(guild.id) || 0;
+  const cooledDown = Date.now() - last >= MEMBERS_FETCH_COOLDOWN;
+  if (!cooledDown && guild.members.cache.size > 0) return;
+  memberFetchCooldown.set(guild.id, Date.now());
+  await guild.members.fetch().catch(() => {});
+}
+
 async function resolveUserNames(client, ids) {
   const map = {};
   if (!client) return map;
@@ -231,16 +263,24 @@ export default function createGuardRouter(guardClient) {
       if (!guild) return res.status(404).json({ error: 'Guild not found' });
 
       const limit = Math.min(parseInt(req.query.limit, 10) || 10, 25);
-      const search = String(req.query.search || '').trim();
+      const rawSearch = String(req.query.search || '').trim();
+      const search = normalizeSearch(rawSearch);
 
-      let members;
+      await ensureMemberCache(guild);
+
+      let members = [...guild.members.cache.values()];
       if (search) {
-        members = await guild.members.fetch({ query: search, limit });
-      } else {
-        members = [...guild.members.cache.values()].slice(0, limit);
-      }
+        members = members.filter((m) => memberSearchText(m).includes(search));
 
-      const list = [...members.values()].map((m) => ({
+        // Önbellekte sonuç yoksa Discord tarafında ara (önbellek boş/kısmi olabilir)
+        if (members.length === 0 && rawSearch) {
+          const fetched = await guild.members.fetch({ query: rawSearch, limit }).catch(() => null);
+          if (fetched) members = [...fetched.values()];
+        }
+      }
+      members = members.slice(0, limit);
+
+      const list = members.map((m) => ({
         userId: m.id,
         username: m.user.username,
         globalName: m.user.globalName || null,

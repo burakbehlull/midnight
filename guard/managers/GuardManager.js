@@ -1057,8 +1057,13 @@ class GuardManager {
 
     const inviteRegex = /(discord\.(gg|io|me|li)|discordapp\.com\/invite|dsc\.gg)\/[a-zA-Z0-9]+/gi;
     const linkRegex = /(https?:\/\/[^\s]+)/gi;
+    // GIF / medya barındıran siteler reklam sayılmaz (tenor, giphy, klipy, Discord CDN)
+    const mediaLinkRegex = /https?:\/\/(?:[^\s/]+\.)?(?:tenor\.com|giphy\.com|klipy\.com|discordapp\.com|discordapp\.net)\/[^\s]+/gi;
 
-    if (!inviteRegex.test(message.content) && !linkRegex.test(message.content)) return;
+    const hasInvite = inviteRegex.test(message.content);
+    const hasOtherLink = linkRegex.test(message.content.replace(mediaLinkRegex, ''));
+
+    if (!hasInvite && !hasOtherLink) return;
 
     const actionLimit = await ActionLimits.findOneAndUpdate(
       { guildId, userId: message.author.id },

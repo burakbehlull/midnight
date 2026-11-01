@@ -259,22 +259,39 @@ function ListRow({ label, sub, avatar, color, onRemove }) {
   );
 }
 
-function RoleListEditor({ title, icon, roles, items, onAdd, onRemove }) {
+function RoleListEditor({ title, icon, roles = [], items = [], onAdd, onRemove }) {
+  const [selected, setSelected] = useState('');
+
+  const handleAdd = () => {
+    if (!selected) return;
+    onAdd(selected);
+    setSelected('');
+  };
+
   return (
     <div className="rounded-lg bg-midnight-base border border-midnight-light p-4">
       <h4 className="font-semibold mb-3">{icon} {title}</h4>
-      <select
-        value=""
-        onChange={(e) => e.target.value && onAdd(e.target.value)}
-        className="w-full px-3 py-2 rounded-lg bg-midnight-base border border-midnight-light outline-none mb-2 text-sm"
-      >
-        <option value="">Rol ekle...</option>
-        {roles
-          .filter((r) => !items.includes(r.id))
-          .map((r) => (
-            <option key={r.id} value={r.id}>{r.name}</option>
-          ))}
-      </select>
+      <div className="flex gap-2 mb-2">
+        <select
+          value={selected}
+          onChange={(e) => setSelected(e.target.value)}
+          className="flex-1 px-3 py-2 rounded-lg bg-midnight-base border border-midnight-light outline-none text-sm"
+        >
+          <option value="">Rol seç...</option>
+          {roles
+            .filter((r) => !items.includes(r.id))
+            .map((r) => (
+              <option key={r.id} value={r.id}>{r.name}</option>
+            ))}
+        </select>
+        <button
+          onClick={handleAdd}
+          disabled={!selected}
+          className="px-4 py-2 rounded-lg bg-midnight-purple/20 border border-midnight-purple hover:bg-midnight-purple/30 transition-colors disabled:opacity-50 text-sm"
+        >
+          + Ekle
+        </button>
+      </div>
       <div className="space-y-1">
         {items.map((id) => {
           const role = roles.find((r) => r.id === id);
@@ -293,10 +310,11 @@ function RoleListEditor({ title, icon, roles, items, onAdd, onRemove }) {
   );
 }
 
-function MemberListEditor({ title, icon, guildId, items, onAdd, onRemove, botsOnly = false, nameCache = {} }) {
+function MemberListEditor({ title, icon, guildId, items = [], onAdd, onRemove, botsOnly = false, nameCache = {} }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
+  const [searched, setSearched] = useState(false);
 
   const search = async () => {
     if (!query.trim()) return;
@@ -304,6 +322,7 @@ function MemberListEditor({ title, icon, guildId, items, onAdd, onRemove, botsOn
       setSearching(true);
       const res = await api.getGuardMembers(guildId, { search: query, limit: 25 });
       setResults((res.data.members || []).filter((m) => (botsOnly ? m.bot : true)));
+      setSearched(true);
     } catch (error) {
       console.error(error);
       toast.error('Arama başarısız');
@@ -352,6 +371,9 @@ function MemberListEditor({ title, icon, guildId, items, onAdd, onRemove, botsOn
             </div>
           ))}
         </div>
+      )}
+      {searched && results.length === 0 && (
+        <p className="text-gray-500 text-center py-2 text-sm mb-2">Sonuç bulunamadı</p>
       )}
       <div className="space-y-1">
         {items.map((id) => (
