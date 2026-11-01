@@ -2,27 +2,75 @@ import { ChannelType, PermissionsBitField } from 'discord.js';
 import { Room } from '#models';
 import { Modal } from '#helpers';
 
-export async function handleVoiceRoomCreate(oldState, newState) {
-  const createRoomChannelId = newState?.guild?.channels.cache.find(
-    c => c.name.includes('Oluştur') && c.type === ChannelType.GuildVoice
-  )?.id;
+const EMPTY_ROOM_DELETE_MS = 10000;
+const emptyRoomTimers = new Map();
 
-  if (!createRoomChannelId) return;
+async function scheduleEmptyRoomCheck(channelId, guild) {
+  const room = await Room.findOne({ guildId: guild.id, id: channelId });
+  if (!room) return;
+
+  const channel = guild.channels.cache.get(channelId);
+  if (!channel) {
+    await Room.deleteOne({ guildId: guild.id, id: channelId });
+    return;
+  }
+  if (channel.members.size > 0) return;
+  if (emptyRoomTimers.has(channelId)) return;
+
+  const timer = setTimeout(async () => {
+    emptyRoomTimers.delete(channelId);
+    try {
+      const ch = guild.channels.cache.get(channelId);
+      if (ch && ch.members.size > 0) return;
+
+      await Room.deleteOne({ guildId: guild.id, id: channelId });
+      if (ch) await ch.delete('Boş özel oda otomatik silindi').catch(() => {});
+    } catch (error) {
+      console.error('Boş oda silme hatası:', error);
+    }
+  }, EMPTY_ROOM_DELETE_MS);
+
+  emptyRoomTimers.set(channelId, timer);
+}
+
+function cancelEmptyRoomCheck(channelId) {
+  const timer = emptyRoomTimers.get(channelId);
+  if (timer) {
+    clearTimeout(timer);
+    emptyRoomTimers.delete(channelId);
+  }
+}
+
+export async function handleVoiceRoomCreate(oldState, newState) {
+  const guild = newState?.guild ?? oldState?.guild;
+  const member = newState?.member ?? oldState?.member;
+  if (!guild || !member) return;
 
   try {
-    if (newState.channelId === createRoomChannelId) {
-      const existingRoom = await Room.findOne({
-        guildId: newState.guild.id,
-        ownerId: newState.member.id
-      });
-      if (existingRoom) return;
+    const newChannel = newState.channel;
+    const isCreateChannel =
+      newChannel &&
+      newChannel.type === ChannelType.GuildVoice &&
+      newChannel.name.includes('Oluştur');
 
-      const cloned = await newState.channel.clone({
-        name: newState.member.displayName,
-        parent: newState.channel.parent,
+    if (isCreateChannel) {
+      const room = await Room.findOne({ guildId: guild.id, ownerId: member.id });
+
+      if (room) {
+        const existingChannel = guild.channels.cache.get(room.id);
+        if (existingChannel) {
+          await member.voice.setChannel(existingChannel.id).catch(() => {});
+          return;
+        }
+        await Room.deleteOne({ _id: room._id });
+      }
+
+      const cloned = await newChannel.clone({
+        name: member.displayName,
+        parent: newChannel.parent,
         permissionOverwrites: [
           {
-            id: newState.member.id,
+            id: member.id,
             allow: [
               PermissionsBitField.Flags.Connect,
               PermissionsBitField.Flags.ManageChannels
@@ -33,24 +81,24 @@ export async function handleVoiceRoomCreate(oldState, newState) {
 
       await Room.create({
         id: cloned.id,
-        ownerId: newState.member.id,
-        guildId: newState.guild.id
+        ownerId: member.id,
+        guildId: guild.id
       });
 
-      await newState.member.voice.setChannel(cloned.id);
+      await member.voice.setChannel(cloned.id).catch(() => {});
+      return;
     }
 
-    if (newState.channel && newState.channelId !== createRoomChannelId) {
-      const isRoom = await Room.findOne({
-        guildId: newState.guild.id,
-        id: newState.channelId
-      });
+    // 2) Bir özel odaya girildi
+    if (newState?.channelId) {
+      const isRoom = await Room.findOne({ guildId: guild.id, id: newState.channelId });
       if (isRoom) {
-        const member = newState.member;
+        // Odaya biri katıldıysa silme sayacını iptal et
+        cancelEmptyRoomCheck(newState.channelId);
+
         if (member.id !== isRoom.ownerId) {
-          const channel = newState.channel;
-          const canConnect = channel
-            .permissionsFor(member)
+          const canConnect = newChannel
+            ?.permissionsFor(member)
             ?.has(PermissionsBitField.Flags.Connect);
 
           if (!canConnect) {
@@ -62,6 +110,9 @@ export async function handleVoiceRoomCreate(oldState, newState) {
       }
     }
 
+    if (oldState?.channelId && oldState.channelId !== newState?.channelId) {
+      await scheduleEmptyRoomCheck(oldState.channelId, guild);
+    }
   } catch (error) {
     console.error('VoiceRoomCreate handler error:', error);
   }

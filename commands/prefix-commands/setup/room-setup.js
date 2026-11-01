@@ -18,34 +18,54 @@ export default {
     const ctrl = await manager.authority.checkOwnerAndBotOwners();
     if (!ctrl) return message.reply({ content: '❌ Bu komutu kullanmak owner olmalısın.', ephemeral: true });
 
-    const category = await message.guild.channels.create({
-      name: 'Özel Odalar',
-      type: ChannelType.GuildCategory
-    });
+    const category =
+      message.guild.channels.cache.find(
+        (c) => c.type === ChannelType.GuildCategory && c.name === 'Özel Odalar'
+      ) ??
+      (await message.guild.channels.create({
+        name: 'Özel Odalar',
+        type: ChannelType.GuildCategory
+      }));
 
-    const textChannel = await message.guild.channels.create({
-      name: 'oda-ayarlari',
-      type: ChannelType.GuildText,
-      parent: category.id,
-      permissionOverwrites: [
-        {
-          id: message.guild.id,
-          allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages],
-        },
-      ]
-    });
+    let textChannel = message.guild.channels.cache.find(
+      (c) =>
+        c.type === ChannelType.GuildText &&
+        c.name === 'oda-ayarlari' &&
+        c.parentId === category.id
+    );
+    if (!textChannel) {
+      textChannel = await message.guild.channels.create({
+        name: 'oda-ayarlari',
+        type: ChannelType.GuildText,
+        parent: category.id,
+        permissionOverwrites: [
+          {
+            id: message.guild.id,
+            allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages],
+          },
+        ]
+      });
+    }
 
-    const voiceChannel = await message.guild.channels.create({
-      name: '➕ Oda Oluştur',
-      type: ChannelType.GuildVoice,
-      parent: category.id,
-      permissionOverwrites: [
-        {
-          id: message.guild.id,
-          allow: [PermissionFlagsBits.Connect],
-        },
-      ]
-    });
+    let voiceChannel = message.guild.channels.cache.find(
+      (c) =>
+        c.type === ChannelType.GuildVoice &&
+        c.parentId === category.id &&
+        c.name.includes('Oluştur')
+    );
+    if (!voiceChannel) {
+      voiceChannel = await message.guild.channels.create({
+        name: '➕ Oda Oluştur',
+        type: ChannelType.GuildVoice,
+        parent: category.id,
+        permissionOverwrites: [
+          {
+            id: message.guild.id,
+            allow: [PermissionFlagsBits.Connect],
+          },
+        ]
+      });
+    }
 
     const embed = new EmbedBuilder()
       .setTitle('Özel Oda Paneli')
