@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import CustomCommandsTab from '../components/CustomCommandsTab';
 import ActionsTab from '../components/ActionsTab';
+import GeneralSettingsTab from '../components/GeneralSettingsTab';
 import { api } from '../api/client';
 
 export default function GuildSettings() {
@@ -116,10 +117,7 @@ export default function GuildSettings() {
         {currentTab === 'actions' && <ActionsTab guildId={guildId} />}
         
         {currentTab === 'general' && (
-          <div className="text-center py-12">
-            <p className="text-gray-400 text-lg mb-2">Genel ayarlar</p>
-            <p className="text-gray-500 text-sm">Yakında eklenecek...</p>
-          </div>
+          <GeneralSettingsTab guildId={guildId} />
         )}
         
         {currentTab === 'moderation' && (

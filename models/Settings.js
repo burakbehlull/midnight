@@ -44,8 +44,10 @@ const settingsSchema = new mongoose.Schema({
   spotifyMatchChannelId: { type: String, default: null },
   
   wordBuildingChannelId: { type: String, default: null },
-  
-  
+
+  voiceChannelId: { type: String, default: null },
+
+
   safeUsers: { type: [String], default: [] },
   
   

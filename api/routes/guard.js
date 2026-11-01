@@ -10,6 +10,7 @@ import {
 } from '../../guard/models/index.js';
 
 import Punishment from '../../models/Punishment.js';
+import { joinGuildVoice, leaveGuildVoice } from '../../helpers/voiceHelper.js';
 
 const COMMAND_SETTING_FIELDS = [
   'roleMode', 'allowedRoles', 'blockedRoles',
@@ -19,6 +20,8 @@ const COMMAND_SETTING_FIELDS = [
 
 
 const HIDDEN_PERMISSION_COMMANDS = ['guard-panel'];
+
+const GUARD_VOICE_GROUP = 'guard';
 
 const SETTINGS_KEYS = [
   'safeguard',
@@ -30,6 +33,7 @@ const SETTINGS_KEYS = [
   'antiSpam',
   'antiAdvertisement',
   'logChannel',
+  'voiceChannelId',
   'permissionsLocked',
 ];
 
@@ -325,6 +329,18 @@ export default function createGuardRouter(guardClient) {
 
      
       guardClient?.permissionsManager?.clearCache?.(guildId);
+
+      if ('voiceChannelId' in update) {
+        try {
+          if (settings.voiceChannelId) {
+            joinGuildVoice(guardClient, guildId, settings.voiceChannelId, GUARD_VOICE_GROUP);
+          } else {
+            leaveGuildVoice(guildId, GUARD_VOICE_GROUP);
+          }
+        } catch (voiceError) {
+          console.error('Guard ses kanalı işlemi başarısız:', voiceError);
+        }
+      }
 
       res.json(settings);
     } catch (error) {

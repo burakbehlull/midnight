@@ -524,6 +524,24 @@ function GuardSettings({ guildId }) {
             </select>
           </label>
         </div>
+        <div className="mt-4">
+          <label className="block">
+            <span className="block text-xs text-gray-400 mb-1">
+              Ses kanalı ID (bot bu kanala girer)
+            </span>
+            <input
+              type="text"
+              value={settings.voiceChannelId || ''}
+              onChange={(e) => patch((s) => { s.voiceChannelId = e.target.value.trim() || null; return s; })}
+              placeholder="Örn: 123456789012345678"
+              className="w-full px-3 py-2 rounded-lg bg-midnight-base border border-midnight-light focus:border-midnight-purple outline-none"
+            />
+          </label>
+          <p className="text-xs text-gray-500 mt-2">
+            Kanal ID'sini almak için kanala sağ tıklayıp <b>Kanal ID'sini Kopyala</b> seçeneğini
+            kullanın. Boş bırakıp kaydederseniz guard botu ses kanalından ayrılır.
+          </p>
+        </div>
       </section>
 
       <section>

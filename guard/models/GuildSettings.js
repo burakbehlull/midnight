@@ -123,6 +123,8 @@ const guildSettingsSchema = new mongoose.Schema({
 
   logChannel: { type: String, default: null },
 
+  voiceChannelId: { type: String, default: null },
+
   permissionsLocked: { type: Boolean, default: false },
 
   createdAt: { type: Date, default: Date.now },

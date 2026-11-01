@@ -21,6 +21,7 @@ import Bank from '../models/Bank.js';
 import BankAccount from '../models/BankAccount.js';
 import BankLoan from '../models/BankLoan.js';
 import { getBankTotals, computeBankValue } from '../helpers/bankHelper.js';
+import { joinGuildVoice, leaveGuildVoice } from '../helpers/voiceHelper.js';
 import { errorHandler, notFoundHandler, requestLogger } from './middleware.js';
 import customCommandsRouter from './routes/customCommands.js';
 import createGuardRouter from './routes/guard.js';
@@ -1057,6 +1058,19 @@ class MidnightAPI {
         }
         
         await settings.save();
+
+        if ('voiceChannelId' in updates) {
+          try {
+            if (settings.voiceChannelId) {
+              joinGuildVoice(this.client, guildId, settings.voiceChannelId);
+            } else {
+              leaveGuildVoice(guildId);
+            }
+          } catch (voiceError) {
+            console.error('Ses kanalı işlemi başarısız:', voiceError);
+          }
+        }
+
         res.json({ success: true, settings });
       } catch (error) {
         console.error('Error updating settings:', error);
