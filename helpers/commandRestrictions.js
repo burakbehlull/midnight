@@ -40,7 +40,7 @@ export async function checkCommandRestrictions(ctx, commandName) {
 
     
     if (!settings.enabled) {
-      return { allowed: false, reason: '❌ Bu komut devre dışı bırakılmış!' };
+      return { allowed: false, reason: '', silent: true };
     }
 
     if (member && isExempt(member, settings)) {

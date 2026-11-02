@@ -129,6 +129,10 @@ export default {
 	
     const restrictionCheck = await checkCommandRestrictions(message, command.name);
     if (!restrictionCheck.allowed) {
+      
+      if (restrictionCheck.silent) {
+        return;
+      }
       return message.reply(restrictionCheck.reason);
     }
     

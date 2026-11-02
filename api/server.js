@@ -25,6 +25,7 @@ import { joinGuildVoice, leaveGuildVoice } from '../helpers/voiceHelper.js';
 import { errorHandler, notFoundHandler, requestLogger } from './middleware.js';
 import customCommandsRouter from './routes/customCommands.js';
 import createGuardRouter from './routes/guard.js';
+import commandSettingsRouter from './routes/commandSettings.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -240,6 +241,57 @@ class MidnightAPI {
 
     // Guard botu Routes (ayrı token/client, ortak DB)
     this.app.use('/api/guard', createGuardRouter(this.guardClient));
+
+    // Command Settings Routes
+    this.app.use('/api/command-settings', commandSettingsRouter);
+
+    // Get all available commands (for command management UI)
+    this.app.get('/api/commands', (req, res) => {
+      const prefixCommands = Array.from(this.client.prefixCommands.values())
+        .filter((cmd, index, self) => 
+          index === self.findIndex(c => c.name === cmd.name) // Remove duplicates (aliases)
+        )
+        .map(cmd => ({
+          name: cmd.name,
+          description: cmd.description || 'Açıklama yok',
+          category: cmd.category || 'other',
+          type: cmd.type || 'prefix',
+          aliases: cmd.aliases || []
+        }));
+
+      const slashCommands = Array.from(this.client.slashCommands.values())
+        .filter((cmd, index, self) => 
+          index === self.findIndex(c => c.name === cmd.name) // Remove duplicates
+        )
+        .map(cmd => ({
+          name: cmd.name,
+          description: cmd.data?.description || cmd.description || 'Açıklama yok',
+          category: cmd.category || 'other',
+          type: cmd.type || 'slash'
+        }));
+
+      // Combine and remove duplicates based on name
+      const allCommands = [...prefixCommands, ...slashCommands];
+      const uniqueCommands = allCommands.filter((cmd, index, self) =>
+        index === self.findIndex(c => c.name === cmd.name)
+      );
+
+      // Group by category
+      const grouped = uniqueCommands.reduce((acc, cmd) => {
+        if (!acc[cmd.category]) {
+          acc[cmd.category] = [];
+        }
+        acc[cmd.category].push(cmd);
+        return acc;
+      }, {});
+
+      res.json({
+        success: true,
+        total: uniqueCommands.length,
+        commands: uniqueCommands,
+        grouped
+      });
+    });
 
     this.app.get('/api/health', (req, res) => {
       res.json({ 

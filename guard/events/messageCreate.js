@@ -22,7 +22,10 @@ export default {
           if (!command.noPermissionCheck && client.permissionsManager) {
             const access = await checkCommandAccess(client, message.member, command.name, command.permissions);
             if (!access.allowed) {
-              await message.reply(access.reason || '❌ Bu komutu kullanmak için yetkiniz yok!').catch(() => {});
+              // Eğer silent flag varsa hiçbir tepki verme
+              if (!access.silent) {
+                await message.reply(access.reason || '❌ Bu komutu kullanmak için yetkiniz yok!').catch(() => {});
+              }
               return;
             }
           }

@@ -17,7 +17,7 @@ export async function checkCommandAccess(client, member, commandName, staticPerm
 
 
     if (doc && doc.enabled === false) {
-      return { allowed: false, reason: '❌ Bu komut devre dışı bırakılmış!' };
+      return { allowed: false, reason: '', silent: true };
     }
 
  

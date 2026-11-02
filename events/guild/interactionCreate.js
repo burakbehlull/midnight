@@ -44,6 +44,10 @@ export default {
 	
     const restrictionCheck = await checkCommandRestrictions(interaction, command.name);
     if (!restrictionCheck.allowed) {
+      if (restrictionCheck.silent) {
+        return;
+      }
+      
       if (!interaction.replied && !interaction.deferred) {
       return interaction.reply({ content: restrictionCheck.reason, flags: MessageFlags.Ephemeral }).catch(() => {});
       } else {
