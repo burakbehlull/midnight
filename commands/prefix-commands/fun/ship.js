@@ -4,7 +4,7 @@ import Manager from '#managers';
 
 export default {
     name: "ship",
-    usage: "ship [@kullanıcı / ID / Random]",
+    usage: "ship / ship @kullanıcı / ship @kullanıcı1 @kullanıcı2",
     aliases: ["ships"],
     description: 'Ship yapma komutu',
     category: "fun",
@@ -16,13 +16,44 @@ export default {
     execute: async (client, message, args) => {
         const manager = new Manager(client, { action: message });
         
-        let user = message.mentions.members.first() || 
-                   message.guild.members.cache.get(args[0]) || 
-                   message.guild.members.cache.random();
+        const mentions = message.mentions.members.filter(m => !m.user.bot);
         
-        if (!user) {
-            return manager.sender.reply(manager.sender.errorEmbed("Geçerli bir kullanıcı belirt!"))
-                .then(msg => setTimeout(() => msg.delete(), 5000));
+        let user1, user2;
+
+        if (mentions.size === 0) {
+            user1 = message.member;
+            
+            const availableMembers = message.guild.members.cache.filter(m => 
+                !m.user.bot && m.id !== message.author.id
+            );
+            
+            if (availableMembers.size === 0) {
+                return manager.sender.reply(manager.sender.errorEmbed("Sunucuda ship yapacak başka kimse yok!"))
+                    .then(msg => setTimeout(() => msg.delete(), 5000));
+            }
+            
+            user2 = availableMembers.random();
+            
+        } else if (mentions.size === 1) {
+            const mentionedUser = mentions.first();
+            
+            if (mentionedUser.id === message.author.id) {
+                return manager.sender.reply(manager.sender.errorEmbed("Kendini ship edemezsin!"))
+                    .then(msg => setTimeout(() => msg.delete(), 5000));
+            }
+            
+            user1 = message.member;
+            user2 = mentionedUser;
+            
+        } else if (mentions.size >= 2) {
+            const mentionsArray = Array.from(mentions.values());
+            user1 = mentionsArray[0];
+            user2 = mentionsArray[1];
+            
+            if (user1.id === user2.id) {
+                return manager.sender.reply(manager.sender.errorEmbed("Aynı kişiyi ship edemezsin!"))
+                    .then(msg => setTimeout(() => msg.delete(), 5000));
+            }
         }
 
         const lovePercentage = Math.floor(Math.random() * 101);
@@ -148,18 +179,18 @@ export default {
 
             await drawPolaroid(
                 ctx, 
-                message.author.displayAvatarURL({ extension: 'png', size: 256 }), 
+                user1.user.displayAvatarURL({ extension: 'png', size: 256 }), 
                 80, 70, 
-                message.author.username, 
+                user1.user.username, 
                 -4,
                 colors
             );
 
             await drawPolaroid(
                 ctx, 
-                user.user.displayAvatarURL({ extension: 'png', size: 256 }), 
+                user2.user.displayAvatarURL({ extension: 'png', size: 256 }), 
                 660, 70, 
-                user.user.username, 
+                user2.user.username, 
                 4,
                 colors
             );
@@ -175,7 +206,7 @@ export default {
             const attachment = new AttachmentBuilder(canvas.toBuffer(), { name: 'ship.png' });
 
             message.reply({
-                content: `**${message.author.username}** & **${user.user.username}** ${lovePercentage >= 50 ? '❤️' : '💔'}`,
+                content: `**${user1.user.username}** & **${user2.user.username}** ${lovePercentage >= 50 ? '❤️' : '💔'}`,
                 files: [attachment]
             });
 
