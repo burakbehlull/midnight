@@ -20,13 +20,21 @@ class ModLogger {
   }
 
   async sendLog({ guild, type, embed }) {
-    const channelId = await this.getLogChannelId(guild.id, type);
-    if (!channelId) return;
+    try {
+      if (!guild || !this.client.guilds.cache.has(guild.id)) return;
 
-    const channel = await this.client.channels.fetch(channelId).catch(() => null);
-    if (!channel) return;
+      const channelId = await this.getLogChannelId(guild.id, type);
+      if (!channelId) return;
 
-    channel.send({ embeds: [embed] }).catch(console.error);
+      const channel = await this.client.channels.fetch(channelId).catch(() => null);
+      if (!channel) return;
+
+      await channel.send({ embeds: [embed] }).catch(console.error);
+    } catch (error) {
+      
+      if (error.code === 10004 || error.code === 10003) return;
+      console.error('ModLogger sendLog error:', error);
+    }
   }
 
   async logEvent({ guild, type, title, description, color, fields = [], author, footer }) {
