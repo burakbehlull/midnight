@@ -3,7 +3,7 @@ Server Public bot built with Discord v14 version, integrated with slash and pref
 
 ` node version: 22.20.0 `
 
-### Usage:
+## Usage:
 
 Operating path:
 
@@ -339,4 +339,102 @@ sender.send(embed, channelId, components)
 sender.reply(content, userSees, components)
 sender.reply()
 
+```
+
+## 🛡️ Guard Bot System
+
+**Midnight Guard** is a powerful security bot that protects your Discord server from unauthorized actions. It runs separately alongside the main bot to provide comprehensive server protection.
+
+### Features:
+- **Role Protection**: Prevents unauthorized role creation, deletion, and modifications
+- **Channel Protection**: Guards against channel manipulation (create, delete, update)
+- **Ban/Kick Protection**: Monitors and prevents mass bans and kicks
+- **Bot Protection**: Controls which bots can be added to the server
+- **Vanity URL Protection**: Prevents vanity URL changes
+- **Anti-Spam**: Detects and punishes spammers
+- **Anti-Advertisement**: Blocks advertisement messages
+- **Backup System**: Automatic server backups with configurable intervals
+- **Whitelist System**: Safe users, roles, and bots bypass all restrictions
+- **Smart Punishment**: Configurable actions (jail, kick, ban) for violations
+- **Detailed Logging**: Comprehensive audit logs for all guard actions
+
+### Guard Commands:
+| command | comment | values | situation |
+| ------ | ------ | ------ | ------ |
+| **guard-panel** | Opens the comprehensive guard control panel | .. | stable |
+| **yt** | Lock/unlock server permissions (role management) | .. | stable |
+| **backup** | Server backup operations (create, load, list) | action, backup id | stable |
+| **guard-user-info** | Shows user's guard profile and violations | user | stable |
+
+### Guard Protection Types:
+- **Role Guard**: Create, Delete, Update protection
+- **Channel Guard**: Create, Delete, Update protection
+- **Ban Guard**: Prevents mass bans
+- **Kick Guard**: Prevents mass kicks
+- **Role Assign Guard**: Monitors role assignments to protected roles
+- **Bot Guard**: Controls bot additions
+- **Guild Update Guard**: Prevents server settings changes
+- **Vanity Guard**: Protects vanity URL
+- **Spam Guard**: Anti-spam protection
+- **Advertisement Guard**: Anti-advertisement protection
+
+### Setup Guard Bot:
+1. Add guard bot credentials to `.env`:
+```
+GUARD_TOKEN = your_guard_bot_token
+GUARD_BOT_ID = your_guard_bot_id
+GUARD_PREFIX = .
+```
+
+2. Start both bots:
+```bash
+npm run all
+```
+
+3. Configure guard settings:
+```bash
+.guard-panel
+```
+
+4. Add safe users/roles:
+- Open guard panel
+- Navigate to Security Settings
+- Add trusted users and roles
+- Configure whitelist bots
+
+### Guard Panel Features:
+- **Security Settings**: Manage safe users, roles, bots, and protected roles
+- **Guard Settings**: Toggle individual protection types
+- **Limit Settings**: Configure action limits (10-minute windows)
+- **Punishment Settings**: Customize penalties for violations
+- **Backup Settings**: Configure automatic backups
+- **Log Settings**: Set log channels
+- **Command Permissions**: Manage command access
+- **Anti-Spam Settings**: Configure spam thresholds
+
+### How It Works:
+1. Guard bot monitors all server actions through Discord events
+2. Checks if action is performed by safe/whitelisted user
+3. Verifies action against configured limits
+4. If violation detected:
+   - Reverses the action (if possible)
+   - Applies configured punishment
+   - Logs the incident
+   - Notifies administrators
+
+### Example Workflow:
+```
+User tries to delete a role
+↓
+Guard checks: Is user safe? → NO
+↓
+Guard checks: Is role protected? → YES
+↓
+Guard checks: Delete limit exceeded? → YES
+↓
+Actions:
+1. Restore the role from backup
+2. Remove permissions from violator
+3. Apply punishment (jail/kick/ban)
+4. Log to audit channel
 ```
