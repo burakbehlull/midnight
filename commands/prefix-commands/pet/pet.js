@@ -10,10 +10,10 @@ const LOVE_COOLDOWN = 12 * 60 * 60 * 1000;
 
 export default {
   name: 'pet',
-  aliases: ['evcilhayvan'],
+  aliases: ['hayvan'],
   category: 'fun',
   description: 'Evcil hayvan sistemi',
-  usage: '.pet [adopt|feed|play|love|sleep|name|accessories|abandon|leaderboard]',
+  usage: '.pet [adopt|feed|play|love|sleep|name|accessories|abandon|leaderboard] veya .hayvan [evlatedin|besle|oyna|sev|uyut|isim|aksesuar|sal|tablo]',
   permissions: {
     enabled: false
   },
@@ -27,6 +27,7 @@ export default {
 
     switch (subCommand) {
       case 'adopt':
+      case 'evlat':
       case 'evlatedin':
         return adoptPet(message);
       case 'feed':
@@ -46,14 +47,17 @@ export default {
         return renamePet(message, args.slice(1));
       case 'accessories':
       case 'aksesuar':
+      case 'aksesuarlar':
         return manageAccessories(message, args.slice(1));
       case 'abandon':
       case 'sal':
       case 'bırak':
+      case 'birak':
         return abandonPet(message);
       case 'leaderboard':
       case 'lider':
       case 'top':
+      case 'tablo':
         return showLeaderboard(message);
       default:
         return message.reply({
@@ -61,16 +65,16 @@ export default {
             '❌ Geçersiz komut!',
             '',
             '**Kullanılabilir komutlar:**',
-            '• `.pet` - Hayvan profilini göster',
-            '• `.pet adopt` - Hayvan evlat edin',
-            '• `.pet feed` - Hayvanı besle',
-            '• `.pet play` - Hayvanla oyna',
-            '• `.pet love` - Hayvanı sev',
-            '• `.pet sleep` - Hayvanı uyut',
-            '• `.pet name <isim>` - İsim değiştir',
-            '• `.pet accessories` - Aksesuar yönetimi',
-            '• `.pet abandon` - Hayvanı sal',
-            '• `.pet leaderboard` - Lider tablosu'
+            '• `.pet` / `.hayvan` - Hayvan profilini göster',
+            '• `.pet adopt` / `.hayvan evlat` - Hayvan evlat edin',
+            '• `.pet feed` / `.hayvan besle` - Hayvanı besle',
+            '• `.pet play` / `.hayvan oyna` - Hayvanla oyna',
+            '• `.pet love` / `.hayvan sev` - Hayvanı sev',
+            '• `.pet sleep` / `.hayvan uyut` - Hayvanı uyut',
+            '• `.pet name <isim>` / `.hayvan isim <isim>` - İsim değiştir',
+            '• `.pet accessories` / `.hayvan aksesuar` - Aksesuar yönetimi',
+            '• `.pet abandon` / `.hayvan sal` - Hayvanı sal',
+            '• `.pet leaderboard` / `.hayvan tablo` - Lider tablosu'
           ].join('\n'),
           allowedMentions: { repliedUser: false }
         });
@@ -619,7 +623,7 @@ async function renamePet(message, args) {
       `**Eski İsim:** ${oldName}`,
       `**Yeni İsim:** ${newName}`,
       '',
-      `💰 **Ücret:** -${RENAME_COST}`
+      `**Ücret:** -${RENAME_COST}`
     ].join('\n'))
     .setColor('#FFD700')
     .setFooter({ text: `Yeni Bakiye: ${userEco.money} 💰` })
@@ -644,30 +648,31 @@ async function manageAccessories(message, args) {
 
   const subCommand = args[0]?.toLowerCase();
 
-  if (subCommand === 'set') {
+  
+  if (subCommand === 'tak' || subCommand === 'set' || subCommand === 'equip') {
     const accessorySlug = args[1];
 
     if (!accessorySlug) {
       return message.reply({
-        content: '❌ Bir aksesuar slug\'ı belirtmelisin!\n\nKullanım: `.pet accessories set <slug>`',
+        content: '❌ Bir aksesuar ID\'si belirtmelisin!\n\n**Kullanım:** `.pet accessories tak <aksesuarID>` veya `.hayvan aksesuar tak <aksesuarID>`\n\n**Envanterindeki aksesuarları görmek için:** `.pet accessories` veya `.hayvan aksesuar`',
         allowedMentions: { repliedUser: false }
       });
     }
 
-   
+    
     const count = userEco.inventory.get(accessorySlug);
     if (!count || count <= 0) {
       return message.reply({
-        content: '❌ Bu aksesuar envanterinde yok!',
+        content: '❌ Bu aksesuar envanterinde yok!\n\n**Envanterini görmek için:** `.pet accessories` veya `.hayvan aksesuar`',
         allowedMentions: { repliedUser: false }
       });
     }
 
-  
+    
     const accessory = await Shop.findOne({ slug: accessorySlug, module: 'pet_accessory' });
     if (!accessory) {
       return message.reply({
-        content: '❌ Geçersiz aksesuar!',
+        content: '❌ Bu bir aksesuar değil! Sadece **pet_accessory** modülündeki ürünler takılabilir.\n\n**Aksesuarları görmek için:** `.shop` komutuyla markete bak veya `.pet accessories` komutuyla envanterindeki aksesuarları gör.',
         allowedMentions: { repliedUser: false }
       });
     }
@@ -675,7 +680,7 @@ async function manageAccessories(message, args) {
    
     if (userEco.pet.accessories.includes(accessorySlug)) {
       return message.reply({
-        content: `❌ **${accessory.name}** zaten takılı!`,
+        content: `❌ **${accessory.emoji} ${accessory.name}** zaten takılı!`,
         allowedMentions: { repliedUser: false }
       });
     }
@@ -696,17 +701,18 @@ async function manageAccessories(message, args) {
     });
   }
 
-  if (subCommand === 'remove') {
+
+  if (subCommand === 'çıkar' || subCommand === 'cikar' || subCommand === 'remove' || subCommand === 'unequip') {
     const accessorySlug = args[1];
 
     if (!accessorySlug) {
       return message.reply({
-        content: '❌ Bir aksesuar slug\'ı belirtmelisin!\n\nKullanım: `.pet accessories remove <slug>`',
+        content: '❌ Bir aksesuar ID\'si belirtmelisin!\n\n**Kullanım:** `.pet accessories çıkar <aksesuarID>` veya `.hayvan aksesuar çıkar <aksesuarID>`',
         allowedMentions: { repliedUser: false }
       });
     }
 
-   
+
     if (!userEco.pet.accessories.includes(accessorySlug)) {
       return message.reply({
         content: '❌ Bu aksesuar zaten takılı değil!',
@@ -714,16 +720,16 @@ async function manageAccessories(message, args) {
       });
     }
 
-   
+  
     const accessory = await Shop.findOne({ slug: accessorySlug, module: 'pet_accessory' });
 
-  
+
     userEco.pet.accessories = userEco.pet.accessories.filter(a => a !== accessorySlug);
     await userEco.save();
 
     const embed = new EmbedBuilder()
       .setTitle('Aksesuar Çıkarıldı!')
-      .setDescription(`**${accessory?.emoji || ''} ${accessory?.name || 'Aksesuar'}** **${userEco.pet.name}**'den çıkarıldı!`)
+      .setDescription(`**${accessory?.emoji || '🎀'} ${accessory?.name || 'Aksesuar'}** **${userEco.pet.name}**'den çıkarıldı!`)
       .setColor('#FF5722')
       .setTimestamp();
 
@@ -733,7 +739,7 @@ async function manageAccessories(message, args) {
     });
   }
 
-
+ 
   const accessories = await Shop.find({ module: 'pet_accessory' });
   const ownedAccessories = accessories.filter(acc => {
     const count = userEco.inventory.get(acc.slug);
@@ -741,11 +747,12 @@ async function manageAccessories(message, args) {
   });
 
   const equippedAccessories = await Shop.find({
-    slug: { $in: userEco.pet.accessories }
+    slug: { $in: userEco.pet.accessories },
+    module: 'pet_accessory'
   });
 
   const embed = new EmbedBuilder()
-    .setTitle(`${userEco.pet.name} - Aksesuarlar`)
+    .setTitle(`🎀 ${userEco.pet.name} - Aksesuarlar`)
     .setColor('#9C27B0');
 
   if (equippedAccessories.length > 0) {
@@ -758,10 +765,11 @@ async function manageAccessories(message, args) {
 
   if (ownedAccessories.length > 0) {
     embed.addFields({
-      name: 'Envanterindeki Aksesuarlar',
+      name: '📦 Envanterindeki Aksesuarlar',
       value: ownedAccessories.map(acc => {
         const isEquipped = userEco.pet.accessories.includes(acc.slug);
-        return `${acc.emoji} **${acc.name}** (\`${acc.slug}\`) ${isEquipped ? '✅' : ''}`;
+        const count = userEco.inventory.get(acc.slug);
+        return `${acc.emoji} **${acc.name}** (\`${acc.slug}\`) x${count} ${isEquipped ? '✅' : ''}`;
       }).join('\n'),
       inline: false
     });
@@ -770,7 +778,9 @@ async function manageAccessories(message, args) {
   if (ownedAccessories.length === 0 && equippedAccessories.length === 0) {
     embed.setDescription('❌ Hiç aksesuarın yok!\n\n`.shop` komutuyla marketten aksesuar satın alabilirsin.');
   } else {
-    embed.setFooter({ text: 'Kullanım: .pet accessories set <slug> | .pet accessories remove <slug>' });
+    embed.setFooter({ 
+      text: 'Kullanım: .pet accessories tak <ID> | .pet accessories çıkar <ID>' 
+    });
   }
 
   await message.reply({
