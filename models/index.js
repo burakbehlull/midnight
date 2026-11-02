@@ -11,7 +11,7 @@ import Settings from "./Settings.js"
 import GuildPermission from "./GuildPermission.js"
 import ModLogConfig from "./ModLogConfig.js"
 
-import Room from "./Room.js"
+import Room, { RoomSetup } from "./Room.js"
 
 import Staff from "./Staff.js"
 import Punishment from "./Punishment.js"
@@ -53,6 +53,7 @@ export {
 	
 	ModLogConfig,
 	Room,
+	RoomSetup,
 	
 	Punishment,
 	ForceBan,

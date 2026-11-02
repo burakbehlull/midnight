@@ -1,8 +1,8 @@
 import { ChannelType, PermissionsBitField } from 'discord.js';
-import { Room } from '#models';
+import { Room, RoomSetup } from '#models';
 import { Modal } from '#helpers';
 
-const EMPTY_ROOM_DELETE_MS = 10000;
+const EMPTY_ROOM_DELETE_MS = 5000;
 const emptyRoomTimers = new Map();
 
 async function scheduleEmptyRoomCheck(channelId, guild) {
@@ -48,12 +48,37 @@ export async function handleVoiceRoomCreate(oldState, newState) {
 
   try {
     const newChannel = newState.channel;
-    const isCreateChannel =
-      newChannel &&
-      newChannel.type === ChannelType.GuildVoice &&
-      newChannel.name.includes('Oluştur');
+    
+    if (newChannel) {
+      const roomSetup = await RoomSetup.findOne({ guildId: guild.id });
+      
+      if (!roomSetup || roomSetup.createChannelId !== newChannel.id) {
+        if (newState?.channelId) {
+          const isRoom = await Room.findOne({ guildId: guild.id, id: newState.channelId });
+          if (isRoom) {
+            cancelEmptyRoomCheck(newState.channelId);
 
-    if (isCreateChannel) {
+            if (member.id !== isRoom.ownerId) {
+              const canConnect = newChannel
+                ?.permissionsFor(member)
+                ?.has(PermissionsBitField.Flags.Connect);
+
+              if (!canConnect) {
+                await member.voice
+                  .disconnect('Özel odaya izinsiz giriş')
+                  .catch(() => {});
+              }
+            }
+          }
+        }
+
+        if (oldState?.channelId && oldState.channelId !== newState?.channelId) {
+          await scheduleEmptyRoomCheck(oldState.channelId, guild);
+        }
+        
+        return; 
+      }
+
       const room = await Room.findOne({ guildId: guild.id, ownerId: member.id });
 
       if (room) {
@@ -67,7 +92,7 @@ export async function handleVoiceRoomCreate(oldState, newState) {
 
       const cloned = await newChannel.clone({
         name: member.displayName,
-        parent: newChannel.parent,
+        parent: roomSetup.categoryId, 
         permissionOverwrites: [
           {
             id: member.id,
@@ -89,11 +114,9 @@ export async function handleVoiceRoomCreate(oldState, newState) {
       return;
     }
 
-    // 2) Bir özel odaya girildi
     if (newState?.channelId) {
       const isRoom = await Room.findOne({ guildId: guild.id, id: newState.channelId });
       if (isRoom) {
-        // Odaya biri katıldıysa silme sayacını iptal et
         cancelEmptyRoomCheck(newState.channelId);
 
         if (member.id !== isRoom.ownerId) {

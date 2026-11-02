@@ -1,5 +1,6 @@
 import Manager from '#managers';
 import { Button } from '#helpers';
+import { RoomSetup } from '#models';
 import { ChannelType, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 
 export default {
@@ -55,7 +56,7 @@ export default {
     );
     if (!voiceChannel) {
       voiceChannel = await message.guild.channels.create({
-        name: '➕ Oda Oluştur',
+        name: 'Oda Oluştur',
         type: ChannelType.GuildVoice,
         parent: category.id,
         permissionOverwrites: [
@@ -66,6 +67,18 @@ export default {
         ]
       });
     }
+
+    await RoomSetup.findOneAndUpdate(
+      { guildId: message.guild.id },
+      {
+        guildId: message.guild.id,
+        createChannelId: voiceChannel.id,
+        categoryId: category.id,
+        textChannelId: textChannel.id,
+        createdAt: new Date()
+      },
+      { upsert: true }
+    );
 
     const embed = new EmbedBuilder()
       .setTitle('Özel Oda Paneli')

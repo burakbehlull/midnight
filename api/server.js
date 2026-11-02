@@ -1354,7 +1354,6 @@ class MidnightAPI {
           return acc;
         }, {});
 
-        console.log(`✅ Commands list sent: ${allCommands.length} total commands`);
         res.json(grouped);
       } catch (error) {
         console.error('Error fetching commands list:', error);
@@ -1362,11 +1361,6 @@ class MidnightAPI {
       }
     });
 
-    // =====================
-    // END COMMAND SETTINGS ENDPOINTS
-    // =====================
-
-    // Get channel messages
     this.app.get('/api/guilds/:guildId/channels/:channelId/messages', async (req, res) => {
       try {
         const { guildId, channelId } = req.params;
