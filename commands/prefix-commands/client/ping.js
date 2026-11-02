@@ -13,11 +13,11 @@ export default {
     try {
       const manager = new Manager(client, { action: message });
 
-      const gatewayPing = client.ws.ping;
-
       const startTime = Date.now();
       const sentMessage = await manager.sender.reply('Ping hesaplanıyor...');
       const messageLatency = Date.now() - startTime;
+
+      const gatewayPing = client.ws.ping;
 
       const restStart = performance.now();
       await sentMessage.edit('.');
@@ -25,9 +25,8 @@ export default {
 
       const eventLoopStart = performance.now();
       await new Promise(resolve => setImmediate(resolve));
-      const eventLoopDelay = Math.round((performance.now() - eventLoopStart) * 1000) / 1000;
+      const eventLoopDelay = ((performance.now() - eventLoopStart)).toFixed(3);
 
-     
       let dbPing = 0;
       try {
         const dbStart = Date.now();
@@ -45,14 +44,18 @@ export default {
           iconURL: message.author.displayAvatarURL({ dynamic: true }) 
         },
         description: [
-          '**Client Heartbeat** **Message Latency** **Database Ping**',
-          `[ **${gatewayPing}ms** ] [ **${messageLatency}ms** ] [ **${dbPing}ms** ]`,
+          '**Client Heartbeat                Message Latency                Database Ping**',
           '',
-          `## ${gatewayPing} ms`,
+          `**[** \`${gatewayPing}ms\` **]               [** \`${messageLatency}ms\` **]               [** \`${dbPing}ms\` **]**`,
+          '',
+          `# ${gatewayPing} ms`,
           '',
           `Gateway (WebSocket heartbeat): **${gatewayPing} ms**`,
+          '',
           `Mesaj yanıtı (Discord zamanları): **${messageLatency} ms**`,
+          '',
           `İlk yanıt gönderimi (REST ve kuyruk): **${restLatency} ms**`,
+          '',
           `Event loop delay: **${eventLoopDelay} ms**`
         ].join('\n'),
         color: 0x2B2D31,
