@@ -529,7 +529,7 @@ async function runGame(client, message, manager, { userId, amount }) {
         color: resultType === 'lose' ? manager.sender.colors.liveRed : manager.sender.colors.green,
         title: resultType === 'lose' ? '💸 Kaybettin' : '💰 Çekildin',
         description:
-          `${resultType === 'lose' ? '❌ Yanlış tahmin.' : '✅ Doğru tahminlerle çekildin.'}\n` +
+          `${resultType === 'lose' ? '❌ Yanlış tahmin.' : 'Doğru tahminlerle çekildin.'}\n` +
           `Çarpan: **${st.mult.toFixed(2)}x**\n` +
           `Seri: **${st.streak}**\n` +
           `${net >= 0 ? 'Kazanç' : 'Kayıp'}: **${net >= 0 ? '+' : ''}${fmt(net)}** coin\n` +

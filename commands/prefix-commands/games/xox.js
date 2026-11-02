@@ -357,7 +357,7 @@ export default {
         title: '🤝 XOX - Berabere!',
         description:
           `Oyun berabere bitti.\n\n` +
-          `💸 Her iki oyuncuya da **${amount.toLocaleString('tr-TR')}** coin iade edildi.`,
+          `Her iki oyuncuya da **${amount.toLocaleString('tr-TR')}** coin iade edildi.`,
         footer: { text: `${challenger.username} vs ${targetUser.username}` }
       });
       try { await confirmMsg.edit({ embeds: [drawEmbed], components: [...finalGridRows] }); } catch (_) {}

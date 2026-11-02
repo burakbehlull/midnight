@@ -95,7 +95,7 @@ export default {
     let net = -amount;
     let resultText = '';
     let color = manager.sender.colors.liveRed;
-    let titleText = '💸 KAYBETTİN';
+    let titleText = 'KAYBETTİN';
     let xpGain = 0;
 
     if (winSide) {

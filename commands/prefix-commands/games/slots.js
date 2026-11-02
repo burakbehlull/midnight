@@ -254,7 +254,7 @@ export default {
     } else if (noMatch) {
       color = manager.sender.colors.liveRed;
       resultText =
-        `💸 **Hiç eşleşmedi!** Tüm bahsini kaybettin.\n` +
+        `**Hiç eşleşmedi!** Tüm bahsini kaybettin.\n` +
         `Kayıp: **${net.toLocaleString('tr-TR')}** coin`;
     }
 
@@ -270,9 +270,9 @@ export default {
     const hasWin = allSame || pairHit;
     const anyGain = hasWin && net >= 0;
 
-    let titleText = '💸 KAYBETTİN';
+    let titleText = 'KAYBETTİN';
     if (anyGain) {
-      titleText = allSame ? '🎉 KAZANDIN!' : '✨ KÜÇÜK KAZANÇ';
+      titleText = allSame ? '🎉 KAZANDIN!' : 'KÜÇÜK KAZANÇ';
     }
 
     let updatedMoney;

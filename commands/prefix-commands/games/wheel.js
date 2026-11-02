@@ -472,19 +472,19 @@ export default {
       let title;
       let color;
       if (mult === 0) {
-        title = '💸 KAYBETTİN';
+        title = 'KAYBETTİN';
         color = manager.sender.colors.liveRed;
       } else if (mult >= 10) {
-        title = '👑 JACKPOT!';
+        title = 'JACKPOT!';
         color = manager.sender.colors.gold;
       } else if (mult >= 5) {
-        title = '🌟 BÜYÜK KAZANÇ!';
+        title = 'BÜYÜK KAZANÇ!';
         color = manager.sender.colors.purple;
       } else if (net >= 0) {
         title = '🎉 KAZANDIN!';
         color = manager.sender.colors.green;
       } else {
-        title = '😐 KÜÇÜK KAYIP';
+        title = 'KÜÇÜK KAYIP';
         color = manager.sender.colors.orange;
       }
 

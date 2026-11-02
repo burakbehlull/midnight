@@ -289,8 +289,8 @@ async function runSinglePlayer(client, message, manager, { challenger, betAmount
       embeds: [{
         title: '🎣 Oltayı Suya Bırakıyor...',
         description:
-          `🎮 Oyuncu: <@${challenger.id}>\n` +
-          `💰 Bahis: **${fmtMoney(betAmount)}** coin\n\n` +
+          `Oyuncu: <@${challenger.id}>\n` +
+          `Bahis: **${fmtMoney(betAmount)}** coin\n\n` +
           '`[ ❓ ] [ ❓ ] [ ❓ ]`',
         color: 0x1e3a8a,
       }]
@@ -375,13 +375,13 @@ async function runSinglePlayer(client, message, manager, { challenger, betAmount
     if (tier === 'tier1') {
       title = '🗑️ Balık Yok! Çöp Çıkardın!';
       resultDescription =
-        `😱 **HAYIR!** ${fish.emoji} **${fish.name}** çıkardın. Ne yazık ki çöp...\n\n` +
-        `🎯 Yakalanan: ${fish.emoji} ${fish.name}\n` +
-        `📦 Tier: ${TIER_NAMES[tier]}\n` +
-        `⚖️ Ağırlık: **${fmtWeight(weightKg)}** kg\n\n` +
-        `💰 Bahis: **${fmtMoney(betAmount)}** coin\n` +
-        `✨ Çarpan: **x${mult.toFixed(2)}**\n` +
-        `💸 NET: **${net.toLocaleString('tr-TR')}** coin`;
+        `**HAYIR!** ${fish.emoji} **${fish.name}** çıkardın. Ne yazık ki çöp...\n\n` +
+        `Yakalanan: ${fish.emoji} ${fish.name}\n` +
+        `Tier: ${TIER_NAMES[tier]}\n` +
+        `Ağırlık: **${fmtWeight(weightKg)}** kg\n\n` +
+        `Bahis: **${fmtMoney(betAmount)}** coin\n` +
+        `Çarpan: **x${mult.toFixed(2)}**\n` +
+        `NET: **${net.toLocaleString('tr-TR')}** coin`;
     } else {
       title = tier === 'tier5'
         ? '👑 JACKPOT!!! ALTIN BALIK!!!'
@@ -391,14 +391,14 @@ async function runSinglePlayer(client, message, manager, { challenger, betAmount
             ? '🎉 NADİR BALIK YAKALANDI!'
             : '🎣 Güzel! Bir Balık Yakaladın!';
       resultDescription =
-        `🎯 Yakalanan: **${fish.emoji} ${fish.name}**\n` +
-        `📦 Tier: **${TIER_NAMES[tier]}**\n` +
-        `⚖️ Ağırlık: **${fmtWeight(weightKg)}** kg\n\n` +
-        `💰 Bahis: **${fmtMoney(betAmount)}** coin\n` +
-        `✨ Çarpan: **x${mult.toFixed(2)}** (Tier × Ağırlık bonusu)\n` +
-        `💸 Toplam Geri Ödeme: **${fmtMoney(winnings)}** coin\n` +
-        `💸 NET: **${plusSign}${fmtMoney(net)}** coin\n` +
-        `✨ XP: **+${xpGain}**`;
+        `Yakalanan: **${fish.emoji} ${fish.name}**\n` +
+        `Tier: **${TIER_NAMES[tier]}**\n` +
+        `Ağırlık: **${fmtWeight(weightKg)}** kg\n\n` +
+        `Bahis: **${fmtMoney(betAmount)}** coin\n` +
+        `Çarpan: **x${mult.toFixed(2)}** (Tier × Ağırlık bonusu)\n` +
+        `Toplam Geri Ödeme: **${fmtMoney(winnings)}** coin\n` +
+        `NET: **${plusSign}${fmtMoney(net)}** coin\n` +
+        `XP: **+${xpGain}**`;
     }
 
     if (startMsg && startMsg.editable) {
@@ -536,9 +536,9 @@ async function runTwoPlayer(client, message, manager, { challenger, target, betA
         embeds: [{
           title: '🎣 2 KİŞİLİK BALIK YARIŞI BAŞLIYOR!',
           description:
-            `🟦 <@${challenger.id}>  vs  🟥 <@${target.id}>\n\n` +
-            `💰 Havuz: **${fmtMoney(pool)}** coin\n` +
-            `⏱️ Oltayı hazırlamak...`,
+            `<@${challenger.id}>  vs  🟥 <@${target.id}>\n\n` +
+            `Havuz: **${fmtMoney(pool)}** coin\n` +
+            `⏱Oltayı hazırlamak...`,
           color: 0x1e3a8a,
         }],
         components: [],
@@ -582,7 +582,7 @@ async function runTwoPlayer(client, message, manager, { challenger, target, betA
           description:
             fmtRow('🟦', p1Fish, p1Weight, p1Score, true) + '\n' +
             fmtRow('🟥', p2Fish, p2Weight, p2Score, false) +
-            `\n\n💰 Havuz: **${fmtMoney(pool)}** coin`,
+            `\n\n Havuz: **${fmtMoney(pool)}** coin`,
           color: 0x3b82f6,
         }],
       }).catch(() => {});
@@ -596,7 +596,7 @@ async function runTwoPlayer(client, message, manager, { challenger, target, betA
           description:
             fmtRow('🟦', p1Fish, p1Weight, p1Score, true) + '\n' +
             fmtRow('🟥', p2Fish, p2Weight, p2Score, true) +
-            `\n\n💰 Havuz: **${fmtMoney(pool)}** coin`,
+            `\n\n Havuz: **${fmtMoney(pool)}** coin`,
           color: 0xfbbf24,
         }],
       }).catch(() => {});
@@ -633,7 +633,7 @@ async function runTwoPlayer(client, message, manager, { challenger, target, betA
     let color;
     let desc;
     if (tie) {
-      title = '🤝 BERABERLİK!';
+      title = 'BERABERLİK!';
       color = 0xeab308;
       desc =
         'İki oyuncu da neredeyse aynı puan aldı! İki tarafa da kendi bahisleri iade edildi.\n\n' +

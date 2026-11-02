@@ -501,8 +501,8 @@ async function runSinglePlayer(client, message, manager, { userId, amount, mode 
       text =
         `${rollLine}\n` +
         `${modeEmoji(mode)} Tahmin: **${modeLabel(mode)}**\n\n` +
-        '😈 Toplam tam **7** geldi! 7 üstü de altı da kaybeder.\n' +
-        `💸 Kayıp: **-${fmt(amount)}** coin\n` +
+        'Toplam tam **7** geldi! 7 üstü de altı da kaybeder.\n' +
+        `Kayıp: **-${fmt(amount)}** coin\n` +
         balanceLine;
     } else if (won) {
       title = '🎉 KAZANDIN!';
@@ -516,7 +516,7 @@ async function runSinglePlayer(client, message, manager, { userId, amount, mode 
         `NET: **+${fmt(net)}** coin • ✨ XP: +${xpGain}\n` +
         balanceLine;
     } else {
-      title = '💸 KAYBETTİN';
+      title = 'KAYBETTİN';
       color = manager.sender.colors.liveRed;
       text =
         `${rollLine}\n` +

@@ -896,10 +896,10 @@ export default {
         color: manager.sender.colors.gold,
         title: '🏆 BİNGO — KAZANAN BELLİ OLDU!',
         description:
-          `💰 **Bahis:** ${fmt(amount)} coin  •  🏆 **Havuz:** ${fmt(pot)} coin\n` +
-          `🎯 **Kazanan çekiliş:** ${winIndex}. top  •  🔢 **Son sayı:** ${lastBall}\n` +
-          `👑 **Kazanan:** ${[...winnerIds].map((id) => `<@${id}>`).join(', ')}  →  **+${fmt(share)}** coin${winners.length > 1 ? ` _(havuz ${winners.length} kişiye bölündü)_` : ''}\n\n` +
-          `✅ işaretli sayılar çekildi • 🟡 kazanan sıra\n\n` +
+          `**Bahis:** ${fmt(amount)} coin  •  **Havuz:** ${fmt(pot)} coin\n` +
+          `**Kazanan çekiliş:** ${winIndex}. top  •  🔢 **Son sayı:** ${lastBall}\n` +
+          `**Kazanan:** ${[...winnerIds].map((id) => `<@${id}>`).join(', ')}  →  **+${fmt(share)}** coin${winners.length > 1 ? ` _(havuz ${winners.length} kişiye bölündü)_` : ''}\n\n` +
+          `işaretli sayılar çekildi • 🟡 kazanan sıra\n\n` +
           cardBlock,
         image: finalPng ? 'attachment://bingo_result.png' : undefined,
         footer: { text: 'Bingo • Çekilişli Tombala' },

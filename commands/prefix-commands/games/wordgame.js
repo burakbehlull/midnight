@@ -548,8 +548,8 @@ export default {
           title: '⚠️ API Erişim Hatası - Beraberlik',
           description: 
             `Kelime doğrulama API'sine erişilemediği için oyun berabere bitti.\n\n` +
-            `💸 Her iki oyuncuya da **${amount.toLocaleString('tr-TR')}** coin iade edildi.\n\n` +
-            `📊 **İstatistikler:**\n` +
+            `Her iki oyuncuya da **${amount.toLocaleString('tr-TR')}** coin iade edildi.\n\n` +
+            `**İstatistikler:**\n` +
             `• Toplam Tur: ${turnCount}\n` +
             `• Kullanılan Kelime: ${usedWords.size}\n` +
             `• Son Kelime: ${lastWord || 'Yok'}\n\n` +
