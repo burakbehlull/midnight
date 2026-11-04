@@ -135,7 +135,7 @@ export default {
 
       const allLimitLines = [...limitLines, ...warningLines];
 
-      const globalLine = `**Genel Limit (10dk):** ${guardHelpers.formatLimitStatus(globalStatus.current, globalStatus.max)} ${globalStatus.exceeded ? '⛔ **AŞILDI**' : '✅'}`;
+      const globalLine = `**Genel Limit (10dk):** ${guardHelpers.formatLimitStatus(globalStatus.current, globalStatus.max)} ${globalStatus.exceeded ? '⛔ **AŞILDI**' : ' '}`;
 
       const limitValue = exemption.isExempt
         ? `♾️ **Whitelist: limit uygulanmaz** (sayaçlar bilgi amaçlı)\n${globalLine}\n${allLimitLines.join('\n')}`
