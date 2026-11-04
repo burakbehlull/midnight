@@ -552,6 +552,73 @@ export default function createGuardRouter(guardClient) {
     }
   });
 
+  router.post('/guilds/:guildId/backup/toggle', async (req, res) => {
+    try {
+      const { guildId } = req.params;
+      
+      const settings = await GuildSettings.findOneAndUpdate(
+        { guildId },
+        { $setOnInsert: { guildId } },
+        { upsert: true, new: false, setDefaultsOnInsert: true }
+      );
+
+      const currentState = settings?.backup?.enabled ?? false;
+      const newState = !currentState;
+
+      const updatedSettings = await GuildSettings.findOneAndUpdate(
+        { guildId },
+        { 
+          $set: { 
+            'backup.enabled': newState,
+            updatedAt: new Date()
+          } 
+        },
+        { new: true }
+      );
+
+      res.json({
+        success: true,
+        enabled: newState,
+        message: `Backup sistemi ${newState ? 'açıldı' : 'kapatıldı'}`,
+        settings: updatedSettings
+      });
+    } catch (error) {
+      console.error('Backup toggle error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  router.put('/guilds/:guildId/backup/interval', async (req, res) => {
+    try {
+      const { guildId } = req.params;
+      const { interval } = req.body;
+
+      if (!interval || typeof interval !== 'number' || interval < 0) {
+        return res.status(400).json({ error: 'Geçersiz interval değeri' });
+      }
+
+      const settings = await GuildSettings.findOneAndUpdate(
+        { guildId },
+        { 
+          $set: { 
+            'backup.interval': interval,
+            updatedAt: new Date()
+          } 
+        },
+        { new: true, upsert: true, setDefaultsOnInsert: true }
+      );
+
+      res.json({
+        success: true,
+        interval: settings.backup.interval,
+        message: 'Backup interval güncellendi',
+        settings
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   
   router.get('/guilds/:guildId/command-permissions', async (req, res) => {
     try {

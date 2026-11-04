@@ -17,7 +17,7 @@ const guildSettingsSchema = new mongoose.Schema({
   },
 
   backup: {
-    enabled: { type: Boolean, default: true },
+    enabled: { type: Boolean, default: false },
     interval: { type: Number, default: 6 * 60 * 60 * 1000 },
     lastBackup: { type: Date, default: null }
   },
