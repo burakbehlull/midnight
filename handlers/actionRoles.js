@@ -112,7 +112,7 @@ export async function actionButtonHandler(interaction) {
     if (member.roles.cache.has(role.id)) {
       try {
         await member.roles.remove(role.id).catch(() => {});
-        await safeReply(interaction, { content: `✅ Rolünüz kaldırıldı: <@&${role.id}>` });
+        await safeReply(interaction, { content: `Rolünüz kaldırıldı: <@&${role.id}>` });
       } catch {
         await safeReply(interaction, { content: "❌ Rol kaldırılamadı." });
       }

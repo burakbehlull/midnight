@@ -1,5 +1,5 @@
 import { EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { GuardLogs } from '#models';
+import { GuardLogs, ActionLimits } from '#models';
 import { guardHelpers } from '#helpers';
 
 const ACTION_NAMES = {
@@ -57,7 +57,7 @@ export default {
       const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
       const executorQuery = { guildId: guild.id, 'executor.id': targetId };
 
-      const [totalLogs, recentLogs, punishedLogs, lastLog, byType] = await Promise.all([
+      const [totalLogs, recentLogs, punishedLogs, lastLog, byType, actionLimitRecord] = await Promise.all([
         GuardLogs.countDocuments(executorQuery),
         GuardLogs.countDocuments({ ...executorQuery, timestamp: { $gte: last24h } }),
         GuardLogs.countDocuments({ ...executorQuery, 'punishments.0': { $exists: true } }),
@@ -65,7 +65,8 @@ export default {
         GuardLogs.aggregate([
           { $match: executorQuery },
           { $group: { _id: '$eventType', count: { $sum: 1 } } }
-        ])
+        ]),
+        ActionLimits.findOne({ guildId: guild.id, userId: targetId }).lean()
       ]);
 
       const profileLines = [
@@ -82,7 +83,7 @@ export default {
       if (user.bot) profileLines.push('**Tip:** 🤖 Bot');
 
       const whitelistLines = [
-        `${exemption.isExempt ? '✅ **MUAF** (guard işlem yapmaz)' : '❌ **Muaf değil** (guard işlem yapar)'}`,
+        `${exemption.isExempt ? '**MUAF** (guard işlem yapmaz)' : '❌ **Muaf değil** (guard işlem yapar)'}`,
         `Sunucu Sahibi: ${exemption.isServerOwner ? '✅' : '❌'}`,
         `Bot Sahibi: ${exemption.isBotOwner ? '✅' : '❌'}`,
         `Güvenli Kullanıcı: ${exemption.inSafeUsers ? '✅' : '❌'}`
@@ -90,12 +91,12 @@ export default {
       if (exemption.safeRoles.length > 0) {
         const roles = exemption.safeRoles.slice(0, 5).map(r => `<@&${r.id}>`).join(', ');
         const extra = exemption.safeRoles.length > 5 ? ` +${exemption.safeRoles.length - 5}` : '';
-        whitelistLines.push(`Güvenli Rol: ✅ ${roles}${extra}`);
+        whitelistLines.push(`Güvenli Rol: ${roles}${extra}`);
       } else {
         whitelistLines.push('Güvenli Rol: ❌');
       }
       if (member && settings.safeguard.whitelistBots.includes(targetId)) {
-        whitelistLines.push('Whitelist Bot: ✅');
+        whitelistLines.push('Whitelist Bot: ');
       }
 
       const typeLines = byType
@@ -118,15 +119,27 @@ export default {
         if (s.max === 0) {
           return `${name}: ⛔ **0 izinli (limit yok)** — son 10dk: ${s.current}`;
         }
-        const status = s.exceeded ? '⛔ **LİMİT AŞILDI**' : '✅';
+        const status = s.exceeded ? '⛔ **LİMİT AŞILDI**' : ' ';
         return `${name}: ${guardHelpers.formatLimitStatus(s.current, s.max)} ${status}`;
       });
+
+      const warningLines = [
+        { name: 'Spam', current: actionLimitRecord?.warnings?.spam ?? 0, max: settings.antiSpam?.maxWarnings ?? 0 },
+        { name: 'Reklam', current: actionLimitRecord?.warnings?.advertisement ?? 0, max: settings.antiAdvertisement?.maxWarnings ?? 0 }
+      ].map((s) => {
+        if (!s.max || s.max <= 0) {
+          return `${s.name}: ⛔ **0 izinli (limit yok)** — uyarı: ${s.current}`;
+        }
+        return `${s.name}: ${guardHelpers.formatLimitStatus(s.current, s.max)}`;
+      });
+
+      const allLimitLines = [...limitLines, ...warningLines];
 
       const globalLine = `**Genel Limit (10dk):** ${guardHelpers.formatLimitStatus(globalStatus.current, globalStatus.max)} ${globalStatus.exceeded ? '⛔ **AŞILDI**' : '✅'}`;
 
       const limitValue = exemption.isExempt
-        ? `♾️ **Whitelist: limit uygulanmaz** (sayaçlar bilgi amaçlı)\n${globalLine}\n${limitLines.join('\n')}`
-        : `${globalLine}\n${limitLines.join('\n') || 'Limit tanımlı değil'}`;
+        ? `♾️ **Whitelist: limit uygulanmaz** (sayaçlar bilgi amaçlı)\n${globalLine}\n${allLimitLines.join('\n')}`
+        : `${globalLine}\n${allLimitLines.join('\n') || 'Limit tanımlı değil'}`;
 
       const embed = new EmbedBuilder()
         .setColor(exemption.isExempt ? '#00ff00' : '#ff9900')

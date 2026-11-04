@@ -53,7 +53,7 @@ export default {
         if (backup) {
           const embed = new EmbedBuilder()
             .setColor('#00ff00')
-            .setTitle('✅ Backup Başarıyla Alındı!')
+            .setTitle('Backup Başarıyla Alındı!')
             .setDescription('Sunucunun tam yedeği başarıyla oluşturuldu.')
             .addFields(
               {
@@ -123,7 +123,7 @@ export default {
         if (success) {
           const embed = new EmbedBuilder()
             .setColor('#00ff00')
-            .setTitle('✅ Backup Süresi Ayarlandı!')
+            .setTitle('Backup Süresi Ayarlandı!')
             .setDescription(`Otomatik backup süresi ${hours} saat olarak güncellendi.`)
             .addFields({
               name: 'ℹ️ Bilgi',

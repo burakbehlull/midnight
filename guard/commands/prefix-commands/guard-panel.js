@@ -286,7 +286,7 @@ export default {
       client.permissionsManager.updateCache(guild.id, settings);
       
       await interaction.reply({ 
-        content: `✅ Tüm guardlar ${!allEnabled ? 'açıldı' : 'kapatıldı'}!`, 
+        content: `Tüm guardlar ${!allEnabled ? 'açıldı' : 'kapatıldı'}!`, 
         ephemeral: true 
       });
     }
@@ -321,7 +321,7 @@ export default {
       client.permissionsManager.updateCache(guild.id, settings);
       
       await interaction.reply({ 
-        content: `✅ **${guardType}** için cezalar ayarlandı:\n${selectedPunishments.map(p => `\`${p}\``).join(', ')}`, 
+        content: `**${guardType}** için cezalar ayarlandı:\n${selectedPunishments.map(p => `\`${p}\``).join(', ')}`, 
         ephemeral: true 
       });
     }
@@ -993,7 +993,7 @@ export default {
     client.permissionsManager.updateCache(guild.id, settings);
 
     await interaction.reply({
-      content: `✅ Otomatik backup ${settings.backup.enabled ? 'açıldı' : 'kapatıldı'}!`,
+      content: `Otomatik backup ${settings.backup.enabled ? 'açıldı' : 'kapatıldı'}!`,
       ephemeral: true
     });
   },
@@ -1032,7 +1032,7 @@ export default {
     client.permissionsManager.updateCache(guild.id, settings);
 
     await interaction.reply({
-      content: `✅ Backup süresi **${hours} saat** olarak ayarlandı!`,
+      content: `Backup süresi **${hours} saat** olarak ayarlandı!`,
       ephemeral: true
     });
   },
@@ -1219,7 +1219,7 @@ export default {
       await settings.save();
       client.permissionsManager.updateCache(guild.id, settings);
       return interaction.reply({ 
-        content: `✅ ${label} uyarı eşiği **${value}** olarak ayarlandı!`, 
+        content: `${label} uyarı eşiği **${value}** olarak ayarlandı!`, 
         ephemeral: true 
       });
     }
