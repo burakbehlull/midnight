@@ -28,6 +28,7 @@ const SETTINGS_KEYS = [
   'backup',
   'guards',
   'limits',
+  'limitPunishment',
   'protectedRoles',
   'punishments',
   'antiSpam',

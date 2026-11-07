@@ -243,22 +243,17 @@ class GuardManager {
   
   async getPunishments(guildId, eventType, limitResult = null) {
     const settings = await this.perms.getGuildSettings(guildId);
+
+    // Limit aşımı: limit için tanımlı ceza uygulanır (varsayılan: yetki çekme)
+    if (limitResult?.exceeded) {
+      const configured = settings.limitPunishment;
+      return Array.isArray(configured) ? [...configured] : ['removePerms'];
+    }
+
     const config = settings.punishments[eventType];
     if (!config) return [];
 
-    let actions = config.actions.length > 0 ? [...config.actions] : [...config.default];
-
-    if (limitResult?.exceeded) {
-      actions = actions.filter(a => a !== 'none');
-      if (!actions.some(a => ['removePerms', 'jail', 'closePerms'].includes(a))) {
-        actions.push('removePerms');
-      }
-      if (!actions.includes('ban')) {
-        actions.push('ban');
-      }
-    }
-
-    return actions;
+    return config.actions.length > 0 ? [...config.actions] : [...config.default];
   }
 
   /**

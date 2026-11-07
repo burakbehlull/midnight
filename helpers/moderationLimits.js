@@ -41,7 +41,7 @@ export async function enforceActionLimit(client, guild, member, actionType) {
     result.applied = await guard.executePunishments(
       guild,
       member,
-      await guard.getPunishments(guild.id, actionType, null),
+      await guard.getPunishments(guild.id, actionType, { exceeded: true }),
       `Guard: ${actionType} limiti aşıldı (${current}/${max})`
     );
 

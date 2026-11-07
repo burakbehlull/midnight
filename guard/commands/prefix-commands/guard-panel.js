@@ -307,6 +307,23 @@ export default {
       await this.handleLimitSet(client, interaction, guild);
     }
     
+    else if (customId === 'limit_punishment_edit') {
+      await this.showLimitPunishmentSettings(client, interaction, guild);
+    }
+    
+    else if (customId === 'limit_punishment_select') {
+      const selected = interaction.values;
+      const settings = await client.permissionsManager.getGuildSettings(guild.id);
+      settings.limitPunishment = selected;
+      await settings.save();
+      client.permissionsManager.updateCache(guild.id, settings);
+
+      await interaction.reply({
+        content: `⚔️ Limit aşımı cezası ayarlandı:\n${selected.map(p => `\`${p}\``).join(', ')}`,
+        ephemeral: true
+      });
+    }
+    
     else if (customId === 'set_punishment_select') {
       await this.handlePunishmentSet(client, interaction, guild);
     }
@@ -762,6 +779,11 @@ export default {
           name: '♾️ Genel Limit',
           value: `Tüm işlemlerin toplamı: **${settings.guards.globalLimit}** / 10 dakika`,
           inline: false
+        },
+        {
+          name: '⚔️ Limit Aşımı Cezası',
+          value: `Herhangi bir limit aşıldığında uygulanır (bot komutları dahil):\n${(settings.limitPunishment?.length ? settings.limitPunishment : ['removePerms']).map(p => `\`${p}\``).join(', ')}`,
+          inline: false
         }
       );
 
@@ -784,6 +806,11 @@ export default {
     const row1 = new ActionRowBuilder().addComponents(selectMenu);
     const row2 = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
+        .setCustomId('limit_punishment_edit')
+        .setLabel('Limit Aşımı Cezası')
+        .setStyle(ButtonStyle.Primary)
+        .setEmoji('⚔️'),
+      new ButtonBuilder()
         .setCustomId('back_to_main')
         .setLabel('Ana Menü')
         .setStyle(ButtonStyle.Danger)
@@ -795,6 +822,50 @@ export default {
     } else {
       await interaction.update({ embeds: [embed], components: [row1, row2] });
     }
+  },
+
+  async showLimitPunishmentSettings(client, interaction, guild) {
+    const settings = await client.permissionsManager.getGuildSettings(guild.id);
+    const current = settings.limitPunishment?.length ? settings.limitPunishment : ['removePerms'];
+
+    const embed = new EmbedBuilder()
+      .setColor('#2b2d31')
+      .setTitle('⚔️ Limit Aşımı Cezası')
+      .setDescription(
+        `Mevcut: ${current.map(p => `\`${p}\``).join(', ')}\n\n` +
+        'Herhangi bir limit aşıldığında (bot komutları ile yapılan işlemler dahil) uygulanacak cezayı seçin.\n' +
+        'Varsayılan: `removePerms` (yetki çekme).'
+      )
+      .addFields({
+        name: 'Ceza Seçenekleri',
+        value: '`ban` - Ban at\n`kick` - Kick at\n`removePerms` - Yetkileri çek\n`jail` - Jail\'e at\n`closePerms` - Tüm yetkileri kapat\n`none` - Cezasız',
+        inline: false
+      });
+
+    const selectMenu = new StringSelectMenuBuilder()
+      .setCustomId('limit_punishment_select')
+      .setPlaceholder('Ceza seç (çoklu seçim)')
+      .setMinValues(1)
+      .setMaxValues(6)
+      .addOptions([
+        { label: 'Ban', value: 'ban', emoji: '🔨' },
+        { label: 'Kick', value: 'kick', emoji: '👢' },
+        { label: 'Yetki Çek', value: 'removePerms', emoji: '🔒' },
+        { label: 'Jail', value: 'jail', emoji: '⛓️' },
+        { label: 'Tüm Yetkileri Kapat', value: 'closePerms', emoji: '🚫' },
+        { label: 'Cezasız', value: 'none', emoji: '✨' }
+      ]);
+
+    const row1 = new ActionRowBuilder().addComponents(selectMenu);
+    const row2 = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId('back_to_main')
+        .setLabel('Ana Menü')
+        .setStyle(ButtonStyle.Danger)
+        .setEmoji('🔙')
+    );
+
+    await interaction.reply({ embeds: [embed], components: [row1, row2], ephemeral: true });
   },
 
   async handleLimitSet(client, interaction, guild) {

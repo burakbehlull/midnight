@@ -462,6 +462,22 @@ function GuardSettings({ guildId }) {
       return s;
     });
 
+  const toggleLimitPunishment = (action) =>
+    patch((s) => {
+      let arr =
+        Array.isArray(s.limitPunishment) && s.limitPunishment.length
+          ? [...s.limitPunishment]
+          : ['removePerms'];
+      if (action === 'none') {
+        arr = arr.includes('none') ? [] : ['none'];
+      } else {
+        arr = arr.filter((a) => a !== 'none');
+        arr = arr.includes(action) ? arr.filter((a) => a !== action) : [...arr, action];
+      }
+      s.limitPunishment = arr;
+      return s;
+    });
+
   const save = async () => {
     try {
       setSaving(true);
@@ -637,6 +653,34 @@ function GuardSettings({ guildId }) {
           ))}
           <NumberField label="Genel Limit (Toplam)" value={g.globalLimit}
             onChange={(v) => patch((s) => { s.guards.globalLimit = v; return s; })} />
+        </div>
+
+        <div className="mt-4 rounded-lg bg-midnight-base border border-midnight-light p-4">
+          <p className="font-medium mb-1 text-sm">⚔️ Limit Aşımı Cezası</p>
+          <p className="text-xs text-gray-500 mb-3">
+            Herhangi bir limit aşıldığında (bot komutları ile yapılan işlemler dahil) uygulanacak ceza.
+            Varsayılan: Yetki Çek.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {PUNISHMENT_ACTIONS.map(([action, actionLabel]) => {
+              const current = settings.limitPunishment?.length ? settings.limitPunishment : ['removePerms'];
+              const active = current.includes(action);
+              return (
+                <button
+                  key={action}
+                  type="button"
+                  onClick={() => toggleLimitPunishment(action)}
+                  className={`px-3 py-1.5 rounded-lg text-xs border transition-colors ${
+                    active
+                      ? 'bg-midnight-purple border-midnight-purple text-white'
+                      : 'bg-midnight-base border-midnight-light text-gray-300 hover:bg-midnight-light'
+                  }`}
+                >
+                  {actionLabel}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </section>
 

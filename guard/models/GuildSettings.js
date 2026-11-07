@@ -57,6 +57,12 @@ const guildSettingsSchema = new mongoose.Schema({
     channelUpdate: { type: Number, default: 1 }
   },
 
+  limitPunishment: {
+    type: [String],
+    enum: ['ban', 'kick', 'removePerms', 'jail', 'closePerms', 'none'],
+    default: ['removePerms']
+  },
+
   protectedRoles: [{ type: String }],
 
   punishments: {
