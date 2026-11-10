@@ -1,6 +1,5 @@
 import Manager from '#managers';
 import { CommandSettings } from '#models';
-import { PermissionFlagsBits } from 'discord.js';
 
 export default {
   name: 'command',
@@ -15,11 +14,9 @@ export default {
   async execute(client, message, args) {
     const manager = new Manager(client, { action: message });
 
-    if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
-      return manager.sender.reply(
-        manager.sender.errorEmbed('Bu komutu kullanmak için **Yönetici** yetkisine sahip olmalısın!')
-      );
-    }
+    const ctrl = await manager.authority.checkOwnerAndBotOwners();
+    if (!ctrl) return message.reply({ content: '❌ Bu komutu kullanmak owner olmalısın.', ephemeral: true });
+
 
     const action = args[0]?.toLowerCase();
     
