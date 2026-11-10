@@ -50,7 +50,26 @@ export default {
           e.target.id === newMember.id &&
           e.changes?.some(change => change.key === 'communication_disabled_until' && change.new === null)
         );
-        const executor = entry?.executor;
+        let executor = entry?.executor;
+        let viaCommand = false;
+
+        // Timeout bot üzerinden (komut ile) kaldırıldıysa gerçek yetkiliyi ceza kaydından bul
+        if (executor?.id === client.user.id) {
+          const timeoutRecord = await Punishment.findOne({
+            userId: newMember.id,
+            guildId: guild.id,
+            type: 'timeout',
+            removedBy: { $ne: null }
+          }).sort({ removedAt: -1 }).lean().catch(() => null);
+
+          if (timeoutRecord?.removedBy) {
+            const actor = await client.users.fetch(timeoutRecord.removedBy).catch(() => null);
+            if (actor) {
+              executor = actor;
+              viaCommand = true;
+            }
+          }
+        }
 
         if (executor) {
           await Punishment.updateMany(
@@ -76,7 +95,7 @@ export default {
           type: 'moderation',
           color: 0xFF0000,
           title: null,
-          description: `<@${newMember.id}> adlı kullanıcının timeout'u ${executor ? `<@${executor.id}> tarafından` : ''} kaldırıldı.`,
+          description: `<@${newMember.id}> adlı kullanıcının timeout'u ${executor ? `<@${executor.id}> tarafından${viaCommand ? ' (komut)' : ''}` : ''} kaldırıldı.`,
           footer: { text: newMember.user.tag, iconURL: newMember.user.displayAvatarURL() }
         });
       }

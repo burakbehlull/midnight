@@ -98,13 +98,31 @@ export default {
           ? `\n\n**Seste Kalan Kullanıcılar (${usersInChannel.length}):**\n${usersInChannel.map((u, i) => `${i + 1}. ${u}`).join('\n')}`
           : '\n\n**Seste başka kullanıcı kalmadı.**';
 
+        let disconnectedText = '';
+        const voiceBotMember = guild.members.cache.get(client.user.id);
+        if (voiceBotMember?.permissions.has(PermissionFlagsBits.ViewAuditLog)) {
+          const disconnectLogs = await guild.fetchAuditLogs({ type: AuditLogEvent.MemberDisconnect, limit: 5 }).catch(() => null);
+          const disconnectEntry = disconnectLogs?.entries.find(e =>
+            e.target?.id === user.id &&
+            Date.now() - e.createdTimestamp < 5000
+          );
+          const executor = disconnectEntry?.executor;
+          if (executor && executor.id !== user.id) {
+            disconnectedText = `\n**Sesten Atan:** <@${executor.id}>${executor.id === client.user.id ? ' (Bot / Komut)' : ''}`;
+          }
+        }
+
+        const leaveText = disconnectedText
+          ? `<@${member.id}> adlı kullanıcı <#${oldState.channel.id}> kanalından atıldı.`
+          : `<@${member.id}> adlı kullanıcı <#${oldState.channel.id}> kanalından ayrıldı.`;
+
         await logger.logEvent({
           guild: oldState.guild,
           type: 'voice',
           color: '#f52a2a',
           title: null,
           author: { name: guild.name, iconURL: guild.iconURL() },
-          description: `<@${member.id}> adlı kullanıcı <#${oldState.channel.id}> kanalından ayrıldı.${durationText}${timeAgoText}${userListText}`,
+          description: `${leaveText}${disconnectedText}${durationText}${timeAgoText}${userListText}`,
           footer: { text: member.user.tag, iconURL: member.user.displayAvatarURL() }
         });
       }

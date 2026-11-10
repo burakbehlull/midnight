@@ -41,8 +41,7 @@ export default {
     const reason = args.slice(1).join(' ') || 'Sebep belirtilmedi.';
 
     try {
-      await member.timeout(null, reason);
-
+      // Logun gerçek yetkiliyi gösterebilmesi için kaydı timeout kaldırılmadan önce işaretle
       await Punishment.updateMany(
         {
           userId: member.id,
@@ -58,6 +57,8 @@ export default {
           }
         }
       );
+
+      await member.timeout(null, reason);
 
       return manager.sender.reply(manager.sender.classic(`${member} kullanıcısının susturma (timeout) cezası kaldırıldı.\n**Sebep:** ${reason}`));
     } catch (err) {
