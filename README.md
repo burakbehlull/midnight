@@ -184,7 +184,8 @@ Create ` config.json ` file and set permission settings:
 | **spotify** | .. | me, user | stable |
 | **pet** | adopt pet | self, adopt, love, heal, play, sleep, name, feed, leaderboard | stable |
 | **game** | shows the game the user is currently playing as a card (icon, game name, playtime) | me, user | stable |
-| **ship** | ships | user | stable |
+| **ship** | ships | random or user and second user | stable |
+| **nickship** | ships | random or user and second user | stable |
 | **slot** | game | bet amount | stable |
 | **rulet** | shows server rules  | user, bet amount | stable |
 | **xox** | shows server rules  | user, bet amount | stable |
