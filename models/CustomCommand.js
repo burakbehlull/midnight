@@ -36,7 +36,8 @@ const customCommandSchema = new Schema({
 
   roleActions: [{
     roleId: String,
-    action: { type: String, enum: ['add', 'remove', 'toggle'] }
+    action: { type: String, enum: ['add', 'remove', 'toggle'] },
+    target: { type: String, enum: ['self', 'mentioned'], default: 'self' } // Rolü kime verecek
   }],
   
 
@@ -50,7 +51,15 @@ const customCommandSchema = new Schema({
   lastUsed: { type: Date },
   
 
-  requiredRoles: [{ type: String }],
+  // Yetkilendirme sistemi
+  permissionMode: { 
+    type: String, 
+    enum: ['everyone', 'roles', 'users'], 
+    default: 'everyone' 
+  }, // Herkes, belirli roller veya belirli kullanıcılar
+  allowedUsers: [{ type: String }], // İzinli kullanıcı ID'leri
+  allowedRoles: [{ type: String }], // İzinli rol ID'leri (eski requiredRoles yerine)
+  
   requiredPermissions: [{ type: String }],
   allowedChannels: [{ type: String }],
   

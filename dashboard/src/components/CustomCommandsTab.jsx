@@ -31,13 +31,20 @@ export default function CustomCommandsTab({ guildId }) {
     embedTitle: '',
     embedDescription: '',
     embedColor: '#5865F2',
-    roleActions: []
+    roleActions: [],
+    permissionMode: 'everyone',
+    allowedUsers: [],
+    allowedRoles: []
   });
 
   const [roleFormData, setRoleFormData] = useState({
     roleId: '',
-    action: 'add'
+    action: 'add',
+    target: 'self'
   });
+
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
     loadCommands();
@@ -71,7 +78,10 @@ export default function CustomCommandsTab({ guildId }) {
       const createData = {
         guildId,
         commandName: formData.commandName,
-        description: formData.description
+        description: formData.description,
+        permissionMode: formData.permissionMode,
+        allowedUsers: formData.allowedUsers,
+        allowedRoles: formData.allowedRoles
       };
 
       // Add enabled features
@@ -110,10 +120,15 @@ export default function CustomCommandsTab({ guildId }) {
       embedTitle: '', 
       embedDescription: '', 
       embedColor: '#5865F2',
-      roleActions: []
+      roleActions: [],
+      permissionMode: 'everyone',
+      allowedUsers: [],
+      allowedRoles: []
     });
     setEnabledFeatures({ text: false, embed: false, roles: false });
-    setRoleFormData({ roleId: '', action: 'add' });
+    setRoleFormData({ roleId: '', action: 'add', target: 'self' });
+    setUserSearchQuery('');
+    setUsers([]);
   };
 
   const handleAddRoleAction = () => {
@@ -136,11 +151,12 @@ export default function CustomCommandsTab({ guildId }) {
       roleActions: [...formData.roleActions, {
         roleId: roleFormData.roleId,
         roleName: role.name,
-        action: roleFormData.action
+        action: roleFormData.action,
+        target: roleFormData.target
       }]
     });
 
-    setRoleFormData({ roleId: '', action: 'add' });
+    setRoleFormData({ roleId: '', action: 'add', target: 'self' });
   };
 
   const handleRemoveRoleAction = (roleId) => {
@@ -152,7 +168,12 @@ export default function CustomCommandsTab({ guildId }) {
 
   const handleUpdateCommand = async () => {
     try {
-      const updateData = { description: formData.description };
+      const updateData = { 
+        description: formData.description,
+        permissionMode: formData.permissionMode,
+        allowedUsers: formData.allowedUsers,
+        allowedRoles: formData.allowedRoles
+      };
 
       if (formData.responseText) {
         updateData.responseText = formData.responseText;
@@ -216,7 +237,10 @@ export default function CustomCommandsTab({ guildId }) {
         embedTitle: cmd.embedData?.title || '',
         embedDescription: cmd.embedData?.description || '',
         embedColor: cmd.embedData?.color || '#5865F2',
-        roleActions: cmd.roleActions || []
+        roleActions: cmd.roleActions || [],
+        permissionMode: cmd.permissionMode || 'everyone',
+        allowedUsers: cmd.allowedUsers || [],
+        allowedRoles: cmd.allowedRoles || []
       });
       setShowEditModal(true);
     } catch (err) {
@@ -484,6 +508,16 @@ export default function CustomCommandsTab({ guildId }) {
                         <option value="toggle">🔄 Değiştir</option>
                       </select>
 
+                      <select
+                        value={roleFormData.target}
+                        onChange={(e) => setRoleFormData({ ...roleFormData, target: e.target.value })}
+                        className="w-40 px-4 py-2 bg-midnight-base rounded-lg focus:ring-2 focus:ring-midnight-purple outline-none"
+                        title="Rolü kime verecek?"
+                      >
+                        <option value="self">👤 Kendine</option>
+                        <option value="mentioned">👥 Etiketlediğine</option>
+                      </select>
+
                       <button
                         type="button"
                         onClick={handleAddRoleAction}
@@ -508,6 +542,8 @@ export default function CustomCommandsTab({ guildId }) {
                                   {roleAction.action === 'add' ? 'Rol eklenecek' : 
                                    roleAction.action === 'remove' ? 'Rol çıkarılacak' : 
                                    'Rol varsa çıkar, yoksa ekle'}
+                                  {' • '}
+                                  {roleAction.target === 'mentioned' ? '👥 Etiketlenene' : '👤 Komutu kullanana'}
                                 </div>
                               </div>
                             </div>
@@ -525,6 +561,162 @@ export default function CustomCommandsTab({ guildId }) {
                   </div>
                 </div>
               )}
+
+              {/* Permission System */}
+              <div className="border-t border-midnight-light pt-4">
+                <h4 className="font-semibold mb-3 flex items-center gap-2">
+                  <span>🔐</span> Yetkilendirme
+                </h4>
+                <p className="text-xs text-gray-400 mb-3">Bu komutu kimler kullanabilir?</p>
+                
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, permissionMode: 'everyone' })}
+                      className={`flex-1 p-3 rounded-lg border-2 transition-all ${
+                        formData.permissionMode === 'everyone'
+                          ? 'border-blue-500 bg-blue-500/20'
+                          : 'border-midnight-light hover:border-blue-500/50'
+                      }`}
+                    >
+                      <div className="text-2xl mb-1">🌍</div>
+                      <div className="font-medium text-sm">Herkes</div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, permissionMode: 'roles' })}
+                      className={`flex-1 p-3 rounded-lg border-2 transition-all ${
+                        formData.permissionMode === 'roles'
+                          ? 'border-purple-500 bg-purple-500/20'
+                          : 'border-midnight-light hover:border-purple-500/50'
+                      }`}
+                    >
+                      <div className="text-2xl mb-1">🎭</div>
+                      <div className="font-medium text-sm">Belirli Roller</div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, permissionMode: 'users' })}
+                      className={`flex-1 p-3 rounded-lg border-2 transition-all ${
+                        formData.permissionMode === 'users'
+                          ? 'border-green-500 bg-green-500/20'
+                          : 'border-midnight-light hover:border-green-500/50'
+                      }`}
+                    >
+                      <div className="text-2xl mb-1">👤</div>
+                      <div className="font-medium text-sm">Belirli Kullanıcılar</div>
+                    </button>
+                  </div>
+
+                  {/* Allowed Roles */}
+                  {formData.permissionMode === 'roles' && (
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium mb-2">İzinli Roller</label>
+                      <select
+                        onChange={(e) => {
+                          const roleId = e.target.value;
+                          if (roleId && !formData.allowedRoles.includes(roleId)) {
+                            setFormData({ 
+                              ...formData, 
+                              allowedRoles: [...formData.allowedRoles, roleId] 
+                            });
+                          }
+                          e.target.value = '';
+                        }}
+                        className="w-full px-4 py-2 bg-midnight-base rounded-lg focus:ring-2 focus:ring-midnight-purple outline-none"
+                      >
+                        <option value="">Rol ekle...</option>
+                        {roles
+                          .filter(r => !formData.allowedRoles.includes(r.id))
+                          .map(role => (
+                            <option key={role.id} value={role.id}>{role.name}</option>
+                          ))}
+                      </select>
+
+                      {formData.allowedRoles.length > 0 && (
+                        <div className="space-y-1">
+                          {formData.allowedRoles.map(roleId => {
+                            const role = roles.find(r => r.id === roleId);
+                            return (
+                              <div key={roleId} className="flex items-center justify-between p-2 bg-midnight-base rounded">
+                                <span className="text-sm">{role?.name || roleId}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setFormData({
+                                      ...formData,
+                                      allowedRoles: formData.allowedRoles.filter(id => id !== roleId)
+                                    });
+                                  }}
+                                  className="text-red-400 hover:text-red-300 text-sm"
+                                >
+                                  ✖
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                      {formData.allowedRoles.length === 0 && (
+                        <p className="text-xs text-gray-500 text-center py-2">Henüz rol eklenmedi</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Allowed Users */}
+                  {formData.permissionMode === 'users' && (
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium mb-2">İzinli Kullanıcılar</label>
+                      <input
+                        type="text"
+                        placeholder="Kullanıcı ID'si girin (örn: 123456789012345678)"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            const userId = e.target.value.trim();
+                            if (userId && !formData.allowedUsers.includes(userId)) {
+                              setFormData({
+                                ...formData,
+                                allowedUsers: [...formData.allowedUsers, userId]
+                              });
+                              e.target.value = '';
+                            }
+                          }
+                        }}
+                        className="w-full px-4 py-2 bg-midnight-base rounded-lg focus:ring-2 focus:ring-midnight-purple outline-none"
+                      />
+                      <p className="text-xs text-gray-500">Enter'a basarak ekleyin</p>
+
+                      {formData.allowedUsers.length > 0 && (
+                        <div className="space-y-1">
+                          {formData.allowedUsers.map(userId => (
+                            <div key={userId} className="flex items-center justify-between p-2 bg-midnight-base rounded">
+                              <span className="text-sm font-mono">{userId}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setFormData({
+                                    ...formData,
+                                    allowedUsers: formData.allowedUsers.filter(id => id !== userId)
+                                  });
+                                }}
+                                className="text-red-400 hover:text-red-300 text-sm"
+                              >
+                                ✖
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {formData.allowedUsers.length === 0 && (
+                        <p className="text-xs text-gray-500 text-center py-2">Henüz kullanıcı eklenmedi</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="flex gap-2 mt-6">
@@ -638,6 +830,16 @@ export default function CustomCommandsTab({ guildId }) {
                       <option value="toggle">🔄 Değiştir</option>
                     </select>
 
+                    <select
+                      value={roleFormData.target}
+                      onChange={(e) => setRoleFormData({ ...roleFormData, target: e.target.value })}
+                      className="w-40 px-4 py-2 bg-midnight-base rounded-lg focus:ring-2 focus:ring-midnight-purple outline-none"
+                      title="Rolü kime verecek?"
+                    >
+                      <option value="self">👤 Kendine</option>
+                      <option value="mentioned">👥 Etiketlediğine</option>
+                    </select>
+
                     <button
                       type="button"
                       onClick={handleAddRoleAction}
@@ -662,6 +864,8 @@ export default function CustomCommandsTab({ guildId }) {
                                 {roleAction.action === 'add' ? 'Rol eklenecek' : 
                                  roleAction.action === 'remove' ? 'Rol çıkarılacak' : 
                                  'Rol varsa çıkar, yoksa ekle'}
+                                {' • '}
+                                {roleAction.target === 'mentioned' ? '👥 Etiketlenene' : '👤 Komutu kullanana'}
                               </div>
                             </div>
                           </div>
@@ -678,6 +882,162 @@ export default function CustomCommandsTab({ guildId }) {
                   ) : (
                     <div className="text-center py-4 text-gray-500 text-sm">
                       Henüz rol işlemi eklenmemiş
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Permission System - SAME AS CREATE MODAL */}
+              <div className="border-t border-midnight-light pt-4">
+                <h4 className="font-semibold mb-3 flex items-center gap-2">
+                  <span>🔐</span> Yetkilendirme
+                </h4>
+                <p className="text-xs text-gray-400 mb-3">Bu komutu kimler kullanabilir?</p>
+                
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, permissionMode: 'everyone' })}
+                      className={`flex-1 p-3 rounded-lg border-2 transition-all ${
+                        formData.permissionMode === 'everyone'
+                          ? 'border-blue-500 bg-blue-500/20'
+                          : 'border-midnight-light hover:border-blue-500/50'
+                      }`}
+                    >
+                      <div className="text-2xl mb-1">🌍</div>
+                      <div className="font-medium text-sm">Herkes</div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, permissionMode: 'roles' })}
+                      className={`flex-1 p-3 rounded-lg border-2 transition-all ${
+                        formData.permissionMode === 'roles'
+                          ? 'border-purple-500 bg-purple-500/20'
+                          : 'border-midnight-light hover:border-purple-500/50'
+                      }`}
+                    >
+                      <div className="text-2xl mb-1">🎭</div>
+                      <div className="font-medium text-sm">Belirli Roller</div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, permissionMode: 'users' })}
+                      className={`flex-1 p-3 rounded-lg border-2 transition-all ${
+                        formData.permissionMode === 'users'
+                          ? 'border-green-500 bg-green-500/20'
+                          : 'border-midnight-light hover:border-green-500/50'
+                      }`}
+                    >
+                      <div className="text-2xl mb-1">👤</div>
+                      <div className="font-medium text-sm">Belirli Kullanıcılar</div>
+                    </button>
+                  </div>
+
+                  {/* Allowed Roles */}
+                  {formData.permissionMode === 'roles' && (
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium mb-2">İzinli Roller</label>
+                      <select
+                        onChange={(e) => {
+                          const roleId = e.target.value;
+                          if (roleId && !formData.allowedRoles.includes(roleId)) {
+                            setFormData({ 
+                              ...formData, 
+                              allowedRoles: [...formData.allowedRoles, roleId] 
+                            });
+                          }
+                          e.target.value = '';
+                        }}
+                        className="w-full px-4 py-2 bg-midnight-base rounded-lg focus:ring-2 focus:ring-midnight-purple outline-none"
+                      >
+                        <option value="">Rol ekle...</option>
+                        {roles
+                          .filter(r => !formData.allowedRoles.includes(r.id))
+                          .map(role => (
+                            <option key={role.id} value={role.id}>{role.name}</option>
+                          ))}
+                      </select>
+
+                      {formData.allowedRoles.length > 0 && (
+                        <div className="space-y-1">
+                          {formData.allowedRoles.map(roleId => {
+                            const role = roles.find(r => r.id === roleId);
+                            return (
+                              <div key={roleId} className="flex items-center justify-between p-2 bg-midnight-base rounded">
+                                <span className="text-sm">{role?.name || roleId}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setFormData({
+                                      ...formData,
+                                      allowedRoles: formData.allowedRoles.filter(id => id !== roleId)
+                                    });
+                                  }}
+                                  className="text-red-400 hover:text-red-300 text-sm"
+                                >
+                                  ✖
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                      {formData.allowedRoles.length === 0 && (
+                        <p className="text-xs text-gray-500 text-center py-2">Henüz rol eklenmedi</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Allowed Users */}
+                  {formData.permissionMode === 'users' && (
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium mb-2">İzinli Kullanıcılar</label>
+                      <input
+                        type="text"
+                        placeholder="Kullanıcı ID'si girin (örn: 123456789012345678)"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            const userId = e.target.value.trim();
+                            if (userId && !formData.allowedUsers.includes(userId)) {
+                              setFormData({
+                                ...formData,
+                                allowedUsers: [...formData.allowedUsers, userId]
+                              });
+                              e.target.value = '';
+                            }
+                          }
+                        }}
+                        className="w-full px-4 py-2 bg-midnight-base rounded-lg focus:ring-2 focus:ring-midnight-purple outline-none"
+                      />
+                      <p className="text-xs text-gray-500">Enter'a basarak ekleyin</p>
+
+                      {formData.allowedUsers.length > 0 && (
+                        <div className="space-y-1">
+                          {formData.allowedUsers.map(userId => (
+                            <div key={userId} className="flex items-center justify-between p-2 bg-midnight-base rounded">
+                              <span className="text-sm font-mono">{userId}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setFormData({
+                                    ...formData,
+                                    allowedUsers: formData.allowedUsers.filter(id => id !== userId)
+                                  });
+                                }}
+                                className="text-red-400 hover:text-red-300 text-sm"
+                              >
+                                ✖
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {formData.allowedUsers.length === 0 && (
+                        <p className="text-xs text-gray-500 text-center py-2">Henüz kullanıcı eklenmedi</p>
+                      )}
                     </div>
                   )}
                 </div>

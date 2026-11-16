@@ -41,26 +41,40 @@ async function executeCustomCommand(message, customCmd) {
 
     
     if (customCmd.roleActions && customCmd.roleActions.length > 0) {
-      const member = message.member;
-      if (member) {
-        for (const roleAction of customCmd.roleActions) {
-          const role = message.guild.roles.cache.get(roleAction.roleId);
-          if (!role) continue;
+      for (const roleAction of customCmd.roleActions) {
+        const role = message.guild.roles.cache.get(roleAction.roleId);
+        if (!role) continue;
 
-          if (roleAction.action === 'add') {
-            if (!member.roles.cache.has(role.id)) {
-              await member.roles.add(role).catch(console.error);
-            }
-          } else if (roleAction.action === 'remove') {
-            if (member.roles.cache.has(role.id)) {
-              await member.roles.remove(role).catch(console.error);
-            }
-          } else if (roleAction.action === 'toggle') {
-            if (member.roles.cache.has(role.id)) {
-              await member.roles.remove(role).catch(console.error);
-            } else {
-              await member.roles.add(role).catch(console.error);
-            }
+        // Rolü kime vereceğimizi belirle
+        let targetMember;
+        if (roleAction.target === 'mentioned') {
+          // Etiketlenen kişiye ver
+          const mentioned = message.mentions.members.first();
+          if (!mentioned) {
+            await message.reply('❌ Rol vermek için birini etiketlemelisin!').catch(() => {});
+            continue;
+          }
+          targetMember = mentioned;
+        } else {
+          // Komutu kullanana ver (default: self)
+          targetMember = message.member;
+        }
+
+        if (!targetMember) continue;
+
+        if (roleAction.action === 'add') {
+          if (!targetMember.roles.cache.has(role.id)) {
+            await targetMember.roles.add(role).catch(console.error);
+          }
+        } else if (roleAction.action === 'remove') {
+          if (targetMember.roles.cache.has(role.id)) {
+            await targetMember.roles.remove(role).catch(console.error);
+          }
+        } else if (roleAction.action === 'toggle') {
+          if (targetMember.roles.cache.has(role.id)) {
+            await targetMember.roles.remove(role).catch(console.error);
+          } else {
+            await targetMember.roles.add(role).catch(console.error);
           }
         }
         hasAction = true;
@@ -91,14 +105,28 @@ async function handleCustomCommand(message, commandName) {
       return false;
     }
 
-    
-    if (customCmd.requiredRoles && customCmd.requiredRoles.length > 0) {
-      const hasRole = customCmd.requiredRoles.some(roleId => 
-        message.member.roles.cache.has(roleId)
-      );
-      if (!hasRole) {
-        return true; 
+    // Yetkilendirme kontrolü
+    let hasPermission = false;
+
+    if (customCmd.permissionMode === 'everyone') {
+      hasPermission = true;
+    } else if (customCmd.permissionMode === 'roles') {
+      // Belirli roller kontrol
+      if (customCmd.allowedRoles && customCmd.allowedRoles.length > 0) {
+        hasPermission = customCmd.allowedRoles.some(roleId => 
+          message.member.roles.cache.has(roleId)
+        );
       }
+    } else if (customCmd.permissionMode === 'users') {
+      // Belirli kullanıcılar kontrol
+      if (customCmd.allowedUsers && customCmd.allowedUsers.length > 0) {
+        hasPermission = customCmd.allowedUsers.includes(message.author.id);
+      }
+    }
+
+    // Yetki yoksa sessizce çık
+    if (!hasPermission) {
+      return true; 
     }
 
     
