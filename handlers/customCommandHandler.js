@@ -5,25 +5,74 @@ async function executeCustomCommand(message, customCmd) {
   try {
     
     let hasAction = false;
+    
+    // Placeholder değişkenleri için hedef kullanıcıyı ve rolü belirle
+    let targetUser = null;
+    let affectedRole = null;
+    
+    // Rol işlemlerinden hedef kullanıcıyı ve rolü al
+    if (customCmd.roleActions && customCmd.roleActions.length > 0) {
+      const firstRoleAction = customCmd.roleActions[0];
+      
+      // Hedef kullanıcıyı belirle
+      if (firstRoleAction.target === 'mentioned') {
+        targetUser = message.mentions.members.first();
+      } else {
+        targetUser = message.member;
+      }
+      
+      // Rolü belirle
+      const role = message.guild.roles.cache.get(firstRoleAction.roleId);
+      if (role) {
+        affectedRole = role;
+      }
+    }
+
+    // Placeholder'ları değiştiren fonksiyon
+    const replacePlaceholders = (text) => {
+      if (!text) return text;
+      
+      let result = text;
+      
+      // $user → Komutu kullanan kişi
+      result = result.replace(/\$user/g, `<@${message.author.id}>`);
+      
+      // $targetUser → Etkilenen/etiketlenen kişi
+      if (targetUser) {
+        result = result.replace(/\$targetUser/g, `<@${targetUser.id}>`);
+      } else {
+        result = result.replace(/\$targetUser/g, `<@${message.author.id}>`);
+      }
+      
+      // $role → Verilen/kaldırılan rol
+      if (affectedRole) {
+        result = result.replace(/\$role/g, affectedRole.name);
+      } else {
+        result = result.replace(/\$role/g, 'Rol');
+      }
+      
+      return result;
+    };
 
     
     if (customCmd.responseText) {
-      await message.channel.send(customCmd.responseText);
+      const processedText = replacePlaceholders(customCmd.responseText);
+      await message.channel.send(processedText);
       hasAction = true;
     }
 
     
     if (customCmd.embedData && customCmd.embedData.description) {
       const embed = {
-        description: customCmd.embedData.description,
+        description: replacePlaceholders(customCmd.embedData.description),
         color: customCmd.embedData.color ? parseInt(customCmd.embedData.color.replace('#', ''), 16) : 0x5865F2,
       };
 
       if (customCmd.embedData.title) {
-        embed.title = customCmd.embedData.title;
+        embed.title = replacePlaceholders(customCmd.embedData.title);
       }
       if (customCmd.embedData.footer) {
-        embed.footer = { text: customCmd.embedData.footer };
+        embed.footer = { text: replacePlaceholders(customCmd.embedData.footer) };
       }
       if (customCmd.embedData.image) {
         embed.image = { url: customCmd.embedData.image };
@@ -32,7 +81,11 @@ async function executeCustomCommand(message, customCmd) {
         embed.thumbnail = { url: customCmd.embedData.thumbnail };
       }
       if (customCmd.embedData.fields && customCmd.embedData.fields.length > 0) {
-        embed.fields = customCmd.embedData.fields;
+        embed.fields = customCmd.embedData.fields.map(field => ({
+          name: replacePlaceholders(field.name),
+          value: replacePlaceholders(field.value),
+          inline: field.inline
+        }));
       }
 
       await message.channel.send({ embeds: [embed] });

@@ -439,6 +439,14 @@ export default function CustomCommandsTab({ guildId }) {
                     rows="3"
                     className="w-full px-4 py-2 bg-midnight-base rounded-lg focus:ring-2 focus:ring-midnight-purple outline-none resize-none"
                   />
+                  <div className="mt-2 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                    <p className="text-xs text-blue-300 mb-1 font-semibold">💡 Kullanılabilir Değişkenler:</p>
+                    <div className="text-xs text-gray-400 space-y-1">
+                      <p><code className="bg-midnight-base px-1 py-0.5 rounded">$user</code> → Komutu kullanan kişiyi etiketler</p>
+                      <p><code className="bg-midnight-base px-1 py-0.5 rounded">$targetUser</code> → Etkilenen/etiketlenen kişiyi etiketler</p>
+                      <p><code className="bg-midnight-base px-1 py-0.5 rounded">$role</code> → Verilen/kaldırılan rol adını yazar</p>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -472,6 +480,14 @@ export default function CustomCommandsTab({ guildId }) {
                         className="w-20 h-10 bg-midnight-base rounded cursor-pointer"
                       />
                       <span className="text-sm text-gray-400">{formData.embedColor}</span>
+                    </div>
+                    <div className="p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+                      <p className="text-xs text-purple-300 mb-1 font-semibold">💡 Kullanılabilir Değişkenler:</p>
+                      <div className="text-xs text-gray-400 space-y-1">
+                        <p><code className="bg-midnight-base px-1 py-0.5 rounded">$user</code> → Komutu kullanan kişiyi etiketler</p>
+                        <p><code className="bg-midnight-base px-1 py-0.5 rounded">$targetUser</code> → Etkilenen/etiketlenen kişiyi etiketler</p>
+                        <p><code className="bg-midnight-base px-1 py-0.5 rounded">$role</code> → Verilen/kaldırılan rol adını yazar</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -767,6 +783,14 @@ export default function CustomCommandsTab({ guildId }) {
                   rows="3"
                   className="w-full px-4 py-2 bg-midnight-base rounded-lg focus:ring-2 focus:ring-midnight-purple outline-none resize-none"
                 />
+                <div className="mt-2 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                  <p className="text-xs text-blue-300 mb-1 font-semibold">💡 Kullanılabilir Değişkenler:</p>
+                  <div className="text-xs text-gray-400 space-y-1">
+                    <p><code className="bg-midnight-base px-1 py-0.5 rounded">$user</code> → Komutu kullanan kişiyi etiketler</p>
+                    <p><code className="bg-midnight-base px-1 py-0.5 rounded">$targetUser</code> → Etkilenen/etiketlenen kişiyi etiketler</p>
+                    <p><code className="bg-midnight-base px-1 py-0.5 rounded">$role</code> → Verilen/kaldırılan rol adını yazar</p>
+                  </div>
+                </div>
               </div>
 
               <div className="border-t border-midnight-light pt-4">
@@ -797,6 +821,14 @@ export default function CustomCommandsTab({ guildId }) {
                       className="w-20 h-10 bg-midnight-base rounded cursor-pointer"
                     />
                     <span className="text-sm text-gray-400">{formData.embedColor}</span>
+                  </div>
+                  <div className="p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+                    <p className="text-xs text-purple-300 mb-1 font-semibold">💡 Kullanılabilir Değişkenler:</p>
+                    <div className="text-xs text-gray-400 space-y-1">
+                      <p><code className="bg-midnight-base px-1 py-0.5 rounded">$user</code> → Komutu kullanan kişiyi etiketler</p>
+                      <p><code className="bg-midnight-base px-1 py-0.5 rounded">$targetUser</code> → Etkilenen/etiketlenen kişiyi etiketler</p>
+                      <p><code className="bg-midnight-base px-1 py-0.5 rounded">$role</code> → Verilen/kaldırılan rol adını yazar</p>
+                    </div>
                   </div>
                 </div>
               </div>
