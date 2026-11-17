@@ -8,6 +8,9 @@ export default {
       if (reaction.partial) {
         try { await reaction.fetch(); } catch { return; }
       }
+      if (user.partial) {
+        try { await user.fetch(); } catch { return; }
+      }
       await actionReactionAddHandler(reaction, user);
     } catch (err) {
       console.error('[MessageReactionAdd event err]', err);

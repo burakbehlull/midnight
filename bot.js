@@ -13,7 +13,13 @@ export default class Bot {
     const connectTimeout = Number(process.env.HTTP_CONNECT_TIMEOUT_MS || 30_000);
     this.client = new Client({
         intents: misc.itentsAll(),
-        partials: [Partials.Message, Partials.Channel, Partials.User],
+        partials: [
+          Partials.Message, 
+          Partials.Channel, 
+          Partials.User, 
+          Partials.Reaction, 
+          Partials.GuildMember
+        ],
         rest: {
           agent: new Agent({ connect: { timeout: connectTimeout } }),
           timeout: restTimeout
