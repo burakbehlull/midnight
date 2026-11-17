@@ -1,6 +1,15 @@
 import Manager from '#managers';
 import { Economy, Shop } from '#models';
 
+const RELATIONSHIP_TYPES = {
+  evli: { emoji: '💍', name: 'Evli' },
+  sevgili: { emoji: '❤️', name: 'Sevgili' },
+  flört: { emoji: '😘', name: 'Flört' },
+  situationship: { emoji: '🤔', name: 'Situationship' },
+  fuckbody: { emoji: '🔥', name: 'Fuck Body' },
+  lovebody: { emoji: '💗', name: 'Love Body' }
+};
+
 export default {
   name: 'family',
   description: 'Aile yapını, evlatlarını ve anne-babanı gösterir.',
@@ -210,11 +219,18 @@ export default {
       ? `\`${displayFamilyName}\`` 
       : `**${target.username}** adlı kullanıcının aile ağacı`;
 
+    // İlişki türü bilgisi
+    const relType = userData.relationshipType || 'evli';
+    const typeInfo = RELATIONSHIP_TYPES[relType] || RELATIONSHIP_TYPES.evli;
+    const relationshipText = partnerId 
+      ? `${typeInfo.emoji} ${typeInfo.name}` 
+      : '_Yok_';
+
     const embed = manager.sender.classic(familyTitle);
     embed.addFields(
       { name: '❤️ Eşi', value: partnerId ? `<@${partnerId}>` : '_Yok_', inline: true },
-      { name: '💍 Evlenme Tarihi', value: marriageSinceText, inline: true },
-      { name: '\u200B', value: '\u200B', inline: true },
+      { name: '💕 İlişki Durumu', value: relationshipText, inline: true },
+      { name: '💍 İlişki Tarihi', value: marriageSinceText, inline: true },
       { name: '👨‍👩‍👧 Evlatları', value: fosterlingsList, inline: false },
       { name: '👨‍👩‍👦 Anne / Babası', value: parentsText, inline: false },
       { name: '🐾 Evcil Hayvanlar', value: petsText, inline: false }

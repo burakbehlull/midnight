@@ -3,6 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import UserProfileModal from '../components/UserProfileModal'
 
+const RELATIONSHIP_TYPES = {
+  evli: { emoji: '💍', name: 'Evli' },
+  sevgili: { emoji: '❤️', name: 'Sevgili' },
+  flört: { emoji: '😘', name: 'Flört' },
+  situationship: { emoji: '🤔', name: 'Situationship' },
+  fuckbody: { emoji: '🔥', name: 'Fuck Body' },
+  lovebody: { emoji: '💗', name: 'Love Body' }
+};
+
 const GlobalEconomy = () => {
   const navigate = useNavigate()
   const [economy, setEconomy] = useState([])
@@ -89,7 +98,7 @@ const GlobalEconomy = () => {
                   <th className="px-6 py-4 text-right text-sm font-semibold">XP</th>
                   <th className="px-6 py-4 text-center text-sm font-semibold">Kurabiye</th>
                   <th className="px-6 py-4 text-center text-sm font-semibold">Kalp</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">Evlilik</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold">İlişki Durumu</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-midnight-light">
@@ -153,11 +162,23 @@ const GlobalEconomy = () => {
                       </td>
                       <td className="px-6 py-4">
                         {user.marriedTo ? (
-                          <span className="text-pink-400 flex items-center gap-1">
-                            💑 Evli
-                          </span>
+                          (() => {
+                            const relType = user.relationshipType || 'evli';
+                            const typeInfo = RELATIONSHIP_TYPES[relType] || RELATIONSHIP_TYPES.evli;
+                            return (
+                              <span 
+                                className="inline-flex items-center gap-1 px-3 py-1 rounded-full font-medium text-sm"
+                                style={{
+                                  backgroundColor: typeInfo.color ? typeInfo.color + '20' : '#FF149320',
+                                  color: typeInfo.color || '#FF1493'
+                                }}
+                              >
+                                {typeInfo.emoji} {typeInfo.name}
+                              </span>
+                            );
+                          })()
                         ) : (
-                          <span className="text-gray-500">Bekar</span>
+                          <span className="text-gray-500">💔 Bekar</span>
                         )}
                       </td>
                     </tr>

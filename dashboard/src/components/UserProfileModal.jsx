@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react'
 import { api } from '../api/client'
 
+const RELATIONSHIP_TYPES = {
+  evli: { emoji: '💍', name: 'Evli', color: '#FFD700' },
+  sevgili: { emoji: '❤️', name: 'Sevgili', color: '#FF1493' },
+  flört: { emoji: '😘', name: 'Flört', color: '#FF69B4' },
+  situationship: { emoji: '🤔', name: 'Situationship', color: '#FFA500' },
+  fuckbody: { emoji: '🔥', name: 'Fuck Body', color: '#DC143C' },
+  lovebody: { emoji: '💗', name: 'Love Body', color: '#FF1493' }
+};
+
 const UserProfileModal = ({ isOpen, onClose, user }) => {
   const [marriedUser, setMarriedUser] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -18,7 +27,6 @@ const UserProfileModal = ({ isOpen, onClose, user }) => {
     
     setLoading(true)
     try {
-      // Evli olduğu kullanıcının bilgilerini çekmek için global economy'den bul
       const res = await api.getGlobalEconomy(1000)
       const married = res.data.find(u => u.userId === user.marriedTo)
       setMarriedUser(married)
@@ -134,16 +142,37 @@ const UserProfileModal = ({ isOpen, onClose, user }) => {
             </div>
 
             {/* Marriage Status */}
+            {/* Marriage Status */}
             <div className="glass rounded-xl p-6 border border-pink-500/20">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-red-500 flex items-center justify-center text-xl">
                   💑
                 </div>
-                <h3 className="text-xl font-bold">Evlilik Durumu</h3>
+                <h3 className="text-xl font-bold">İlişki Bilgileri</h3>
               </div>
 
               {user.marriedTo ? (
                 <div className="space-y-4">
+                  {/* Relationship Type Badge */}
+                  {(() => {
+                    const relType = user.relationshipType || 'evli';
+                    const typeInfo = RELATIONSHIP_TYPES[relType] || RELATIONSHIP_TYPES.evli;
+                    return (
+                      <div 
+                        className="flex items-center justify-center gap-2 p-3 rounded-lg border-2"
+                        style={{ 
+                          borderColor: typeInfo.color + '40',
+                          backgroundColor: typeInfo.color + '10'
+                        }}
+                      >
+                        <span className="text-3xl">{typeInfo.emoji}</span>
+                        <span className="text-lg font-bold" style={{ color: typeInfo.color }}>
+                          {typeInfo.name}
+                        </span>
+                      </div>
+                    );
+                  })()}
+
                   {loading ? (
                     <div className="flex items-center justify-center py-4">
                       <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-pink-500"></div>
@@ -163,7 +192,7 @@ const UserProfileModal = ({ isOpen, onClose, user }) => {
                       )}
                       <div className="flex-1">
                         <div className="font-semibold text-lg text-pink-300">{marriedUser.username}</div>
-                        <div className="text-sm text-gray-400">Eş</div>
+                        <div className="text-sm text-gray-400">Partner</div>
                       </div>
                       <div className="text-3xl">💕</div>
                     </div>
@@ -173,12 +202,11 @@ const UserProfileModal = ({ isOpen, onClose, user }) => {
                         👤
                       </div>
                       <div className="flex-1">
-                        <div className="font-semibold text-pink-300">Evli</div>
-                        <div className="text-xs text-gray-400">Eş bilgisi yüklenemedi</div>
+                        <div className="font-semibold text-pink-300">İlişkide</div>
+                        <div className="text-xs text-gray-400">Partner bilgisi yüklenemedi</div>
                       </div>
                     </div>
                   )}
-
                   {/* Marriage Ring */}
                   {user.marriageRing && (
                     <div className="flex items-center justify-center gap-2 p-3 bg-gradient-to-r from-yellow-500/10 to-pink-500/10 rounded-lg border border-yellow-500/30">
@@ -192,7 +220,7 @@ const UserProfileModal = ({ isOpen, onClose, user }) => {
                   {/* Marriage Date */}
                   {user.marriageSince && (
                     <div className="text-center text-sm text-gray-400">
-                      📅 Evlilik Tarihi: {new Date(user.marriageSince).toLocaleDateString('tr-TR', {
+                      📅 İlişki Başlangıcı: {new Date(user.marriageSince).toLocaleDateString('tr-TR', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
@@ -204,7 +232,7 @@ const UserProfileModal = ({ isOpen, onClose, user }) => {
                 <div className="text-center py-6">
                   <div className="text-6xl mb-3">💔</div>
                   <p className="text-gray-400">Bekar</p>
-                  <p className="text-xs text-gray-500 mt-2">Henüz kimseyle evli değil</p>
+                  <p className="text-xs text-gray-500 mt-2">Henüz kimseyle ilişkide değil</p>
                 </div>
               )}
             </div>

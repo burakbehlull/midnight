@@ -1433,7 +1433,11 @@ class MidnightAPI {
               level: data.level,
               xp: data.xp,
               marriedTo: data.marriedTo,
-              subtitle: data.subtitle
+              marriageSince: data.marriageSince,
+              marriageRing: data.marriageRing,
+              relationshipType: data.relationshipType,
+              subtitle: data.subtitle,
+              fosterlings: data.fosterlings
             };
           })
         );

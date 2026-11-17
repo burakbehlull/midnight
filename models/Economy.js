@@ -13,6 +13,11 @@ const economySchema = new mongoose.Schema({
   marriedTo: { type: String, default: null },
   marriageSince: { type: Date, default: null },
   marriageRing: { type: String, default: null },
+  relationshipType: { 
+    type: String, 
+    enum: ['evli', 'sevgili', 'flört', 'situationship', 'fuckbody', 'lovebody'],
+    default: 'evli' 
+  },
   familyName: { type: String, default: null },
   background: { type: String, default: null },
   fosterlings: { type: [String], default: [] },
