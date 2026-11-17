@@ -81,6 +81,11 @@ function acceptableImageURL(value) {
     if (!["https:", "http:"].includes(u.protocol)) return false;
     if (u.username || u.password || !u.hostname) return false;
     if (u.port && !["80", "443"].includes(u.port)) return false;
+    
+    // Discord CDN URL'lerini her zaman kabul et
+    if (u.hostname.includes('cdn.discord') || u.hostname.includes('media.discord')) {
+      return true;
+    }
    
     if (/^\d+\.\d+\.\d+\.\d+$/.test(u.hostname) || u.hostname.includes(":")) return false;
     return true;
@@ -91,21 +96,35 @@ function acceptableImageURL(value) {
 async function downloadImage(urlString, redirect = 0) {
   if (!acceptableImageURL(urlString) || redirect > MAX_REDIRECTS) return null;
   const url = new URL(urlString);
+  
+  // Discord CDN için özel işlem - DNS lookup atla
+  const isDiscordCDN = url.hostname.includes('cdn.discord') || url.hostname.includes('media.discord');
+  
   try {
-    const addresses = await dns.lookup(url.hostname, { family: 4, all: true });
-
-    if (!addresses.length || addresses.some(entry => !isPublicIPv4(entry.address))) return null;
-    const pinned = addresses[0].address;
+    let pinned = url.hostname;
+    
+    if (!isDiscordCDN) {
+      const addresses = await dns.lookup(url.hostname, { family: 4, all: true });
+      if (!addresses.length || addresses.some(entry => !isPublicIPv4(entry.address))) return null;
+      pinned = addresses[0].address;
+    }
+    
     const transport = url.protocol === "https:" ? https : http;
     return await new Promise(resolve => {
-      const req = transport.get(url, {
+      const reqOptions = {
         timeout: 6500,
-        lookup: (host, opts, cb) => cb(null, pinned, 4),
         headers: {
           Accept: "image/png,image/jpeg,image/webp,image/gif,image/avif,*/*;q=0.2",
           "User-Agent": "DiscordProfileCard/1.0",
         },
-      }, res => {
+      };
+      
+      // Discord CDN için DNS lookup'ı atla
+      if (!isDiscordCDN) {
+        reqOptions.lookup = (host, opts, cb) => cb(null, pinned, 4);
+      }
+      
+      const req = transport.get(url, reqOptions, res => {
         const status = res.statusCode || 0;
         if (status >= 300 && status < 400 && res.headers.location) {
           res.resume();
@@ -420,8 +439,15 @@ export default {
       const avatarURL = member?.displayAvatarURL?.({ extension: "png", size: 512 }) ||
         target.displayAvatarURL({ extension: "png", size: 512 });
 
-      const [avatarData, backgroundData, ringItem, partner] = await Promise.all([
-        toImageData(avatarURL, "avatar"),
+      let avatarData = await toImageData(avatarURL, "avatar");
+      
+      // Eğer avatar indirilemezse, fallback olarak Discord CDN'den dene
+      if (!avatarData) {
+        const fallbackURL = target.displayAvatarURL({ extension: "png", size: 256, forceStatic: true });
+        avatarData = await toImageData(fallbackURL, "avatar");
+      }
+
+      const [backgroundData, ringItem, partner] = await Promise.all([
         userData.background ? toImageData(userData.background, "background") : null,
         userData.marriageRing ? Shop.findOne({ slug: userData.marriageRing }).catch(() => null) : null,
         userData.marriedTo
